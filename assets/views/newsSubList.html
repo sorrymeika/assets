@@ -1,0 +1,14 @@
+﻿<header><em class="ico-back J_Back" hl></em><h1>资讯</h1></header>
+<section id="main" class="main">
+</section>
+<script id="list" type="text/template">
+<ul class="J_List listBox">
+    {%include listItem%}
+</ul>
+</script>
+<script id="listItem" type="text/template">
+    {%each(i,item) Data%}
+    <li data-id="${item.NewId}"><p>${item.Title}</p>
+    <span class="date">${item.PublishDate.replace("T"," ")}</span></li>
+    {%/each%}
+</script>

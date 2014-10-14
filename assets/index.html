@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="anim.css" rel="stylesheet" type="text/css" />
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <script src="js/seajs/sea.js"></script>
+</head>
+<body>
+    <div id="viewport" class="viewport">
+        <div class="view"></div>
+    </div>
+    <script type="text/javascript">
+        seajs.config({
+            alias: {
+                "$": "zepto"
+            }
+        });
+
+        seajs.use(['zepto','ui/sl.app','app','ui/dialog'],function($,sl,_app) {
+            if(!_app.isDevelopment) {
+                localStorage.removeItem('ssqBetData');
+                localStorage.removeItem('threedDBetData');
+                localStorage.removeItem('east61BetData');
+                localStorage.removeItem('f15c5BetData');
+                localStorage.removeItem('k3BetData');
+                localStorage.removeItem('qlcBetData');
+            }
+
+            sl.Route.config({
+                '': 'index',
+                'menu/{name:\\w+}.html': 'menu',
+                'newsList.html': 'newsList',
+                'newsSubList/{id:\\d+}.html': 'newsSubList',
+                'news/{id:\\d+}.html': 'news',
+                'prizeList.html': 'prizeList',
+                'prizeSubList/{id:\\d+}.html': 'prizeSubList',
+                'selector.html': 'selector',
+                'prize.html': 'prize',
+                'user.html': 'user',
+                'login.html': 'login',
+                'ssq.html': 'ssq',
+                'ssqBuy.html': 'ssqBuy',
+                'qlc.html': 'qlc',
+                'qlcBuy.html': 'qlcBuy',
+                'east61.html': 'east61',
+                'east61Buy.html': 'east61Buy',
+                '3d.html': '3d',
+                '3dBuy.html': '3dBuy',
+                'k3.html': 'k3',
+                'k3Buy.html': 'k3Buy',
+                'f15c5.html': 'f15c5',
+                'f15c5Buy.html': 'f15c5Buy',
+                'order/{id:\\d+}.html': 'order',
+                'type/{id:\\d+}.html': 'type',
+                'item/{id:\\d+}.html': 'juice',
+                'search.html': 'search',
+                'fav.html': 'fav',
+                'motion.html': 'motion'
+            });
+
+            var app=new sl.Application('#viewport');
+            app.start();
+
+            sl.activedApp=app;
+
+            if(_app.isAndroid)
+                setTimeout(function() {
+                    _app.load(function() {
+                    });
+                },1500);
+
+            sl.checkUpdate()
+                .done(function(downloadUrl,versionName) {
+
+                    if(_app.versionName!=versionName)
+                        sl.confirm({
+                            title: '检查更新',
+                            content: '发现了新版本,是否更新',
+                            okText: '立即更新'
+
+                        },function() {
+                            _app.update(downloadUrl,versionName);
+
+                        },function() {
+                        });
+                });
+        });
+    </script>
+</body>
+</html>

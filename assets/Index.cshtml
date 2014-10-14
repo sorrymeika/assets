@@ -1,0 +1,53 @@
+﻿@{
+    
+    string qs = "";
+
+    for (int i = 0; i < Request.QueryString.Count; i++)
+    {
+        if (Request.QueryString.GetKey(i) != "path")
+        {
+            qs += Request.QueryString.GetKey(i) + "=" + Request.QueryString[i] + "&";
+        }
+    }
+
+
+    string url = "http://ms1.962666.cn" + Request.QueryString["path"] + (Request.QueryString["path"].IndexOf('?') == -1 ? '?' : '&') + qs;
+
+    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+
+    request.Method = Request.HttpMethod;
+
+    qs = "";
+    if (Request.HttpMethod == "POST")
+    {
+        for (int i = 0; i < Request.Form.Count; i++)
+        {
+            if (Request.Form.GetKey(i) != "path")
+            {
+                qs += Request.Form.GetKey(i) + "=" + Request.Form[i] + "&";
+            }
+        }
+
+        request.ContentType = "application/x-www-form-urlencoded";
+
+        using (StreamWriter sw = new StreamWriter(request.GetRequestStream(), System.Text.Encoding.UTF8))
+        {
+            sw.Write(qs);
+        }
+    }
+
+    request.Headers.Add("Cookie", ".ASPXCOOKIEWebApi=3AE586FC895336F64E0966FF4E5025247B69FAA98DA03AD20D639DCC9FAAF8769897713548ECF889E1BE0D7979262439BA298A2F02A78DFA24D77B656BE67EB59E996C1874412CDED8B33F6DE7E10FCB433D4045A9D3751C83FDA5C51A3D0106D5E41F285AB85BE5A81C4356F742438B01469E666DFE8A3D");
+
+    var response = request.GetResponse();
+
+    string result;
+    using (StreamReader sr = new StreamReader(response.GetResponseStream()))
+    {
+        result = sr.ReadToEnd();
+    }
+
+    response.Close();
+
+    Output.Write(result);
+    return;
+}

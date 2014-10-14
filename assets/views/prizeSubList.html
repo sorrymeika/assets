@@ -1,0 +1,17 @@
+﻿<header><em class="ico-back J_Back" hl></em><h1>福利彩票</h1></header>
+<section id="main" class="main">
+    <ul class="listbox J_List">
+    </ul>
+</section>
+<script id="list" type="text/tmpl">
+{%each(i,item) Data%}
+<li data-id="${item.GameID}" data-wid="${item.WagerIssue}"{%if (i!=0||!isFirst)%} class="noballs"{%/if%}>
+    <p class="info"><!--<i class="r_info">2014-07-18</i>--><b>${item.GameID=="10001"?"双色球":item.GameID=="10003"?"七乐彩":item.GameID=="10002"?"3D":item.GameID=="32003"?"快三":item.GameID=="90015"?"15选5":item.GameID=="90016"?"福彩6+1":"其他"}</b> <i>第${item.WagerIssue}期</i></p>
+    <p class="balls">
+        {%each(j,num) item.Nums%}
+        <em class="red">${num}</em>
+        {%/each%}
+    </p>
+</li>
+{%/each%}
+</script>

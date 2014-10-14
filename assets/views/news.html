@@ -1,0 +1,14 @@
+﻿<header><em class="ico-back J_Back" hl></em><h1>资讯</h1></header>
+<section class="main">
+    <div id="main" class="article">
+    </div>
+</section>
+<script id="article" type="text/template">
+    <div class="hd">
+        <div class="title">${Title}</div>
+        <div class="info">${PublishDate.replace("T"," ")}</div>
+    </div>
+    <div class="bd">
+        {%html Content%}
+    </div>
+</script>
