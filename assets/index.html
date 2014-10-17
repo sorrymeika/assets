@@ -20,14 +20,6 @@
         });
 
         seajs.use(['zepto','ui/sl.app','app','ui/dialog'],function($,sl,_app) {
-            if(!_app.isDevelopment) {
-                localStorage.removeItem('ssqBetData');
-                localStorage.removeItem('threedDBetData');
-                localStorage.removeItem('east61BetData');
-                localStorage.removeItem('f15c5BetData');
-                localStorage.removeItem('k3BetData');
-                localStorage.removeItem('qlcBetData');
-            }
 
             sl.Route.config({
                 '': 'index',
@@ -72,21 +64,6 @@
                     });
                 },1500);
 
-            sl.checkUpdate()
-                .done(function(downloadUrl,versionName) {
-
-                    if(_app.versionName!=versionName)
-                        sl.confirm({
-                            title: '检查更新',
-                            content: '发现了新版本,是否更新',
-                            okText: '立即更新'
-
-                        },function() {
-                            _app.update(downloadUrl,versionName);
-
-                        },function() {
-                        });
-                });
         });
     </script>
 </body>
