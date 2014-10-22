@@ -12,12 +12,12 @@
         startPath: ''
     });
 
-    var records={};
+    var templatesRecords={};
 
-    function getTemplate(url) {
+    var getTemplate=function(url) {
         var that=this,
             dfd=$.Deferred(),
-            record=records[url];
+            record=templatesRecords[url];
 
         if(typeof record!=='undefined') {
             dfd.resolveWith(that,[record]);
@@ -62,7 +62,7 @@
 
                 record.main=template;
                 record.template=record.templates.length?record.templates[0]:null;
-                records[url]=record;
+                templatesRecords[url]=record;
                 if(includes.length) {
                     var incDfd=(includes.shift())();
                     while(includes.length) {

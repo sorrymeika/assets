@@ -1,12 +1,12 @@
-﻿define('views/index',['zepto','ui/sl','app'],function (require,exports,module) {
+﻿define('views/index',['zepto','sl/sl','app'],function(require,exports,module) {
     var $=require('zepto'),
-        sl=require('ui/sl'),
+        sl=require('sl/sl'),
         app=require('app');
 
     module.exports=sl.Activity.extend({
         template: 'views/index.html',
         _events: {
-            'touchstart': function (e) {
+            'touchstart': function(e) {
                 var that=this,
                     point=e.touches[0];
 
@@ -17,7 +17,7 @@
                     that.isFromEdge=true;
                 }
             },
-            'touchmove': function (e) {
+            'touchmove': function(e) {
 
                 if(!this.isFromEdge) return;
 
@@ -28,10 +28,10 @@
                     changeX=that.pointX-point.pageX;
 
                 if(!that._menu) {
-                    that.application.getOrCreate('/menu/index.html',function (activity) {
+                    that.application.getOrCreate('/menu/index.html',function(activity) {
                         that._menu=activity;
 
-                        activity.bind('Destory',function () {
+                        activity.bind('Destory',function() {
                             that._menu=null;
                         });
 
@@ -45,7 +45,7 @@
                     that._menu.$('.menu').css({ width: '100%' });
                 }
             },
-            'touchend': function (e) {
+            'touchend': function(e) {
                 if(!this.isFromEdge) return;
 
                 if(this._menu) {
@@ -74,10 +74,10 @@
         _dfdController: $.when(),
 
         _index: 0,
-        onCreate: function () {
+        onCreate: function() {
             var that=this;
 
-            $.each(that._events,function (evt,f) {
+            $.each(that._events,function(evt,f) {
                 var arr=evt.split(' '),
                     events=arr.shift();
 
@@ -92,12 +92,12 @@
                 }
             });
         },
-        onStart: function () {
+        onStart: function() {
         },
-        onResume: function () {
+        onResume: function() {
             console.log("index onResume");
         },
-        onDestory: function () {
+        onDestory: function() {
             console.log("index onDestory");
         }
     });

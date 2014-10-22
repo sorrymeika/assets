@@ -1,19 +1,19 @@
-﻿define('ui/sl',['zepto','util','app','ui/style','tmpl'],function (require,exports,module) {
+﻿define('ui/sl',['zepto','util','app','ui/style','tmpl'],function(require,exports,module) {
     var $=require('zepto'),
         util=require('util'),
         app=require('app'),
         tmpl=require('tmpl'),
         style=require('ui/style');
 
-    var blankFn=function () { },
-        indexOf=function (array,key,compareItem) {
+    var blankFn=function() { },
+        indexOf=function(array,key,compareItem) {
             if(typeof compareItem==='undefined') {
                 compareItem=key;
                 key=null;
             };
             var result= -1,
                 value;
-            $.each(array,function (i,item) {
+            $.each(array,function(i,item) {
                 value=key!==null?item[key]:item;
 
                 if(compareItem===value) {
@@ -23,7 +23,7 @@
             });
             return result;
         },
-        lastIndexOf=function (array,key,compareItem) {
+        lastIndexOf=function(array,key,compareItem) {
             if(typeof compareItem==='undefined') {
                 compareItem=key;
                 key=null;
@@ -44,12 +44,12 @@
             return result;
         },
         slice=Array.prototype.slice,
-        record=(function () {
+        record=(function() {
             var data={},
                 id=0,
                 ikey='_gid';    // internal key.
 
-            return function (obj,key,val) {
+            return function(obj,key,val) {
                 var dkey=obj[ikey]||(obj[ikey]= ++id),
                     store=data[dkey]||(data[dkey]={});
 
@@ -60,19 +60,15 @@
             };
         })();
 
-    window.app_trigger=function () {
-        $.fn.trigger.apply($(window),arguments);
-    };
-
     var Route={
         routes: [],
-        config: function (options) {
+        config: function(options) {
             var routes=this.routes;
-            $.each(options,function (k,opt) {
+            $.each(options,function(k,opt) {
                 var parts=[],
                     routeOpt={};
 
-                var reg='^(?:\/{0,1})'+k.replace(/(\/|^|\?){([^\/\?]+)}/g,function (r0,r1,r2) {
+                var reg='^(?:\/{0,1})'+k.replace(/(\/|^|\?){([^\/\?]+)}/g,function(r0,r1,r2) {
                     var ra=r2.split(':');
 
                     if(ra.length>1) {
@@ -95,10 +91,10 @@
                 routes.push(routeOpt);
             });
         },
-        match: function (url) {
+        match: function(url) {
             var result=null;
 
-            $.each(this.routes,function (i,route) {
+            $.each(this.routes,function(i,route) {
                 var m=route.reg?url.match(route.reg):null;
 
                 if(m) {
@@ -107,7 +103,7 @@
                         view: route.view,
                         data: {}
                     };
-                    $.each(route.parts,function (i,name) {
+                    $.each(route.parts,function(i,name) {
                         result.data[name]=m[i+1];
                     });
                     return false;
@@ -120,13 +116,13 @@
 
     exports.Route=Route;
 
-    var Application=function (el) {
+    var Application=function(el) {
         var that=this;
 
         that.$el=$(el);
         that.el=that.$el[0];
 
-        that.$el.delegate('a:not(.js-link-default)','tap click',function (e) {
+        that.$el.delegate('a:not(.js-link-default)','tap click',function(e) {
             var target=$(e.currentTarget);
 
             if(!/http\:|javascript\:|mailto\:/.test(target.attr('href'))) {
@@ -157,22 +153,22 @@
         _recordIndex: -1,
         index: -1,
         _bindAttrs: [],
-        $: function (selector) {
+        $: function(selector) {
             if(typeof selector==="string"&&selector[0]=='#') {
                 selector='[id="'+selector.substr(1)+'"]';
             }
             return $(selector,this.$el);
         },
-        one: function (name,f) {
+        one: function(name,f) {
             this.$el.one(name,$.proxy(f,this));
             return this;
         },
-        bind: function (name,f) {
+        bind: function(name,f) {
             this._bindAttrs.push([name,f]);
             this.$el.bind(name,$.proxy(f,this));
             return this;
         },
-        unbind: function (name,f) {
+        unbind: function(name,f) {
             var that=this,
                 $el=that.$el;
 
@@ -187,7 +183,7 @@
 
             return this;
         },
-        trigger: function () {
+        trigger: function() {
             var args=slice.call(arguments),
                 name=args.shift();
 
@@ -199,12 +195,12 @@
         viewPath: 'views/',
         startURL: location.hash.replace('#','')||location.pathname+location.search,
         startPath: location.pathname+location.search,
-        start: function () {
+        start: function() {
             var that=this;
 
             var startURL=this.startURL;
 
-            this.bind('ActivityStart',function (e,activity) {
+            this.bind('ActivityStart',function(e,activity) {
                 that.url=activity.route.url;
                 var currentActivity=that.currentActivity,
                     toOptions=that.toOptions,
@@ -225,11 +221,11 @@
                 }
             });
 
-            that.mask=$('<div class="winheight" style="position:fixed;top:0px;bottom:0px;right:0px;width:100%;background:rgba(0,0,0,0);z-index:2000;display:none"></div>').on('tap click touchend touchmove touchstart',function (e) {
+            that.mask=$('<div class="winheight" style="position:fixed;top:0px;bottom:0px;right:0px;width:100%;background:rgba(0,0,0,0);z-index:2000;display:none"></div>').on('tap click touchend touchmove touchstart',function(e) {
                 e.preventDefault();
             }).appendTo('body');
 
-            $(window).on('hashchange',function () {
+            $(window).on('hashchange',function() {
                 that.url=location.hash.replace(/^#/,'')||that.startPath||'/';
 
                 if(lastIndexOf(that._records,that.url)== -1) {
@@ -242,7 +238,7 @@
 
                 that._startActivity(that.url);
 
-            }).on('scroll',function () {
+            }).on('scroll',function() {
             });
 
             if(startURL!==that.startPath) {
@@ -257,13 +253,13 @@
 
             console.log("app start",this._records,that.url);
         },
-        _loadActivity: function (route) {
+        _loadActivity: function(route) {
             var that=this,
                 dfd=$.Deferred();
 
             that._isMatching=true;
 
-            seajs.use(that.viewPath+route.view,function (activityClass) {
+            seajs.use(that.viewPath+route.view,function(activityClass) {
                 var activity=new activityClass({
                     application: that,
                     route: route
@@ -272,8 +268,8 @@
                 that._add(activity);
 
                 activity
-                    .bind("Start",function () {
-                        this.bind("Destory",function () {
+                    .bind("Start",function() {
+                        this.bind("Destory",function() {
                             var index=that.indexOf(this),
                                 flag=that.length>1&&index!= -1&&index==that.length-1;
 
@@ -283,7 +279,7 @@
                             } else {
                                 this._destoryEnd();
                             }
-                        }).bind("Resume",function () {
+                        }).bind("Resume",function() {
                             that._remove(this)._add(this);
                             that.trigger('ActivityStart',this);
                         });
@@ -299,7 +295,7 @@
 
             return dfd;
         },
-        _startActivity: function (url) {
+        _startActivity: function(url) {
             var that=this,
                 index=that.indexOf(url);
 
@@ -318,7 +314,7 @@
 
                         that.length-=count;
                         that.history.splice(index+1,count);
-                        $.each(that.activities.splice(index+1,count),function (j,activity) {
+                        $.each(that.activities.splice(index+1,count),function(j,activity) {
                             activity.finish();
                         });
                     }
@@ -332,10 +328,10 @@
         },
         length: 0,
         _dfdController: $.when(),
-        getOrCreate: function (url,callback) {
+        getOrCreate: function(url,callback) {
             var that=this;
 
-            that._dfdController=that._dfdController.then(function () {
+            that._dfdController=that._dfdController.then(function() {
 
                 var activity=that.get(url);
 
@@ -344,14 +340,14 @@
 
                     var route=Route.match(url);
 
-                    seajs.use(that.viewPath+route.view,function (ActivityClass) {
+                    seajs.use(that.viewPath+route.view,function(ActivityClass) {
                         var activity=new ActivityClass({
                             application: that,
                             route: route
                         });
 
-                        activity.bind("Start",function () {
-                            this.bind("Destory",function () {
+                        activity.bind("Start",function() {
+                            this.bind("Destory",function() {
                                 var index=that.indexOf(this),
                                     flag=that.length>1&&index!= -1&&index==that.length-1;
 
@@ -361,7 +357,7 @@
                                 } else {
                                     this._destoryEnd();
                                 }
-                            }).bind("Resume",function () {
+                            }).bind("Resume",function() {
                                 that._remove(this)._add(this);
                                 that.trigger('ActivityStart',this);
                             });
@@ -381,14 +377,14 @@
                     callback.call(that,activity);
             });
         },
-        get: function (url) {
+        get: function(url) {
             var index=typeof url==='undefined'?this.length-1:typeof url=="number"?url:this.indexOf(url);
             return (index== -1||index>=this.activities.length)?null:this.activities[index];
         },
-        indexOf: function (url) {
+        indexOf: function(url) {
             return indexOf(typeof url==='string'?this.history:this.activities,url);
         },
-        _remove: function (url) {
+        _remove: function(url) {
             var that=this;
             var index=(typeof url=="number")?url:that.indexOf(url);
 
@@ -399,7 +395,7 @@
             }
             return that;
         },
-        _add: function (activity) {
+        _add: function(activity) {
             var that=this,
                 isInsert=false;
 
@@ -409,7 +405,7 @@
             that.length++;
             return that;
         },
-        to: function (url,options) {
+        to: function(url,options) {
             var that=this;
 
             url=url.replace(/^#/,'')||that.startURL;
@@ -447,7 +443,7 @@
                 history.go(newUrlIndex-urlIndex);
             }
         },
-        saveScroll: function () {
+        saveScroll: function() {
             var that=this,
                 me=that.currentActivity,
                 innerHeight=window.innerHeight,
@@ -462,7 +458,7 @@
             that.$el.css({ height: innerHeight }).attr('amin-temp-scrolltop',scrollY);
             that.el.clientHeight;
         },
-        back: function () {
+        back: function() {
             var that=this,
                 records=that._records;
 
@@ -483,7 +479,7 @@
 
     var isActivityStart=false;
 
-    var Activity=function (options) {
+    var Activity=function(options) {
         var me=this;
 
         if(!me._options)
@@ -514,7 +510,7 @@
         me.status="init";
 
         if(me.events) {
-            $.each(me.events,function (evt,f) {
+            $.each(me.events,function(evt,f) {
                 var arr=evt.split(' '),
                     events=arr.shift();
 
@@ -536,23 +532,23 @@
 
     var activityFn=Activity.fn=Activity.prototype={
         events: {
-            'touchstart [hl]': function (e) {
+            'touchstart [hl]': function(e) {
                 var firstTouch=e.touches[0];
                 this._hf_startX=firstTouch.pageX;
                 this._hf_startY=firstTouch.pageY;
                 this._elHl=$(e.currentTarget).addClass('active');
             },
-            'touchmove header,footer': function (e) {
+            'touchmove header,footer': function(e) {
                 e.preventDefault();
             },
-            'touchmove': function (e) {
+            'touchmove': function(e) {
                 this._elHl&&(Math.abs(e.touches[0].pageX-this._hf_startX)>10||Math.abs(e.touches[0].pageY-this._hf_startY)>10)&&(this._elHl.removeClass('active'),this._elHl=null);
             },
-            'touchend,touchcancel': function (e) {
+            'touchend,touchcancel': function(e) {
                 this._elHl&&this._elHl.removeClass('active');
                 this._elHl=null;
             },
-            'tap [data-href]': function (e) {
+            'tap [data-href]': function(e) {
                 this.to($(e.currentTarget).attr('data-href'));
             }
         },
@@ -560,16 +556,16 @@
         _bindDelegateAttrs: [],
         _bindAttrs: [],
         _bindResults: [],
-        _bind: function (el,name,f) {
+        _bind: function(el,name,f) {
             this._bindDelegateAttrs.push([el,name,f]);
             this.$el.delegate(el,name,$.proxy(f,this));
         },
-        listenToResult: function (name,f) {
+        listenToResult: function(name,f) {
             name='result_'+name;
             this._bindResults.push([name,f]);
             this.$viewport.bind(name,$.proxy(f,this));
         },
-        setResult: function () {
+        setResult: function() {
             var args=slice.call(arguments);
             this.$viewport.trigger('result_'+args.shift(),args);
         },
@@ -586,7 +582,7 @@
         onResume: blankFn,
         onPause: blankFn,
         onDestory: blankFn,
-        _resetHeight: function () {
+        _resetHeight: function() {
             this.$viewport.css({ height: '0' });
             this.$el.css({ height: '0' });
             this.el.clientHeight;
@@ -595,16 +591,16 @@
             this.$el.css({ height: '' });
         },
         //处理上一个activity
-        playUnderlayer: function (underlayer) {
+        playUnderlayer: function(underlayer) {
             underlayer.animateOut();
         },
-        _transitionTime: function (time) {
+        _transitionTime: function(time) {
             time+='ms';
             this.el.style['-webkit-transition-duration']=time;
         },
         animateInClassName: 'anim-in',
         animateOutClassName: 'anim-out',
-        animateIn: function () {
+        animateIn: function() {
             var that=this,
                 innerHeight=window.innerHeight;
 
@@ -618,7 +614,7 @@
                 that.application.mask.show();
                 that.$viewport.addClass("screen");
 
-                that.$el.one($.fx.transitionEnd,function () {
+                that.$el.one($.fx.transitionEnd,function() {
                     that.$viewport.removeClass("screen");
                     var top=that.$el.attr('amin-temp-top'),
                     scrollTop=parseInt(that.$el.attr('amin-temp-scrolltop'));
@@ -632,7 +628,7 @@
                     }
                     that.$el.removeClass('timer').addClass('active');
                     that.el.clientHeight;
-                    that.$('header,footer').each(function () {
+                    that.$('header,footer').each(function() {
                         this.style.cssText="";
                     });
 
@@ -662,7 +658,7 @@
             }
 
         },
-        animateOut: function () {
+        animateOut: function() {
             var that=this;
 
             if(that.useTransition) {
@@ -679,7 +675,7 @@
 
                 that.el.className=that.className+" "+that.animateOutClassName+" timer";
                 that.el.clientHeight;
-                that.$el.one($.fx.transitionEnd,function () {
+                that.$el.one($.fx.transitionEnd,function() {
                     that.$el.addClass('stop');
                     that.$el.remove();
 
@@ -692,7 +688,7 @@
             }
 
         },
-        animateFinish: function () {
+        animateFinish: function() {
             var that=this,
                 scrollY=window.scrollY,
                 innerHeight=window.innerHeight;
@@ -702,7 +698,7 @@
 
                 this.$viewport.css({ height: innerHeight });
 
-                this.$el.one($.fx.transitionEnd,function () {
+                this.$el.one($.fx.transitionEnd,function() {
                     that._destoryEnd();
 
                 }).removeClass('active').addClass("finish");
@@ -712,7 +708,7 @@
             }
 
         },
-        _destoryEnd: function () {
+        _destoryEnd: function() {
             this.$viewport.css({ height: '' });
             this.$el.remove();
             this.$el=null;
@@ -720,58 +716,58 @@
             this.application=null;
             this.$viewport=null;
         },
-        start: function () {
+        start: function() {
             var that=this;
             that.status="start";
             that.trigger('Start');
 
             $.when(that.initDfd)
                 .then($.proxy(that.onCreate,that))
-                .then(function () {
+                .then(function() {
                     that.trigger('Active');
                 });
         },
-        pause: function () {
+        pause: function() {
             var that=this;
             that.status="pause";
             that.trigger('Pause');
         },
-        destory: function () {
+        destory: function() {
             var $el=this.$el,
                 that=this;
 
             that.status="destory";
 
-            $.each(this._bindDelegateAttrs,function (i,attrs) {
+            $.each(this._bindDelegateAttrs,function(i,attrs) {
                 $el.undelegate.apply($el,attrs);
             });
 
-            $.each(this._bindResults,function (i,attrs) {
+            $.each(this._bindResults,function(i,attrs) {
                 that.$viewport.unbind.apply(that.$viewport,attrs);
             });
 
-            this.one('Destory',function () {
-                $.each(that._bindAttrs,function (i,attrs) {
+            this.one('Destory',function() {
+                $.each(that._bindAttrs,function(i,attrs) {
                     $el.unbind.apply($el,attrs);
                 });
             });
             this.trigger('Destory');
         },
-        resume: function () {
+        resume: function() {
             this.trigger('Resume');
             this.trigger('Active');
         },
-        finish: function () {
+        finish: function() {
             this.status="finish";
             this.destory();
         },
-        back: function () {
+        back: function() {
             this.application.back();
         },
-        to: function (url,options) {
+        to: function(url,options) {
             this.application.to(url,options);
         },
-        _loading: function (msg) {
+        _loading: function(msg) {
             if(!this.$loading) this.$loading=$('<div class="dataloading"><div class="msg"></div></div>').appendTo(this.$el);
 
             var loading=this.$loading;
@@ -787,7 +783,7 @@
         }
     };
 
-    var View=function (selector,options) {
+    var View=function(selector,options) {
         var me=this;
 
 
@@ -803,7 +799,7 @@
         me.el=me.$el[0];
 
         if(me.events) {
-            $.each(me.events,function (evt,f) {
+            $.each(me.events,function(evt,f) {
                 me.listen(evt,f);
             });
         }
@@ -817,13 +813,13 @@
         _bindDelegateAttrs: [],
         _bindAttrs: [],
         _bindResults: [],
-        _bind: function (el,name,f) {
+        _bind: function(el,name,f) {
             this._bindDelegateAttrs.push([el,name,f]);
             this.$el.delegate(el,name,$.proxy(f,this));
 
             return this;
         },
-        listen: function (evt,f) {
+        listen: function(evt,f) {
             var that=this,
                 arr=evt.split(' '),
                 events=arr.shift();
@@ -840,17 +836,17 @@
 
             return that;
         },
-        listenToResult: function (name,f) {
+        listenToResult: function(name,f) {
             name='result_'+name;
             this._bindResults.push([name,f]);
             $(document).bind(name,$.proxy(f,this));
         },
-        setResult: function () {
+        setResult: function() {
             var args=slice.call(arguments);
             $(document).trigger('result_'+args.shift(),args);
         },
         one: applicationFn.one,
-        on: function (selector,evt,handler) {
+        on: function(selector,evt,handler) {
             if(handler) {
                 this._bind(selector,evt,handler);
             } else {
@@ -863,20 +859,20 @@
         trigger: applicationFn.trigger,
         $: applicationFn.$,
         init: blankFn,
-        destory: function () {
+        destory: function() {
             var $el=this.$el,
                 that=this;
 
-            $.each(this._bindDelegateAttrs,function (i,attrs) {
+            $.each(this._bindDelegateAttrs,function(i,attrs) {
                 $el.undelegate.apply($el,attrs);
             });
 
-            $.each(this._bindResults,function (i,attrs) {
+            $.each(this._bindResults,function(i,attrs) {
                 $(document).unbind.apply($(document),attrs);
             });
 
-            this.one('Destory',function () {
-                $.each(that._bindAttrs,function (i,attrs) {
+            this.one('Destory',function() {
+                $.each(that._bindAttrs,function(i,attrs) {
                     $el.unbind.apply($el,attrs);
                 });
             });
@@ -884,10 +880,10 @@
         }
     };
 
-    Application.extend=Activity.extend=View.extend=function (prop) {
+    Application.extend=Activity.extend=View.extend=function(prop) {
         var that=this;
 
-        var childClass=function () {
+        var childClass=function() {
             that.apply(this,slice.call(arguments));
         };
 
@@ -903,13 +899,13 @@
         return childClass;
     };
 
-    var Tip=function (text) {
+    var Tip=function(text) {
         this._tip=$('<div class="tip" style="display:none">'+(text||'')+'</div>').appendTo('body');
     };
 
     Tip.prototype={
         _hideTimer: null,
-        _clearHideTimer: function () {
+        _clearHideTimer: function() {
             var me=this;
             if(me._hideTimer) {
                 clearTimeout(me._hideTimer);
@@ -917,7 +913,7 @@
             }
         },
         _visible: false,
-        show: function (msec) {
+        show: function(msec) {
 
             var me=this,
                 tip=me._tip;
@@ -925,7 +921,7 @@
             me._clearHideTimer();
 
             if(msec)
-                me._hideTimer=setTimeout(function () {
+                me._hideTimer=setTimeout(function() {
                     me._hideTimer=null;
                     me.hide();
                 },msec);
@@ -947,7 +943,7 @@
 
             return me;
         },
-        hide: function () {
+        hide: function() {
             var me=this,
                 tip=me._tip;
 
@@ -959,7 +955,7 @@
             tip.animate({
                 scale: ".2,.2",
                 opacity: 0
-            },200,'ease-in',function () {
+            },200,'ease-in',function() {
                 tip.hide().css({
                     '-webkit-transform': 'scale(1,1)'
                 })
@@ -968,7 +964,7 @@
             me._clearHideTimer();
             return me;
         },
-        text: function (msg) {
+        text: function(msg) {
             var me=this,
                 tip=me._tip;
 
@@ -995,7 +991,7 @@
 
     function simplelize(Class,defaultFunc) {
 
-        return function () {
+        return function() {
             var one=Class._static,
                 args=slice.apply(arguments);
 
@@ -1006,7 +1002,7 @@
             var actionName=args.shift()+'',
                 action;
 
-            $.each(one,function (name,val) {
+            $.each(one,function(name,val) {
                 if(name==actionName) {
                     action=val;
                     return false;
@@ -1026,13 +1022,13 @@
         var key=name.substring(0,1).toLowerCase()+name.substring(1),
             old=$.fn[key];
 
-        $.fn[key]=function (opts) {
+        $.fn[key]=function(opts) {
             var args=slice.call(arguments,1),
                 method=typeof opts==='string'&&opts,
                 ret,
                 obj;
 
-            $.each(this,function (i,el) {
+            $.each(this,function(i,el) {
 
                 // 从缓存中取，没有则创建一个
                 obj=record(el,name)||record(el,name,new Class(el,$.isPlainObject(opts)?opts:undefined));
@@ -1068,7 +1064,7 @@
         * var gmuPanel = $.fn.panel.noConflict();
         * gmuPanel.call(test, 'fnname');
         */
-        $.fn[key].noConflict=function () {
+        $.fn[key].noConflict=function() {
             $.fn[key]=old;
             return this;
         };
@@ -1083,12 +1079,12 @@
         has3d: style.has3d,
         indexOf: indexOf,
         lastIndexOf: lastIndexOf,
-        tip: simplelize(Tip,function (actionName) {
+        tip: simplelize(Tip,function(actionName) {
             this.text(actionName).show(3000);
         }),
         common: {},
         _loading: null,
-        loading: function (msg) {
+        loading: function(msg) {
             if(!this._loading) this._loading=$('<div id="dataloading" class="dataloading"><div class="msg"></div></div>').appendTo('body');
 
             loading=this._loading;

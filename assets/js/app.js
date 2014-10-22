@@ -1,6 +1,7 @@
-﻿define('app',['util'],function(require,exports,module) {
+﻿define('app',['$','util'],function(require,exports,module) {
 
-    var util=require('util'),
+    var $=require('$'),
+        util=require('util'),
         isiPhone=/iPhone/.test(navigator.userAgent),
         isAndroid=/Android/.test(navigator.userAgent),
         slice=Array.prototype.slice,
@@ -12,6 +13,10 @@
             queue.shift();
             if(queue.length!=0) location.href=queue.shift();
         }
+    };
+
+    window.app_trigger=function() {
+        $.fn.trigger.apply($(window),arguments);
     };
 
     var queue=[],funcguid=0,stringify=util.stringify,

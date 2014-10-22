@@ -2,12 +2,13 @@
 
     var $=require('$'),
         sl=require('./base'),
-        tmpl=require('./tmpl');
+        tmpl=require('./tmpl'),
+        slice=Array.prototype.slice;
 
     var View=sl.Class.extend(function() {
         var that=this,
             options,
-            args=Array.prototype.slice.call(arguments),
+            args=slice.call(arguments),
             selector=args.shift();
 
         if(typeof selector!=='undefined'&&!$.isPlainObject(selector)) {

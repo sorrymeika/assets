@@ -19,41 +19,17 @@
             }
         });
 
-        seajs.use(['zepto','ui/sl.app','app','ui/dialog'],function($,sl,_app) {
+        seajs.use(['$','sl/sl','app'],function($,sl,_app) {
 
-            sl.Route.config({
+            var app=new sl.Application();
+
+            app.mapRoute({
                 '': 'index',
                 'menu/{name:\\w+}.html': 'menu',
                 'newsList.html': 'newsList',
-                'newsSubList/{id:\\d+}.html': 'newsSubList',
-                'news/{id:\\d+}.html': 'news',
-                'prizeList.html': 'prizeList',
-                'prizeSubList/{id:\\d+}.html': 'prizeSubList',
-                'selector.html': 'selector',
-                'prize.html': 'prize',
-                'user.html': 'user',
-                'login.html': 'login',
-                'ssq.html': 'ssq',
-                'ssqBuy.html': 'ssqBuy',
-                'qlc.html': 'qlc',
-                'qlcBuy.html': 'qlcBuy',
-                'east61.html': 'east61',
-                'east61Buy.html': 'east61Buy',
-                '3d.html': '3d',
-                '3dBuy.html': '3dBuy',
-                'k3.html': 'k3',
-                'k3Buy.html': 'k3Buy',
-                'f15c5.html': 'f15c5',
-                'f15c5Buy.html': 'f15c5Buy',
-                'order/{id:\\d+}.html': 'order',
-                'type/{id:\\d+}.html': 'type',
-                'item/{id:\\d+}.html': 'juice',
-                'search.html': 'search',
-                'fav.html': 'fav',
-                'motion.html': 'motion'
+                'news/{id:\\d+}.html': 'news'
             });
 
-            var app=new sl.Application('#viewport');
             app.start();
 
             sl.activedApp=app;
