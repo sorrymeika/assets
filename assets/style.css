@@ -38,17 +38,24 @@ input[type="password"].prompt-text { letter-spacing: 2px; }
 .dropdown_bd > li:last-child { border-right: 0; border-bottom: 0; }
 .dropdown_bd > li.curr { color: #f3e210; font-weight: bold; }
 
-.anim-out { z-index: 1; -webkit-transition-duration: 0; -webkit-transform: translate(0,0) translateZ(0); }
-.anim-out.run { -webkit-transform: translate(-50%,0) translateZ(0); }
-.anim-out.timer { -webkit-transition: -webkit-transform 300ms ease-out 0ms; }
-.anim-out.stop { height: 0px; overflow: hidden; }
-.anim-out.under { height: 0px; overflow: hidden; }
+.open_enter_animation-from { z-index: 2; -webkit-transform: translate(100%,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; }
+.open_enter_animation-to { -webkit-transform: translate(0,0) translateZ(0); }
+.open_exit_animation-from { z-index: 1; -webkit-transform: translate(0,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; }
+.open_exit_animation-to { -webkit-transform: translate(-50%,0) translateZ(0); }
+
 .anim-in { z-index: 2; -webkit-transition-duration: 0; -webkit-transform: translate(100%,0) translateZ(0); }
 .anim-in.timer, .anim-in-timer { -webkit-transition: -webkit-transform 300ms ease 0ms; }
 .anim-in.run { -webkit-transform: translate(0,0) translateZ(0); }
 .anim-in.finish { z-index: 3; -webkit-transform: translate(100%,0) translateZ(0); }
 .anim-in.active { -webkit-transform: none; }
 .anim-in.stop { z-index: 0; overflow: hidden; }
+
+.anim-out { z-index: 1; -webkit-transition-duration: 0; -webkit-transform: translate(0,0) translateZ(0); }
+.anim-out.run { -webkit-transform: translate(-50%,0) translateZ(0); }
+.anim-out.timer { -webkit-transition: -webkit-transform 300ms ease-out 0ms; }
+.anim-out.stop { height: 0px; overflow: hidden; }
+.anim-out.under { height: 0px; overflow: hidden; }
+
 
 .anim-left-out { z-index: 1; -webkit-transition-duration: 0; -webkit-transform: translate(0,0) translateZ(0); }
 .anim-left-out.run { -webkit-transform: translate(-100%,0) translateZ(0); }
@@ -81,7 +88,7 @@ header .ico-back:before, header .ico-menu:before, header .ico-home:before, heade
 header .ico-menu:before { background-position: -25px -1px; margin-left: 15px; margin-right: 15px; }
 header .ico-back:before { background-position: -43px -228px; }
 header .ico-cart { float: right; }
-header .ico-cart:before { background-position: 0px -1px;margin-left: 15px; margin-right: 15px; }
+header .ico-cart:before { background-position: 0px -1px; margin-left: 15px; margin-right: 15px; }
 header h1 { text-align: center; margin: 0px 47px; position: absolute; right: 0px; left: 0px; top: 0px; z-index: -1; font-size: 18px; letter-spacing: 1px; }
 
 footer { position: fixed; bottom: 0px; left: 0px; width: 100%; z-index: 200; overflow: hidden; }
@@ -112,9 +119,9 @@ ul.table li > p { display: table-cell; text-align: center; padding-top: 5px; }
 .menu div { width: 100%; position: relative; }
 .menu img { width: 100%; }
 .menu ul { padding-top: 10px; }
-.menu li,.menu span  { height: 60px; color: #aeafb4; line-height: 60px; padding: 0 10px; }
-.menu li:before,.menu span:before { display: inline-block; background: url(images/site.png) no-repeat -1000px -1000px; background-size: 320px auto; width: 25px; height: 25px; content: ''; vertical-align: -6px; margin: 0 4px; }
-.menu span { width: 100%; display: block; position: absolute; bottom: 0px;height: 60px; color: #aeafb4; line-height: 60px;  }
+.menu li, .menu span { height: 60px; color: #aeafb4; line-height: 60px; padding: 0 10px; }
+.menu li:before, .menu span:before { display: inline-block; background: url(images/site.png) no-repeat -1000px -1000px; background-size: 320px auto; width: 25px; height: 25px; content: ''; vertical-align: -6px; margin: 0 4px; }
+.menu span { width: 100%; display: block; position: absolute; bottom: 0px; height: 60px; color: #aeafb4; line-height: 60px; }
 
 .menu li.ico-menu-my:before { background-position: -213px -271px; }
 .menu li.ico-menu-prize:before { background-position: -8px -309px; }
@@ -126,14 +133,14 @@ ul.table li > p { display: table-cell; text-align: center; padding-top: 5px; }
 .menu li.curr { color: #fff; border-left: 3px solid #ff0300; padding-left: 7px; }
 
 .home_bd { width: 100%; display: -webkit-box; padding-bottom: 77px; }
-.home_con { width: 100%; position: relative; top: 10px; left: 0; min-height: 300px;}
+.home_con { width: 100%; position: relative; top: 10px; left: 0; min-height: 300px; }
 .home_con .t_info { margin-top: 20px; text-align: center; line-height: 22px; font-size: 14px; }
 .home_con .t_info span { display: block; margin: 0 60px; }
 .home_con .t_info span:first-child { border-bottom: 1px solid #333; }
 .home_tee_img { width: 100%; display: block; }
 .home_buy_btn { position: absolute; bottom: 95px; left: 170px; width: 97px; height: 55px; display: block; background: url(images/site.png) no-repeat 0px -75px; background-size: 320px auto; }
 .home_action { bottom: 10px; height: 47px; width: 100%; display: -webkit-box; }
-.home_action b { display: block; background:#7f7d7d; color:#fff; -webkit-box-flex: 1; }
-.home_create_btn:after { content: ''; display: block; float: right; height: 47px; width: 26px; background: url(images/site.png) no-repeat -100px -75px; background-size: 320px auto; margin-left: 30px;}
+.home_action b { display: block; background: #7f7d7d; color: #fff; -webkit-box-flex: 1; }
+.home_create_btn:after { content: ''; display: block; float: right; height: 47px; width: 26px; background: url(images/site.png) no-repeat -100px -75px; background-size: 320px auto; margin-left: 30px; }
 .home_create_btn:before { content: ''; display: inline-block; background: url(images/site.png) no-repeat 0px -25px; background-size: 320px auto; height: 47px; width: 40px; vertical-align: -23px; margin-top: 6px; margin-left: 30px; margin-right: 4px; }
-.home_list_btn:before { content: ''; display: inline-block; background: url(images/site.png) no-repeat -50px -25px; background-size: 320px auto; height: 47px; width: 40px;margin-top: 6px; margin-left: 20px;}
+.home_list_btn:before { content: ''; display: inline-block; background: url(images/site.png) no-repeat -50px -25px; background-size: 320px auto; height: 47px; width: 40px; margin-top: 6px; margin-left: 20px; }

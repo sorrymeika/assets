@@ -80,8 +80,6 @@
             initWithTemplate: function() {
                 var that=this;
 
-                alert(that.template);
-
                 buildTemplate(that.template,function(record) {
                     that.$el.html(record.main);
                     that.templates=record;

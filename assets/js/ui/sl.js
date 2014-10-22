@@ -617,7 +617,7 @@
                 that.$el.one($.fx.transitionEnd,function() {
                     that.$viewport.removeClass("screen");
                     var top=that.$el.attr('amin-temp-top'),
-                    scrollTop=parseInt(that.$el.attr('amin-temp-scrolltop'));
+                        scrollTop=parseInt(that.$el.attr('amin-temp-scrolltop'));
                     if(top!=null) {
                         that.$el.css({ top: top,height: '',marginBottom: that.$el.attr('amin-temp-margin-bottom') }).removeAttr('amin-temp-top').removeAttr('amin-temp-scrolltop').removeAttr('amin-temp-margin-bottom');
                         that._resetHeight();
@@ -664,9 +664,9 @@
             if(that.useTransition) {
                 if(that.$el.attr('amin-temp-top')==null) {
                     var scrollY=that.$viewport.attr('amin-temp-scrolltop')||window.scrollY,
-                    innerHeight=window.innerHeight,
-                    top=parseInt(that.$el.css('top'))||0,
-                    marginBottom=that.$el.css('margin-bottom')||'';
+                        innerHeight=window.innerHeight,
+                        top=parseInt(that.$el.css('top'))||0,
+                        marginBottom=that.$el.css('margin-bottom')||'';
 
                     that.$el.attr({ 'amin-temp-top': top,'amin-temp-margin-bottom': marginBottom,'amin-temp-scrolltop': scrollY }).css({ top: top-scrollY,height: innerHeight+(scrollY-top),marginBottom: marginBottom });
                     that.$('header').css({ top: scrollY+'px',position: 'absolute' });
