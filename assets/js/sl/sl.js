@@ -448,17 +448,14 @@
                 var currentActivity=application._currentActivity;
 
                 activity.$el.appendTo(application.$el);
-                activity.el.clientHeight;
 
                 application._currentActivity=activity;
 
                 if(that.useAnimation) {
 
-                    that._transitionTime(0);
                     that._animationFrom(animationName,'open_exit_animation-from');
                     that._transitionTime(duration);
 
-                    activity._transitionTime(0);
                     activity._animationFrom(animationName,'open_enter_animation-from');
                     activity._transitionTime(duration);
 
@@ -466,6 +463,8 @@
                     activity.el.clientHeight;
 
                     that.$el.one($.fx.transitionEnd,function () {
+                        that._transitionTime(0);
+                        activity._transitionTime(0);
                         that.trigger('Pause');
                     });
                     that._animationTo(animationName,'open_exit_animation-to');
