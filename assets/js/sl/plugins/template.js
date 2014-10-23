@@ -8,9 +8,9 @@
                 record=templatesRecords[url];
 
             if(typeof record!=='undefined') {
+                callback&&callback(record);
                 dfd.resolveWith(that,[record]);
 
-                callback&&callback(record);
             } else
                 $.get(url,function(template) {
                     var templates=[],
@@ -59,12 +59,12 @@
                             incDfd=incDfd.then(includes.shift());
                         }
                         incDfd.then(function() {
-                            dfd.resolveWith(that,[record]);
                             callback&&callback(record);
+                            dfd.resolveWith(that,[record]);
                         });
                     } else {
-                        dfd.resolveWith(that,[record]);
                         callback&&callback(record);
+                        dfd.resolveWith(that,[record]);
                     }
                 });
 
@@ -79,8 +79,7 @@
             },
             initWithTemplate: function() {
                 var that=this;
-
-                buildTemplate(that.template,function(record) {
+                return buildTemplate(that.template,function(record) {
                     that.$el.html(record.main);
                     that.templates=record;
                 });

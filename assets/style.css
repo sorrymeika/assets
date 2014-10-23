@@ -86,10 +86,9 @@ input[type="password"].prompt-text { letter-spacing: 2px; }
 
 
 .dataloading { position: absolute; top: 30px; right: 0px; left: 0px; bottom: 0px; background: rgba(0,0,0,0); z-index: 2001; display: none; }
-.dataloading .msg { display: none; }
-.dataloading.loading-error .msg { display: block; top: 50%; left: 5%; right: 5%; text-align: center; margin: -20px 0 0 0px; position: absolute; }
-.dataloading:before { top: 50%; left: 50%; margin: -20px 0 0 -20px; position: absolute; content: ""; }
-.dataloading:before { width: 40px; height: 40px; text-indent: -10000px; background: url('images/dataloading.png') 0 0 no-repeat; -webkit-background-size: 40px 40px; -webkit-animation-name: ui-loading-anim; -webkit-animation-duration: 1s; -webkit-animation-iteration-count: infinite; -webkit-animation-timing-function: step-start; }
+.dataloading .msg { display: none;top: 50%; left: 5%; right: 5%; text-align: center; margin: -20px 0 0 0px; position: absolute; }
+.dataloading .loading { top: 50%; left: 50%; margin: -20px 0 0 -20px; position: absolute; content: ""; }
+.dataloading .loading { width: 40px; height: 40px; text-indent: -10000px; background: url('images/dataloading.png') 0 0 no-repeat; -webkit-background-size: 40px 40px; -webkit-animation-name: ui-loading-anim; -webkit-animation-duration: 1s; -webkit-animation-iteration-count: infinite; -webkit-animation-timing-function: step-start; }
 .dataloading.loading-error:before { display: none; }
 
 .refreshing { line-height: 50px; height: 50px; background: #ddd; color: #2E435D; text-align: center; width: 100%; z-index: 1; -webkit-transition: height 300ms ease 0ms; }

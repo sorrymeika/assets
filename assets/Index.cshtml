@@ -11,7 +11,7 @@
     }
 
 
-    string url = "http://ms1.962666.cn" + Request.QueryString["path"] + (Request.QueryString["path"].IndexOf('?') == -1 ? '?' : '&') + qs;
+    string url = "http://localhost:30593" + Request.QueryString["path"] + (Request.QueryString["path"].IndexOf('?') == -1 ? '?' : '&') + qs;
 
     HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
 

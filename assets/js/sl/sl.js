@@ -403,9 +403,8 @@
             that.bind('Destory',that.onDestory);
             that.bind('QueryChange',that.onQueryChange);
 
-            that.options.templateEnabled&&that.initWithTemplate();
-
-            $.when($.proxy(that.onCreate,that))
+            $.when(that.options.templateEnabled&&that.initWithTemplate())
+                .then($.proxy(that.onCreate,that))
                 .then(function() {
                     that.trigger('Start');
                     that.trigger('Resume');
@@ -669,7 +668,6 @@
         }
     };
 
-
     $.extend(sl,{
         Application: Application,
         Activity: Activity,
@@ -679,6 +677,7 @@
             this.text(actionName).show(3000);
         }),
         common: {},
+        noop: noop,
         zeptolize: zeptolize,
         simplelize: simplelize
     });
