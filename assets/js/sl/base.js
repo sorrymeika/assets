@@ -41,8 +41,7 @@
             childClass.prototype[i]=prop[i];
         }
 
-        childClass.fn.superClass=that.fn;
-        childClass.fn.superConstructor=that;
+        childClass.superClass=that.fn;
         childClass.fn.constructor=childClass;
 
         childClass.extend=arguments.callee;

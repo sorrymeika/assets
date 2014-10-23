@@ -159,6 +159,7 @@
                 $.each(that._bindAttrs,function(i,attrs) {
                     $.fn.unbind.apply($el,attrs);
                 });
+                that.$el.remove();
             });
 
             that.trigger('Destory');
@@ -170,7 +171,7 @@
 
         childClass=sl.Class.extend.call(that,childClass,prop);
 
-        childClass.events=$.extend({},childClass.fn.superClass.events,childClass.prototype.events);
+        childClass.events=$.extend({},childClass.superClass.events,childClass.prototype.events);
 
         childClass.extend=arguments.callee;
         childClass.plugin=function(plugin) {

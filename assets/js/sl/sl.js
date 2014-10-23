@@ -1,4 +1,4 @@
-﻿define('sl/sl',['$','util','app','./tmpl','./view','./plugins/template'],function (require,exports,module) {
+﻿define(['$','util','app','./tmpl','./view','./style','./plugins/template'],function(require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
@@ -6,17 +6,18 @@
         sl=require('./base'),
         tmpl=require('./tmpl'),
         view=require('./view'),
+        style=require('./style'),
         plugin=require('./plugins/template');
 
-    var noop=function () { },
-        indexOf=function (array,key,compareItem) {
+    var noop=function() { },
+        indexOf=function(array,key,compareItem) {
             if(typeof compareItem==='undefined') {
                 compareItem=key;
                 key=null;
             };
             var result= -1,
                 value;
-            $.each(array,function (i,item) {
+            $.each(array,function(i,item) {
                 value=key!==null?item[key]:item;
 
                 if(compareItem===value) {
@@ -26,7 +27,7 @@
             });
             return result;
         },
-        lastIndexOf=function (array,key,compareItem) {
+        lastIndexOf=function(array,key,compareItem) {
             if(typeof compareItem==='undefined') {
                 compareItem=key;
                 key=null;
@@ -46,20 +47,20 @@
 
             return result;
         },
-        getUrlPath=function (url) {
+        getUrlPath=function(url) {
             var index=url.indexOf('?');
             if(index!= -1) {
                 url=url.substr(0,index);
             }
-            return url.toLowerCase()
+            return url.toLowerCase();
         },
         slice=Array.prototype.slice,
-        record=(function () {
+        record=(function() {
             var data={},
                 id=0,
                 ikey='_gid';    // internal key.
 
-            return function (obj,key,val) {
+            return function(obj,key,val) {
                 var dkey=obj[ikey]||(obj[ikey]= ++id),
                     store=data[dkey]||(data[dkey]={});
 
@@ -69,9 +70,9 @@
                 return store[key];
             };
         })(),
-        simplelize=function (Class,defaultFunc) {
+        simplelize=function(Class,defaultFunc) {
 
-            return function () {
+            return function() {
                 var one=Class._static,
                 args=slice.apply(arguments);
 
@@ -82,7 +83,7 @@
                 var actionName=args.shift()+'',
                 action;
 
-                $.each(one,function (name,val) {
+                $.each(one,function(name,val) {
                     if(name==actionName) {
                         action=val;
                         return false;
@@ -97,17 +98,17 @@
                 return this;
             }
         },
-        zeptolize=function (name,Class) {
+        zeptolize=function(name,Class) {
             var key=name.substring(0,1).toLowerCase()+name.substring(1),
             old=$.fn[key];
 
-            $.fn[key]=function (opts) {
+            $.fn[key]=function(opts) {
                 var args=slice.call(arguments,1),
                 method=typeof opts==='string'&&opts,
                 ret,
                 obj;
 
-                $.each(this,function (i,el) {
+                $.each(this,function(i,el) {
 
                     // 从缓存中取，没有则创建一个
                     obj=record(el,name)||record(el,name,new Class(el,$.isPlainObject(opts)?opts:undefined));
@@ -138,7 +139,7 @@
                 return ret!==undefined?ret:this;
             };
 
-            $.fn[key].noConflict=function () {
+            $.fn[key].noConflict=function() {
                 $.fn[key]=old;
                 return this;
             };
@@ -146,7 +147,7 @@
 
     var Application=view.extend({
         events: {
-            'tap,click a:not(.js-link-default)': function (e) {
+            'tap,click a:not(.js-link-default)': function(e) {
                 var that=this,
                     target=$(e.currentTarget);
 
@@ -169,13 +170,13 @@
         el: '<div class="viewport"></div>',
 
         routes: [],
-        mapRoute: function (options) {
+        mapRoute: function(options) {
             var routes=this.routes;
-            $.each(options,function (k,opt) {
+            $.each(options,function(k,opt) {
                 var parts=[],
                     routeOpt={};
 
-                var reg='^(?:\/{0,1})'+k.replace(/(\/|^|\?){([^\/\?]+)}/g,function (r0,r1,r2) {
+                var reg='^(?:\/{0,1})'+k.replace(/(\/|^|\?){([^\/\?]+)}/g,function(r0,r1,r2) {
                     var ra=r2.split(':');
 
                     if(ra.length>1) {
@@ -198,7 +199,7 @@
                 routes.push(routeOpt);
             });
         },
-        matchRoute: function (url) {
+        matchRoute: function(url) {
             var result=null,
                 queries={},
                 hash=url.replace(/^#/,'');
@@ -212,7 +213,7 @@
 
                 url=url.substr(0,index);
 
-                query.replace(/(?:^|&)([^=&]+)=([^=&]*)/g,function (r0,r1,r2) {
+                query.replace(/(?:^|&)([^=&]+)=([^=&]*)/g,function(r0,r1,r2) {
                     queries[r1]=decodeURIComponent(r2);
                     return '';
                 })
@@ -220,7 +221,7 @@
                 query='';
             }
 
-            $.each(this.routes,function (i,route) {
+            $.each(this.routes,function(i,route) {
                 var m=route.reg?url.match(route.reg):null;
 
                 if(m) {
@@ -232,7 +233,7 @@
                         queryString: query,
                         query: queries
                     };
-                    $.each(route.parts,function (i,name) {
+                    $.each(route.parts,function(i,name) {
                         result.data[name]=m[i+1];
                     });
                     return false;
@@ -242,8 +243,12 @@
             return result;
         },
 
-        initialize: function () {
+        initialize: function() {
             var that=this;
+
+            that.mask=$('<div class="screen" style="position:fixed;top:0px;bottom:0px;right:0px;width:100%;background:rgba(0,0,0,0);z-index:2000;display:none"></div>').on('tap click touchend touchmove touchstart',function(e) {
+                e.preventDefault();
+            }).appendTo(document.body);
         },
 
         skip: 0,
@@ -251,35 +256,38 @@
         _historyCursor: -1,
         _currentActivity: null,
 
-        start: function () {
+        start: function() {
             var that=this;
 
             that.hash=location.hash.replace(/^#/,'');
 
-            that._getOrCreateActivity(that.hash,function (activity) {
+            that._getOrCreateActivity(that.hash,function(activity) {
                 that._currentActivity=activity;
                 that._history.push(activity.hash);
                 that._historyCursor++;
                 activity.$el.appendTo(that.$el);
             });
 
-            $(window).on('hashchange',function () {
+            $(window).on('hashchange',function() {
                 that.hash=location.hash.replace(/^#/,'');
 
                 var index=lastIndexOf(that._history,that.hash),
-                    noHistory=index== -1;
-                if(noHistory) {
-                    that._history.push(that.hash);
-                    that._historyCursor++;
-                } else {
-                    that._history.length=index+1;
-                    that._historyCursor=index;
-                }
+                    isForward=that._skipRecordHistory||index== -1;
 
-                console.log(that._history,that.hash,index,that._historyCursor);
+                if(that._skipRecordHistory!==true) {
+                    if(index== -1) {
+                        that._history.push(that.hash);
+                        that._historyCursor++;
+                    } else {
+                        that._history.length=index+1;
+                        that._historyCursor=index;
+                    }
+                } else
+                    that._skipRecordHistory=false;
+
 
                 if(that.skip==0) {
-                    that._currentActivity.forward(that.hash);
+                    that._currentActivity[isForward?'forward':'back'](that.hash);
 
                 } else if(that.skip>0)
                     that.skip--;
@@ -290,7 +298,11 @@
             that.$el.appendTo(document.body);
         },
 
-        to: function (url) {
+        go: function(index) {
+            history.go(index);
+        },
+
+        to: function(url) {
             url=url.replace(/^#/,'');
 
             var that=this,
@@ -302,56 +314,66 @@
             }
 
             if(index== -1) {
+                that._history.splice(that._historyCursor+1,0,url);
+                that._history.length=that._historyCursor+2;
+                that._historyCursor++;
+                that._skipRecordHistory=true;
                 location.hash=url;
-            } else {
-                if(!that.get(url)) {
-                    that._history.splice(0,that._historyCursor);
-                    that._historyCursor=0;
-                    location.hash=url;
 
-                } else {
-                    history.go(index-that._historyCursor);
-                }
+            } else {
+                history.go(index-that._historyCursor);
             }
         },
 
-        navigate: function (url) {
+        navigate: function(url) {
             this.skip++;
             this.to(url);
         },
 
         _activities: {},
 
-        get: function (url) {
+        get: function(url) {
             return this._activities[getUrlPath(url)];
         },
 
-        set: function (url,activity) {
+        set: function(url,activity) {
             this._activities[getUrlPath(url)]=activity;
+        },
+
+        remove: function(url) {
+            this._activities[getUrlPath(url)]=undefined;
+        },
+
+        siblings: function(url,url1) {
+            $.each(this._activities,function(k,activity) {
+                if(typeof activity!=='undefined'&&k!=url&&k!=url1) {
+                    activity.$el.remove();
+                }
+            });
         },
 
         viewPath: 'views/',
 
-        _getOrCreateActivity: function (url,callback) {
+        _getOrCreateActivity: function(url,callback) {
             var that=this,
-                route=that.matchRoute(location.hash);
+                route=that.matchRoute(url);
 
             if(!route) return;
 
             var activity=that.get(route.url);
 
             if(activity==null) {
-                seajs.use(that.viewPath+route.view,function (ActivityClass) {
+                seajs.use(that.viewPath+route.view,function(ActivityClass) {
                     activity=new ActivityClass({
                         application: that,
                         route: route
                     });
                     that.set(route.url,activity);
-                    callback.call(that,activity);
+                    callback.call(that,activity,route);
                 });
 
             } else {
-                callback.call(that,activity);
+                callback.call(that,activity,route);
             }
         }
     });
@@ -361,11 +383,13 @@
             route: null
         },
         useAnimation: !/Android\s2/.test(navigator.userAgent),
+        animationName: null,
         application: null,
         el: '<div class="view"></div>',
-        initialize: function () {
+        initialize: function() {
             var that=this;
 
+            that.className&&that.$el.addClass(that.className);
             that.className=that.el.className;
 
             that.route=that.options.route;
@@ -382,7 +406,7 @@
             that.options.templateEnabled&&that.initWithTemplate();
 
             $.when($.proxy(that.onCreate,that))
-                .then(function () {
+                .then(function() {
                     that.trigger('Start');
                     that.trigger('Resume');
                 });
@@ -392,12 +416,14 @@
         onResume: noop,
         onStop: noop,
         onRestart: noop,
-        onPause: function () {
-            this.$el.remove();
-        },
+        onPause: noop,
         onQueryChange: noop,
 
-        prepareExitAnimation: function () {
+        isPrepareExitAnimation: false,
+        prepareExitAnimation: function() {
+            if(this.isPrepareExitAnimation) return;
+            this.isPrepareExitAnimation=true;
+
             var that=this,
                 innerHeight=window.innerHeight,
                 scrollY=window.scrollY,
@@ -418,89 +444,148 @@
                 that.$('header').css({ top: scrollY+'px',position: 'absolute' });
                 that.$('footer').css({ position: 'absolute' });
             }
-            that.application.$el.css({ height: innerHeight });
+            that.application.mask.show();
+            that.application.$el.addClass("screen");
         },
 
-        compareUrl: function (url) {
+        finishEnterAnimation: function() {
+            var that=this,
+                top=that.$el.attr('anim-temp-top'),
+                scrollTop=parseInt(that.$el.attr('anim-temp-scrolltop'));
+
+            if(top!=null) {
+                that.$el.css({ top: top,height: '',marginBottom: that.$el.attr('anim-temp-margin-bottom') }).removeAttr('anim-temp-top').removeAttr('anim-temp-scrolltop').removeAttr('anim-temp-margin-bottom');
+                window[$.isFunction(window.scrollTo)?'scrollTo':'scroll'](0,scrollTop||0);
+            }
+
+            if(that.useAnimation) {
+                that.$el.addClass('active');
+                that.$('header,footer').each(function() {
+                    this.style.cssText="";
+                });
+            }
+            that.application.mask.hide();
+            that.application.$el.removeClass("screen");
+            that.application.el.clientHeight;
+
+            that.isPrepareExitAnimation=false;
+        },
+
+        compareUrl: function(url) {
             return getUrlPath(url)===this.route.url.toLowerCase();
         },
 
-        _transitionTime: function (time) {
+        _transitionTime: function(time) {
             this.el.style['-webkit-transition-duration']=(time||0)+'ms';
         },
 
-        _animationFrom: function (name,type) {
+        _animationFrom: function(name,type) {
             this.el.className=this.className+' '+(name?name+'-':'')+type;
         },
 
-        _animationTo: function (name,type) {
+        _animationTo: function(name,type) {
             this.$el.addClass((name?name+'-':'')+type);
         },
 
-        forward: function (url,duration,animationName) {
-            if(!duration) duration=300;
+        _to: function(url,duration,animationName,type,callback) {
+            if(!duration) duration=400;
 
             var that=this,
                 application=that.application;
 
-            application._getOrCreateActivity(url,function (activity) {
+            if(url.toLowerCase()!=location.hash.replace(/^#/,'').toLowerCase()) {
+                application.navigate(url);
+            }
 
-                var currentActivity=application._currentActivity;
+            application._getOrCreateActivity(url,function(activity,route) {
+                animationName=animationName||(type=='open'?activity:that).animationName;
+
+                if(activity.route.hash!=route.hash) {
+                    activity.route=route;
+                    activity.hash=route.hash;
+                    activity.url=route.url;
+                    activity.trigger('QueryChange');
+                }
+
+                if(activity.url==that.url) {
+                    return;
+                }
+
+                that.application.siblings(route.url,that.url);
+
+                that.prepareExitAnimation();
 
                 activity.$el.appendTo(application.$el);
 
                 application._currentActivity=activity;
 
                 if(that.useAnimation) {
+                    activity._animationFrom(animationName,type+'_enter_animation-from');
+                    that._animationFrom(animationName,type+'_exit_animation-from');
+                    that.el.clientHeight;
 
-                    that._animationFrom(animationName,'open_exit_animation-from');
                     that._transitionTime(duration);
-
-                    activity._animationFrom(animationName,'open_enter_animation-from');
                     activity._transitionTime(duration);
 
-                    that.el.clientHeight;
-                    activity.el.clientHeight;
-
-                    that.$el.one($.fx.transitionEnd,function () {
+                    var isTransitionEnd=false;
+                    $(activity.$el).add(that.$el).one($.fx.transitionEnd,function() {
+                        if(isTransitionEnd) return;
+                        isTransitionEnd=true;
                         that._transitionTime(0);
                         activity._transitionTime(0);
-                        that.trigger('Pause');
+                        activity.finishEnterAnimation();
+                        callback&&callback();
                     });
-                    that._animationTo(animationName,'open_exit_animation-to');
-                    activity._animationTo(animationName,'open_enter_animation-to');
+                    that._animationTo(animationName,type+'_exit_animation-to');
+                    activity._animationTo(animationName,type+'_enter_animation-to');
 
                 } else {
-                    that.trigger('Pause');
+                    activity.finishEnterAnimation();
+                    callback&&callback();
                 }
             });
-
         },
 
-        back: function (url,enterAnimation,exitAnimation) {
+        forward: function(url,duration,animationName) {
             var that=this;
 
-            if(that.useAnimation) {
-
-            } else {
-                that.finish();
-            }
+            that._to(url,duration,animationName,'open',function() {
+                that.trigger('Pause');
+            });
         },
 
-        finish: function () {
+        back: function(url,duration,animationName) {
+            var that=this;
+
+            if(typeof url=='undefined') {
+                that.prepareExitAnimation();
+                history.back();
+            }
+
+            that._to(url,duration,animationName,'close',function() {
+                that.destory();
+            });
+        },
+
+        finish: function() {
             this.destory();
+        },
+
+        destory: function() {
+            this.application.remove(this.url);
+            view.fn.destory.apply(this,arguments);
         }
     });
 
     plugin(Activity);
 
-    var Tip=function (text) {
+    var Tip=function(text) {
         this._tip=$('<div class="tip" style="display:none">'+(text||'')+'</div>').appendTo('body');
     };
 
     Tip.prototype={
         _hideTimer: null,
-        _clearHideTimer: function () {
+        _clearHideTimer: function() {
             var me=this;
             if(me._hideTimer) {
                 clearTimeout(me._hideTimer);
@@ -508,7 +593,7 @@
             }
         },
         _visible: false,
-        show: function (msec) {
+        show: function(msec) {
 
             var me=this,
                 tip=me._tip;
@@ -516,7 +601,7 @@
             me._clearHideTimer();
 
             if(msec)
-                me._hideTimer=setTimeout(function () {
+                me._hideTimer=setTimeout(function() {
                     me._hideTimer=null;
                     me.hide();
                 },msec);
@@ -538,7 +623,7 @@
 
             return me;
         },
-        hide: function () {
+        hide: function() {
             var me=this,
                 tip=me._tip;
 
@@ -550,7 +635,7 @@
             tip.animate({
                 scale: ".2,.2",
                 opacity: 0
-            },200,'ease-in',function () {
+            },200,'ease-in',function() {
                 tip.hide().css({
                     '-webkit-transform': 'scale(1,1)'
                 })
@@ -559,7 +644,7 @@
             me._clearHideTimer();
             return me;
         },
-        text: function (msg) {
+        text: function(msg) {
             var me=this,
                 tip=me._tip;
 
@@ -590,7 +675,7 @@
         Activity: Activity,
         indexOf: indexOf,
         lastIndexOf: lastIndexOf,
-        tip: simplelize(Tip,function (actionName) {
+        tip: simplelize(Tip,function(actionName) {
             this.text(actionName).show(3000);
         }),
         common: {},

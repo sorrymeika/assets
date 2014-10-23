@@ -9,9 +9,6 @@
     <script src="js/seajs/sea.js"></script>
 </head>
 <body>
-    <div id="viewport" class="viewport">
-        <div class="view"></div>
-    </div>
     <script type="text/javascript">
         seajs.config({
             alias: {
@@ -19,8 +16,7 @@
             }
         });
 
-        seajs.use(['$','sl/sl','app'],function ($,sl,_app) {
-
+        seajs.use(['$','sl/sl','app'],function($,sl,_app) {
             var app=new sl.Application();
 
             app.mapRoute({
@@ -35,8 +31,8 @@
             sl.activedApp=app;
 
             if(_app.isAndroid)
-                setTimeout(function () {
-                    _app.load(function () {
+                setTimeout(function() {
+                    _app.load(function() {
                     });
                 },1500);
 

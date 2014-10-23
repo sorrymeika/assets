@@ -43,6 +43,21 @@ input[type="password"].prompt-text { letter-spacing: 2px; }
 .open_exit_animation-from { z-index: 1; -webkit-transform: translate(0,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; }
 .open_exit_animation-to { -webkit-transform: translate(-50%,0) translateZ(0); }
 
+.close_enter_animation-from { z-index: 1; -webkit-transform: translate(-50%,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; }
+.close_enter_animation-to { -webkit-transform: translate(0,0) translateZ(0); }
+.close_exit_animation-from { z-index: 3; -webkit-transform: translate(0,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease-out 0ms; }
+.close_exit_animation-to { -webkit-transform: translate(100%,0) translateZ(0); }
+
+.menu-open_enter_animation-from { z-index: 2; -webkit-transform: translate(-100%,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; }
+.menu-open_enter_animation-to { -webkit-transform: translate(0,0) translateZ(0); }
+.menu-open_exit_animation-from { z-index: 1; -webkit-transition: -webkit-transform 0ms ease 0ms; }
+.menu-open_exit_animation-to { }
+
+.menu-close_enter_animation-from { z-index: 1; -webkit-transition: -webkit-transform 0ms ease 0ms; }
+.menu-close_enter_animation-to { }
+.menu-close_exit_animation-from { z-index: 3; -webkit-transform: translate(0,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease-out 0ms; }
+.menu-close_exit_animation-to { -webkit-transform: translate(-100%,0) translateZ(0); }
+
 .anim-in { z-index: 2; -webkit-transition-duration: 0; -webkit-transform: translate(100%,0) translateZ(0); }
 .anim-in.timer, .anim-in-timer { -webkit-transition: -webkit-transform 300ms ease 0ms; }
 .anim-in.run { -webkit-transform: translate(0,0) translateZ(0); }
