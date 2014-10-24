@@ -1,25 +1,3 @@
 ﻿<header><em class="ico-back J_Back" hl></em><h1>用户中心</h1></header>
-<section id="main" class="main"></section>
-<script id="account" type="text/template">
-    <ul class="account">
-        <li>账户：${UserName}</li>
-        <li>余额：${AvailBalance/100}</li>
-    </ul>
-</script>
-<script id="record" type="text/template">
-<ul class="J_List listbox">
-    {%include listItem%}
-</ul>
-</script>
-<script id="win" type="text/template">
-<ul class="J_List listbox">
-    {%include listItem%}
-</ul>
-</script>
-<!--${item.Win_Money>0?"奖金"+item.Win_Money+"元":item.OrderStateCode=="00000"?"出票成功":item.OrderStateCode=="0"?"未提交":item.OrderStateCode=="1"?"已提交":item.OrderStateCode=="2"?"已注销":"未中奖"}-->
-<script id="listItem" type="text/template">
-    {%each(i,item) data%}
-    <li data-id="${item.OrderID}"><p class="info"><i class="r_info">${item.OrderStateCode=="00000"?"出票成功":"出票失败"}</i><b>${item.GameID=="10001"?"双色球":item.GameID=="10003"?"七乐彩":item.GameID=="10002"?"3D":item.GameID=="32003"?"快三":item.GameID=="90015"?"15选5":item.GameID=="90016"?"福彩6+1":"其他"} ${item.WagerIssue}</b></p>
-    <p class="info">{%if (item.Win_Money>0)%}<em class="r_info red">中奖${item.Win_Money/100}元</em>{%/if%}<em>${item.INTIME.replace("T"," ")}{%if (item.OrderStateCode=="00000")%} 支付${item.Amount/100}元{%/if%}</em></p></li>
-    {%/each%}
-</script>
+<section id="main" class="main userwrap">
+</section>

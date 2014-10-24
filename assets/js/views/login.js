@@ -1,36 +1,31 @@
-﻿define('views/login',['zepto','ui/sl','ui/tabs','app','ui/loading'],function(require,exports,module) {
+﻿define(['$','sl/sl','ui/tabs','app','ui/loading'],function (require,exports,module) {
     var $=require('zepto'),
-        sl=require('ui/sl'),
+        sl=require('sl/sl'),
         app=require('app'),
         Loading=require('ui/loading');
 
     module.exports=sl.Activity.extend({
         template: 'views/login.html',
         events: {
-            'tap .J_Back': 'back',
-            'tap .J_Login': 'login'
+            'tap .js_back': 'backToFrom'
         },
-        login: function() {
+
+        onCreate: function () {
             var that=this;
 
-            app.exec('login',function(res) {
-                localStorage.auth=JSON.stringify(res);
-                localStorage.UserName=res.UserName;
-                localStorage.authCookies=".ASPXCOOKIEWebApi="+res[".ASPXCOOKIEWebApi"]+"; ASP.NET_SessionId="+res["ASP.NET_SessionId"];
+        },
+        onDestory: function () {
+        },
 
-                that.to('/');
-            });
-        },
-        onCreate: function() {
-            var that=this;
+        login: function () {
+            var that=this,
+                r=this.route.query['r'];
 
-            that.login();
+            that.redirect(r||'/user.html');
         },
-        onStart: function() {
-        },
-        onResume: function() {
-        },
-        onDestory: function() {
+
+        backToFrom: function () {
+            this.back();
         }
     });
 });
