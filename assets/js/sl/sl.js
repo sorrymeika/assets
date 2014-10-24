@@ -9,7 +9,7 @@
         style=require('./style'),
         plugin=require('./plugins/template');
 
-    var noop=function() { },
+    var noop=sl.noop,
         indexOf=function(array,key,compareItem) {
             if(typeof compareItem==='undefined') {
                 compareItem=key;
@@ -55,21 +55,6 @@
             return url.toLowerCase();
         },
         slice=Array.prototype.slice,
-        record=(function() {
-            var data={},
-                id=0,
-                ikey='_gid';    // internal key.
-
-            return function(obj,key,val) {
-                var dkey=obj[ikey]||(obj[ikey]= ++id),
-                    store=data[dkey]||(data[dkey]={});
-
-                val!==undefined&&(store[key]=val);
-                val===null&&delete store[key];
-
-                return store[key];
-            };
-        })(),
         simplelize=function(Class,defaultFunc) {
 
             return function() {
@@ -97,52 +82,6 @@
                 }
                 return this;
             }
-        },
-        zeptolize=function(name,Class) {
-            var key=name.substring(0,1).toLowerCase()+name.substring(1),
-            old=$.fn[key];
-
-            $.fn[key]=function(opts) {
-                var args=slice.call(arguments,1),
-                method=typeof opts==='string'&&opts,
-                ret,
-                obj;
-
-                $.each(this,function(i,el) {
-
-                    // 从缓存中取，没有则创建一个
-                    obj=record(el,name)||record(el,name,new Class(el,$.isPlainObject(opts)?opts:undefined));
-
-                    // 取实例
-                    if(method==='this') {
-                        ret=obj;
-                        return false;    // 断开each循环
-                    } else if(method) {
-
-                        // 当取的方法不存在时，抛出错误信息
-                        if(!$.isFunction(obj[method])) {
-                            throw new Error('组件没有此方法：'+method);
-                        }
-
-                        ret=obj[method].apply(obj,args);
-
-                        // 断定它是getter性质的方法，所以需要断开each循环，把结果返回
-                        if(ret!==undefined&&ret!==obj) {
-                            return false;
-                        }
-
-                        // ret为obj时为无效值，为了不影响后面的返回
-                        ret=undefined;
-                    }
-                });
-
-                return ret!==undefined?ret:this;
-            };
-
-            $.fn[key].noConflict=function() {
-                $.fn[key]=old;
-                return this;
-            };
         };
 
     var Application=view.extend({
@@ -164,6 +103,36 @@
                 }
 
                 return false;
+            },
+            'tap [data-href]': function(e) {
+                var that=this,
+                    target=$(e.currentTarget);
+
+                if(!/http\:|javascript\:|mailto\:/.test(target.attr('data-href'))) {
+                    that.to(target.attr('data-href'));
+                }
+            },
+            'tap [data-back]': function(e) {
+                this._currentActivity.back($(e.currentTarget).attr('data-back'));
+            },
+            'tap [data-forward]': function(e) {
+                this._currentActivity.forward($(e.currentTarget).attr('data-forward'));
+            },
+            'touchstart [hl]': function(e) {
+                var firstTouch=e.touches[0];
+                this._hf_startX=firstTouch.pageX;
+                this._hf_startY=firstTouch.pageY;
+                this._elHl=$(e.currentTarget).addClass('active');
+            },
+            'touchmove header,footer': function(e) {
+                e.preventDefault();
+            },
+            'touchmove': function(e) {
+                this._elHl&&(Math.abs(e.touches[0].pageX-this._hf_startX)>10||Math.abs(e.touches[0].pageY-this._hf_startY)>10)&&(this._elHl.removeClass('active'),this._elHl=null);
+            },
+            'touchend,touchcancel': function(e) {
+                this._elHl&&this._elHl.removeClass('active');
+                this._elHl=null;
             }
         },
 
@@ -298,10 +267,6 @@
             that.$el.appendTo(document.body);
         },
 
-        go: function(index) {
-            history.go(index);
-        },
-
         to: function(url) {
             url=url.replace(/^#/,'');
 
@@ -398,7 +363,8 @@
             that.application=that.options.application;
 
             that.bind('Start',that.onStart);
-            that.bind('Resume',that.onResume);
+            that.bind('Resume',that.onShow);
+            that.bind('Show',that.onResume);
             that.bind('Pause',that.onPause);
             that.bind('Destory',that.onDestory);
             that.bind('QueryChange',that.onQueryChange);
@@ -407,15 +373,21 @@
                 .then($.proxy(that.onCreate,that))
                 .then(function() {
                     that.trigger('Start');
-                    that.trigger('Resume');
                 });
         },
         onCreate: noop,
         onStart: noop,
         onResume: noop,
+
+        //进入动画结束时触发
+        onShow: noop,
+
         onStop: noop,
         onRestart: noop,
+
+        //离开动画结束时触发
         onPause: noop,
+
         onQueryChange: noop,
 
         isPrepareExitAnimation: false,
@@ -436,7 +408,8 @@
             }).css({
                 top: top-scrollY,
                 height: innerHeight+scrollY-top,
-                marginBottom: top-scrollY
+                marginBottom: top-scrollY,
+                overflow: 'hidden'
             });
 
             if(that.useAnimation) {
@@ -453,7 +426,7 @@
                 scrollTop=parseInt(that.$el.attr('anim-temp-scrolltop'));
 
             if(top!=null) {
-                that.$el.css({ top: top,height: '',marginBottom: that.$el.attr('anim-temp-margin-bottom') }).removeAttr('anim-temp-top').removeAttr('anim-temp-scrolltop').removeAttr('anim-temp-margin-bottom');
+                that.$el.css({ top: top,height: '',marginBottom: that.$el.attr('anim-temp-margin-bottom'),overflow: '' }).removeAttr('anim-temp-top').removeAttr('anim-temp-scrolltop').removeAttr('anim-temp-margin-bottom');
                 window[$.isFunction(window.scrollTo)?'scrollTo':'scroll'](0,scrollTop||0);
             }
 
@@ -468,6 +441,7 @@
             that.application.el.clientHeight;
 
             that.isPrepareExitAnimation=false;
+            that.trigger('Show');
         },
 
         compareUrl: function(url) {
@@ -518,6 +492,7 @@
 
                 application._currentActivity=activity;
 
+                activity.trigger('Resume');
                 if(that.useAnimation) {
                     activity._animationFrom(animationName,type+'_enter_animation-from');
                     that._animationFrom(animationName,type+'_exit_animation-from');
@@ -533,14 +508,14 @@
                         that._transitionTime(0);
                         activity._transitionTime(0);
                         activity.finishEnterAnimation();
-                        callback&&callback();
+                        callback&&callback(activity);
                     });
                     that._animationTo(animationName,type+'_exit_animation-to');
                     activity._animationTo(animationName,type+'_enter_animation-to');
 
                 } else {
                     activity.finishEnterAnimation();
-                    callback&&callback();
+                    callback&&callback(activity);
                 }
             });
         },
@@ -559,6 +534,9 @@
             if(typeof url=='undefined') {
                 that.prepareExitAnimation();
                 history.back();
+            } else if(typeof duration==='string') {
+                animationName=duration;
+                duration=null;
             }
 
             that._to(url,duration,animationName,'close',function() {
@@ -678,7 +656,6 @@
         }),
         common: {},
         noop: noop,
-        zeptolize: zeptolize,
         simplelize: simplelize
     });
 

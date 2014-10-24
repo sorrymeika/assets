@@ -1,4 +1,4 @@
-﻿define('views/newsSubList',['zepto','ui/sl','ui/tabs','app','views/loading'],function(require,exports,module) {
+﻿define(['zepto','ui/sl','ui/tabs','app','views/loading'],function(require,exports,module) {
     var $=require('zepto'),
         sl=require('ui/sl'),
         app=require('app'),

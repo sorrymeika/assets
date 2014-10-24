@@ -5,11 +5,7 @@
 
     module.exports=sl.Activity.extend({
         template: 'views/menu.html',
-        events: {
-            'tap .J_Index': function() {
-                this.back('',400,this.animationName);
-            }
-        },
+        events: {},
         className: 'transparent',
         animationName: 'menu',
         onCreate: function() {

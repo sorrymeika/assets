@@ -1,7 +1,7 @@
 ﻿define(['$','app','./../view'],function(require,exports,module) {
     var $=require('$'),
+        sl=require('./../base'),
         view=require('./../view'),
-        sl=require('./../sl'),
         app=require('app');
 
     var records=[];

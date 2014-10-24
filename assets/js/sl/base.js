@@ -50,6 +50,7 @@
     };
 
     module.exports={
+        noop: function() { },
         Class: Class
     };
 });
