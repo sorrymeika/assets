@@ -1,14 +1,15 @@
-﻿define(['$','sl/sl','ui/tabs','app','views/loading'],function (require,exports,module) {
+﻿define(['$','ui/sl','app'],function (require,exports,module) {
     var $=require('$'),
         sl=require('sl/sl'),
         app=require('app'),
-        Loading=require('sl/widget/loading');
+        util=require('util');
 
     module.exports=sl.Activity.extend({
-        template: 'views/cart.html',
+        template: 'views/credit.html',
         events: {},
         onCreate: function () {
             var that=this;
+
         },
         onStart: function () {
         },
@@ -16,5 +17,5 @@
         },
         onDestory: function () {
         }
-    });
+    });;
 });
