@@ -5,7 +5,13 @@
 
     module.exports=sl.Activity.extend({
         template: 'views/menu.html',
-        events: {},
+        events: {
+            'tap': function(e) {
+                if($(e.target).hasClass('view')) {
+                    this.back();
+                }
+            }
+        },
         className: 'transparent',
         animationName: 'menu',
         onCreate: function() {

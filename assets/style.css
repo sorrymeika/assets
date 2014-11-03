@@ -96,18 +96,18 @@ ul.table { width: 100%; display: table; }
 ul.table > li { display: table-row; }
 ul.table li > p { display: table-cell; text-align: center; padding-top: 5px; }
 
-.menu-open_enter_animation-from { z-index: 2; -webkit-transform: translate(-100%,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; }
+.menu-open_enter_animation-from { z-index: 2; -webkit-transform: translate(-80%,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; }
 .menu-open_enter_animation-to { -webkit-transform: translate(0,0) translateZ(0); }
-.menu-open_exit_animation-from { -webkit-transform: translate(0,0) translateZ(0);-webkit-transition: -webkit-transform 0ms ease-in 0ms; }
-.menu-open_exit_animation-to { -webkit-transform: translate(50%,0) translateZ(0); }
+.menu-open_exit_animation-from { -webkit-transform: translate(0,0) translateZ(0);-webkit-transition: -webkit-transform 0ms ease 0ms; }
+.menu-open_exit_animation-to { -webkit-transform: translate(80%,0) translateZ(0); }
 
-.menu-close_enter_animation-from {-webkit-transform: translate(50%,0) translateZ(0);  z-index: 1; -webkit-transition: -webkit-transform 0ms ease 0ms; }
+.menu-close_enter_animation-from {-webkit-transform: translate(80%,0) translateZ(0);  z-index: 1; -webkit-transition: -webkit-transform 0ms ease 0ms; }
 .menu-close_enter_animation-to {-webkit-transform: translate(0,0) translateZ(0);  }
-.menu-close_exit_animation-from {-webkit-transform: translate(0,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease-out 0ms; z-index: 3; }
-.menu-close_exit_animation-to { -webkit-transform: translate(-100%,0) translateZ(0); }
+.menu-close_exit_animation-from {-webkit-transform: translate(0,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; z-index: 3; }
+.menu-close_exit_animation-to { -webkit-transform: translate(-80%,0) translateZ(0); }
 
 
-.menu { width: 253px; background: #1f1f21; height: 100%; position: relative; }
+.menu { width: 80%; background: #1f1f21; height: 100%; position: relative; }
 .menu div { width: 100%; position: relative; }
 .menu img { width: 100%; }
 .menu span { width: 100%; display: block; position: absolute; bottom: 0px;color: #aeafb4; }

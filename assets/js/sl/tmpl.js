@@ -128,7 +128,7 @@
             var fn=buildTmplFn(html);
 
             return function(data) {
-                fn($,{
+                return fn($,{
                     data: data,
                     nest: function(s,d) {
                         return tmpl(s,d);

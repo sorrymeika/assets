@@ -20,25 +20,24 @@
     };
 
     Class.extend=function(childClass,prop) {
-        var that=this;
+        var that=this,
+            F=function() { },
+            options=that.fn.options;
 
         childClass=typeof childClass=='function'?childClass:(prop=childClass,function() {
             that.apply(this,arguments);
         });
 
-        var F=function() { };
-        F.prototype=that.prototype;
-
+        F.prototype=that.fn;
         childClass.fn=childClass.prototype=new F();
 
-        var options=that.fn.options;
         if(!prop.options) prop.options={};
         for(var i in options) {
             prop.options[i]=options[i];
         }
 
         for(var i in prop) {
-            childClass.prototype[i]=prop[i];
+            childClass.fn[i]=prop[i];
         }
 
         childClass.superClass=that.fn;

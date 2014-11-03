@@ -1,5 +1,8 @@
-﻿define('sl/plugins/template',['$'],function(require,exports,module) {
-    var $=require('$');
+﻿define('sl/plugins/template',['$','app','./../tmpl'],function(require,exports,module) {
+    var $=require('$'),
+        app=require('app'),
+        tmpl=require('./../tmpl'),
+        slice=Array.prototype.slice;
 
     var templatesRecords={},
         buildTemplate=function(url,callback) {
@@ -118,7 +121,7 @@
                 if(typeof url==='string') {
                     var dfd=$.Deferred();
                     $.ajax({
-                        url: url,
+                        url: app.url(url),
                         data: data,
                         dataType: 'json',
                         type: 'post',

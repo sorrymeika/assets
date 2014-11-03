@@ -101,7 +101,6 @@
                 } else {
                     target.addClass('js-link-default');
                 }
-
                 return false;
             },
             'tap [data-href]': function(e) {
@@ -118,21 +117,8 @@
             'tap [data-forward]': function(e) {
                 this._currentActivity.forward($(e.currentTarget).attr('data-forward'));
             },
-            'touchstart [hl]': function(e) {
-                var firstTouch=e.touches[0];
-                this._hf_startX=firstTouch.pageX;
-                this._hf_startY=firstTouch.pageY;
-                this._elHl=$(e.currentTarget).addClass('active');
-            },
             'touchmove header,footer': function(e) {
                 e.preventDefault();
-            },
-            'touchmove': function(e) {
-                this._elHl&&(Math.abs(e.touches[0].pageX-this._hf_startX)>10||Math.abs(e.touches[0].pageY-this._hf_startY)>10)&&(this._elHl.removeClass('active'),this._elHl=null);
-            },
-            'touchend,touchcancel': function(e) {
-                this._elHl&&this._elHl.removeClass('active');
-                this._elHl=null;
             }
         },
 
@@ -171,7 +157,7 @@
         matchRoute: function(url) {
             var result=null,
                 queries={},
-                hash=url.replace(/^#/,'');
+                hash=url.replace(/^#/,'')||'/';
 
             url=hash;
 
@@ -182,7 +168,7 @@
 
                 url=url.substr(0,index);
 
-                query.replace(/(?:^|&)([^=&]+)=([^=&]*)/g,function(r0,r1,r2) {
+                query.replace(/(?:^|&)([^=&]+)=([^&]*)/g,function(r0,r1,r2) {
                     queries[r1]=decodeURIComponent(r2);
                     return '';
                 })
@@ -228,47 +214,51 @@
         start: function() {
             var that=this;
 
-            that.hash=location.hash.replace(/^#/,'');
+            if(!location.hash) location.hash='/';
+            that.hash=location.hash.replace(/^#/,'')||'/';
 
             that._getOrCreateActivity(that.hash,function(activity) {
                 that._currentActivity=activity;
                 that._history.push(activity.hash);
                 that._historyCursor++;
                 activity.$el.appendTo(that.$el);
-            });
+                activity.then(function() {
+                    activity.trigger('Resume');
+                    activity.trigger('Show');
+                });
 
-            $(window).on('hashchange',function() {
-                that.hash=location.hash.replace(/^#/,'');
+                $(window).on('hashchange',function() {
+                    that.hash=location.hash.replace(/^#/,'')||'/';
 
-                var index=lastIndexOf(that._history,that.hash),
+                    var index=lastIndexOf(that._history,that.hash),
                     isForward=that._skipRecordHistory||index== -1;
 
-                if(that._skipRecordHistory!==true) {
-                    if(index== -1) {
-                        that._history.push(that.hash);
-                        that._historyCursor++;
-                    } else {
-                        that._history.length=index+1;
-                        that._historyCursor=index;
-                    }
-                } else
-                    that._skipRecordHistory=false;
+                    if(that._skipRecordHistory!==true) {
+                        if(index== -1) {
+                            that._history.push(that.hash);
+                            that._historyCursor++;
+                        } else {
+                            that._history.length=index+1;
+                            that._historyCursor=index;
+                        }
+                    } else
+                        that._skipRecordHistory=false;
 
+                    if(that.skip==0) {
+                        that._currentActivity[isForward?'forward':'back'](that.hash);
 
-                if(that.skip==0) {
-                    that._currentActivity[isForward?'forward':'back'](that.hash);
-
-                } else if(that.skip>0)
-                    that.skip--;
-                else
-                    that.skip=0;
+                    } else if(that.skip>0)
+                        that.skip--;
+                    else
+                        that.skip=0;
+                });
             });
 
             that.$el.appendTo(document.body);
         },
 
         to: function(url) {
-            url=url.replace(/^#/,'');
+            url=url.replace(/^#/,'')||'/';
 
             var that=this,
                 activity=that._currentActivity,
@@ -312,7 +302,7 @@
         siblings: function(url,url1) {
             $.each(this._activities,function(k,activity) {
                 if(typeof activity!=='undefined'&&k!=url&&k!=url1) {
-                    activity.$el.remove();
+                    activity.$el.addClass('stop');
                 }
             });
         },
@@ -334,7 +324,10 @@
                         route: route
                     });
                     that.set(route.url,activity);
-                    callback.call(that,activity,route);
+
+                    activity.then(function() {
+                        callback.call(that,activity,route);
+                    });
                 });
 
             } else {
@@ -351,25 +344,29 @@
         animationName: null,
         application: null,
         el: '<div class="view"></div>',
+
+        _setRoute: function(route) {
+            this.route=route;
+            this.hash=route.hash;
+            this.url=route.url;
+        },
+
         initialize: function() {
             var that=this;
 
             that.className&&that.$el.addClass(that.className);
             that.className=that.el.className;
 
-            that.route=that.options.route;
-            that.hash=that.route.hash;
-            that.url=that.route.url;
+            that._setRoute(that.options.route);
             that.application=that.options.application;
 
-            that.bind('Start',that.onStart);
-            that.bind('Resume',that.onShow);
-            that.bind('Show',that.onResume);
-            that.bind('Pause',that.onPause);
-            that.bind('Destory',that.onDestory);
-            that.bind('QueryChange',that.onQueryChange);
+            that.on('Start',that.onStart);
+            that.on('Resume',that.onResume);
+            that.on('Show',that.onShow);
+            that.on('Pause',that.onPause);
+            that.on('QueryChange',that.onQueryChange);
 
-            $.when(that.options.templateEnabled&&that.initWithTemplate())
+            that._dfd=$.when(that.options.templateEnabled&&that.initWithTemplate())
                 .then($.proxy(that.onCreate,that))
                 .then(function() {
                     that.trigger('Start');
@@ -389,6 +386,18 @@
         onPause: noop,
 
         onQueryChange: noop,
+
+        then: function(f) {
+            return (this._dfd=this._dfd.then($.proxy(f,this)));
+        },
+
+        listenResult: function(event,f) {
+            this.listenTo(this.application,event,f);
+        },
+
+        setResult: function(event,data) {
+            this.application.trigger(event,data);
+        },
 
         isPrepareExitAnimation: false,
         prepareExitAnimation: function() {
@@ -414,7 +423,9 @@
 
             if(that.useAnimation) {
                 that.$('header').css({ top: scrollY+'px',position: 'absolute' });
-                that.$('footer').css({ position: 'absolute' });
+                that.$('footer').each(function() {
+                    this.style.cssText='position: absolute;';
+                });
             }
             that.application.mask.show();
             that.application.$el.addClass("screen");
@@ -441,11 +452,32 @@
             that.application.el.clientHeight;
 
             that.isPrepareExitAnimation=false;
-            that.trigger('Show');
+            that.then(function() {
+                that.trigger('Show');
+            });
         },
 
         compareUrl: function(url) {
             return getUrlPath(url)===this.route.url.toLowerCase();
+        },
+
+        //onShow后才可调用
+        redirect: function(url) {
+            var that=this,
+                application=that.application;
+
+            application._getOrCreateActivity(url,function(activity,route) {
+                activity.el.className=activity.className+' active';
+                application.$el.append(activity.$el);
+                application._currentActivity=activity;
+                that.$el.remove();
+                that.trigger('Pause');
+
+                activity.then(function() {
+                    activity.trigger('Resume');
+                    activity.trigger('Show');
+                });
+            });
         },
 
         _transitionTime: function(time) {
@@ -474,9 +506,7 @@
                 animationName=animationName||(type=='open'?activity:that).animationName;
 
                 if(activity.route.hash!=route.hash) {
-                    activity.route=route;
-                    activity.hash=route.hash;
-                    activity.url=route.url;
+                    activity._setRoute(route);
                     activity.trigger('QueryChange');
                 }
 
@@ -492,8 +522,13 @@
 
                 application._currentActivity=activity;
 
-                activity.trigger('Resume');
+                activity.then(function() {
+                    activity.trigger('Resume');
+                });
                 if(that.useAnimation) {
+                    activity.$('footer').each(function() {
+                        this.style.cssText='position: absolute';
+                    });
                     activity._animationFrom(animationName,type+'_enter_animation-from');
                     that._animationFrom(animationName,type+'_exit_animation-from');
                     that.el.clientHeight;
@@ -531,17 +566,20 @@
         back: function(url,duration,animationName) {
             var that=this;
 
-            if(typeof url=='undefined') {
+            if(typeof url!=='string') {
                 that.prepareExitAnimation();
                 history.back();
-            } else if(typeof duration==='string') {
-                animationName=duration;
-                duration=null;
-            }
 
-            that._to(url,duration,animationName,'close',function() {
-                that.destory();
-            });
+            } else {
+                if(typeof duration==='string') {
+                    animationName=duration;
+                    duration=null;
+                }
+
+                that._to(url,duration,animationName,'close',function() {
+                    that.destory();
+                });
+            }
         },
 
         finish: function() {

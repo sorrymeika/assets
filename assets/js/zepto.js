@@ -1583,45 +1583,18 @@ window.$ === undefined && (window.$ = Zepto)
     touch = {}
   }
 
-  function isPrimaryTouch(event){
-
-    return (event.pointerType == 'touch' ||
-      event.pointerType == event.MSPOINTER_TYPE_TOUCH)
-      && event.isPrimary
-  }
-
-  function isPointerEventType(e, type){
-    return (e.type == 'pointer'+type ||
-        e.type.toLowerCase() == 'mspointer'+type)
-  }
-
   function isMouseEventType(e,type) {
     return e.type == 'mouse'+type;
   }
 
   $(document).ready(function(){
-    var now, delta, deltaX = 0, deltaY = 0, firstTouch, _isPointerType,
+    var now, delta, deltaX = 0, deltaY = 0, firstTouch,
         events='ontouchstart' in document?['touchstart','touchmove','touchend','touchcancel']:['mousedown','mousemove','mouseup','mouseleave'];
 
-    if ('MSGesture' in window) {
-      gesture = new MSGesture()
-      gesture.target = document.body
-    }
-
     $(document)
-      .bind('MSGestureEnd', function(e){
-        var swipeDirectionFromVelocity =
-          e.velocityX > 1 ? 'Right' : e.velocityX < -1 ? 'Left' : e.velocityY > 1 ? 'Down' : e.velocityY < -1 ? 'Up' : null;
-        if (swipeDirectionFromVelocity) {
-          touch.el.trigger('swipe')
-          touch.el.trigger('swipe'+ swipeDirectionFromVelocity)
-        }
-      })
-      .on(events[0]+' MSPointerDown pointerdown', function(e){
-        if((_isPointerType = isPointerEventType(e, 'down')) &&
-          !isPrimaryTouch(e)) return
+      .on(events[0], function(e){
 
-        firstTouch = _isPointerType||isMouseEventType(e, 'down') ? e : e.touches[0]
+        firstTouch = isMouseEventType(e, 'down') ? e : e.touches[0]
         if (e.touches && e.touches.length === 1 && touch.x2) {
           // Clear out touch movement data if we have it sticking around
           // This can occur if touchcancel doesn't fire due to preventDefault, etc.
@@ -1639,14 +1612,11 @@ window.$ === undefined && (window.$ = Zepto)
         if (delta > 0 && delta <= 250) touch.isDoubleTap = true
         touch.last = now
         longTapTimeout = setTimeout(longTap, longTapDelay)
-        // adds the current touch contact for IE gesture recognition
-        if (gesture && _isPointerType) gesture.addPointer(e.pointerId);
 
       })
-      .on(events[1]+' MSPointerMove pointermove', function(e){
-        if(((_isPointerType = isPointerEventType(e, 'move')) &&
-          !isPrimaryTouch(e))||(e.type=='mousemove'&&!('last' in touch))) return
-        firstTouch = _isPointerType||e.type=='mousemove' ? e : e.touches[0]
+      .on(events[1], function(e){
+        if(e.type=='mousemove'&&!('last' in touch)) return
+        firstTouch = e.type=='mousemove' ? e : e.touches[0]
         cancelLongTap()
         touch.x2 = firstTouch.pageX
         touch.y2 = firstTouch.pageY
@@ -1654,9 +1624,7 @@ window.$ === undefined && (window.$ = Zepto)
         deltaX += Math.abs(touch.x1 - touch.x2)
         deltaY += Math.abs(touch.y1 - touch.y2)
       })
-      .on(events[2]+' MSPointerUp pointerup', function(e){
-        if((_isPointerType = isPointerEventType(e, 'up')) &&
-          !isPrimaryTouch(e)) return
+      .on(events[2], function(e){
         cancelLongTap()
 
         // swipe
@@ -1709,7 +1677,7 @@ window.$ === undefined && (window.$ = Zepto)
       // when the browser window loses focus,
       // for example when a modal dialog is shown,
       // cancel all ongoing events
-      .on(events[3]+' MSPointerCancel pointercancel', cancelAll)
+      .on(events[3], cancelAll)
 
     // scrolling the window indicates intention of the user
     // to scroll, not tap or swipe, so cancel all ongoing events
