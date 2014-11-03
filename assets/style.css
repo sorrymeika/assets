@@ -62,8 +62,8 @@ header { position: fixed; top: 0px; left: 0px; width: 100%; height: 43px; line-h
 
 header .ico-back, header .ico-menu, header .ico-home, header .ico-cart, header .ico-close { float: left; width: 60px; height: 100%; box-sizing: content-box; background-clip: content-box; position: relative; z-index: 2px; }
 
-header .ico-back.active, header .ico-menu.active, header .ico-home.active, header .ico-close.active { opacity: .7; background:#555; }
-header .ico-menu.active, header .ico-cart.active{ background-color: #f1f1f1;}
+header .ico-back:active, header .ico-menu:active, header .ico-home:active, header .ico-close:active { opacity: .7; background:#555; }
+header .ico-menu:active, header .ico-cart:active{ background-color: #f1f1f1;}
 
 header .ico-back:before, header .ico-menu:before, header .ico-home:before, header .ico-cart:before,header .ico-close:before { background: rgba(0,0,0,0) url(images/site.png) no-repeat 0px 0px; background-size: 320px auto; display: block; content: ""; width: 25px; height: 25px; margin: 10px 7px; }
 header .ico-menu:before { background-position: -25px -1px; margin-left: 15px; margin-right: 15px; }
@@ -125,7 +125,7 @@ ul.table li > p { display: table-cell; text-align: center; padding-top: 5px; }
 
 .menu .menu_action {position: absolute; bottom: 0px; display: -webkit-box; height: 50px; width: 100%;}
 .menu .menu_action i { display: block; height: 100%; -webkit-box-flex: 1; }
-.menu .menu_action i.active { background:#555; }
+.menu .menu_action i:active { background:#555; }
 .menu .menu_action .ico_takephoto:before,.menu .menu_action .ico_settings:before {content: ''; display: inline-block; background: url(images/site.png) no-repeat -100px -25px; background-size: 320px auto; height: 30px; width: 30px; margin:10px 20px 0 20px;}
 .menu .menu_action .ico_takephoto { text-align: center; }
 .menu .menu_action .ico_settings { text-align: center; }
