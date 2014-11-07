@@ -32,6 +32,7 @@
 
                 that.maxScrollX=that.scrollerW-that.wrapperW;
                 that.maxScrollY=that.scrollerH-that.wrapperH;
+                that.minScrollY=0;
             },
             'touchmove': function(e) {
                 e.preventDefault();
@@ -86,7 +87,6 @@
                 if(!that.moved) {
                     return;
                 }
-
                 if(duration<300) {
                     momentumX=newPosX?that._momentum(newPosX-that.startX,duration,that.maxScrollX,that.x,that.options.bounce?that.wrapperW:0):momentumX;
                     momentumY=newPosY?that._momentum(newPosY-that.startY,duration,that.maxScrollY,that.y,that.options.bounce?that.wrapperH:0):momentumY;
@@ -96,6 +96,7 @@
 
                     if((that.x<0&&newPosX<0)||(that.x>that.maxScrollX&&newPosX>that.maxScrollX)) momentumX={ dist: 0,time: 0 };
                     if((that.y<that.minScrollY&&newPosY<that.minScrollY)||(that.y>that.maxScrollY&&newPosY>that.maxScrollY)) momentumY={ dist: 0,time: 0 };
+
                 }
 
                 if(momentumX.dist||momentumY.dist) {
