@@ -119,21 +119,8 @@
             'tap [data-forward]': function(e) {
                 this._currentActivity.forward($(e.currentTarget).attr('data-forward'));
             },
-            'touchstart [hl]': function(e) {
-                var firstTouch=e.touches[0];
-                this._hf_startX=firstTouch.pageX;
-                this._hf_startY=firstTouch.pageY;
-                this._elHl=$(e.currentTarget).addClass('active');
-            },
             'touchmove header,footer': function(e) {
                 e.preventDefault();
-            },
-            'touchmove': function(e) {
-                this._elHl&&(Math.abs(e.touches[0].pageX-this._hf_startX)>10||Math.abs(e.touches[0].pageY-this._hf_startY)>10)&&(this._elHl.removeClass('active'),this._elHl=null);
-            },
-            'touchend,touchcancel': function(e) {
-                this._elHl&&this._elHl.removeClass('active');
-                this._elHl=null;
             }
         },
 
