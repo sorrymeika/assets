@@ -7,6 +7,7 @@
         tmpl=require('./tmpl'),
         view=require('./view'),
         style=require('./style'),
+        store=require('./store'),
         plugin=require('./plugins/template');
 
     var noop=sl.noop,
@@ -101,6 +102,7 @@
                 } else {
                     target.addClass('js-link-default');
                 }
+
                 return false;
             },
             'tap [data-href]': function(e) {
@@ -117,8 +119,21 @@
             'tap [data-forward]': function(e) {
                 this._currentActivity.forward($(e.currentTarget).attr('data-forward'));
             },
+            'touchstart [hl]': function(e) {
+                var firstTouch=e.touches[0];
+                this._hf_startX=firstTouch.pageX;
+                this._hf_startY=firstTouch.pageY;
+                this._elHl=$(e.currentTarget).addClass('active');
+            },
             'touchmove header,footer': function(e) {
                 e.preventDefault();
+            },
+            'touchmove': function(e) {
+                this._elHl&&(Math.abs(e.touches[0].pageX-this._hf_startX)>10||Math.abs(e.touches[0].pageY-this._hf_startY)>10)&&(this._elHl.removeClass('active'),this._elHl=null);
+            },
+            'touchend,touchcancel': function(e) {
+                this._elHl&&this._elHl.removeClass('active');
+                this._elHl=null;
             }
         },
 
@@ -395,8 +410,9 @@
             this.listenTo(this.application,event,f);
         },
 
-        setResult: function(event,data) {
-            this.application.trigger(event,data);
+        setResult: function() {
+            var args=slice.call(arguments);
+            this.application.trigger.apply(this.application,args);
         },
 
         isPrepareExitAnimation: false,
@@ -421,11 +437,12 @@
                 overflow: 'hidden'
             });
 
-            if(that.useAnimation) {
-                that.$('header').css({ top: scrollY+'px',position: 'absolute' });
-                that.$('footer').each(function() {
-                    this.style.cssText='position: absolute;';
-                });
+            that.$('header').css({ top: scrollY+'px',position: 'absolute' });
+            that.$('footer').each(function() {
+                this.style.cssText='position: absolute;';
+            });
+
+            if(!that.useAnimation) {
             }
             that.application.mask.show();
             that.application.$el.addClass("screen");
@@ -441,11 +458,12 @@
                 window[$.isFunction(window.scrollTo)?'scrollTo':'scroll'](0,scrollTop||0);
             }
 
-            if(that.useAnimation) {
-                that.$el.addClass('active');
-                that.$('header,footer').each(function() {
-                    this.style.cssText="";
-                });
+            that.$el.addClass('active');
+            that.$('header,footer').each(function() {
+                this.style.cssText="";
+            });
+            if(!that.useAnimation) {
+                that.el.clientHeight;
             }
             that.application.mask.hide();
             that.application.$el.removeClass("screen");
@@ -693,6 +711,7 @@
             this.text(actionName).show(3000);
         }),
         common: {},
+        store: store,
         noop: noop,
         simplelize: simplelize
     });

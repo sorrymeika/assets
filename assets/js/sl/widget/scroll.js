@@ -8,9 +8,9 @@
     var Scroll=view.extend({
         events: {
             'touchstart': function(e) {
-                //e.preventDefault();
                 var that=this,
                     point=hasTouch?e.touches[0]:e;
+                that.stop=true;
 
                 that.x=that.el.scrollLeft;
                 that.y=that.el.scrollTop;
@@ -26,15 +26,17 @@
                 that.wrapperW=that.el.clientWidth;
                 that.wrapperH=that.el.clientHeight;
 
-                //alert(that.el.scrollHeight)
                 that.scrollerW=that.el.scrollWidth;
                 that.scrollerH=that.el.scrollHeight;
 
                 that.maxScrollX=that.scrollerW-that.wrapperW;
                 that.maxScrollY=that.scrollerH-that.wrapperH;
                 that.minScrollY=0;
+
+                that._isStart=that.wrapperW<that.scrollerW||that.wrapperH<that.scrollerH;
             },
             'touchmove': function(e) {
+                if(!this._isStart) return;
                 e.preventDefault();
 
                 var that=this,
@@ -87,6 +89,7 @@
                 if(!that.moved) {
                     return;
                 }
+
                 if(duration<300) {
                     momentumX=newPosX?that._momentum(newPosX-that.startX,duration,that.maxScrollX,that.x,that.options.bounce?that.wrapperW:0):momentumX;
                     momentumY=newPosY?that._momentum(newPosY-that.startY,duration,that.maxScrollY,that.y,that.options.bounce?that.wrapperH:0):momentumY;
@@ -96,20 +99,17 @@
 
                     if((that.x<0&&newPosX<0)||(that.x>that.maxScrollX&&newPosX>that.maxScrollX)) momentumX={ dist: 0,time: 0 };
                     if((that.y<that.minScrollY&&newPosY<that.minScrollY)||(that.y>that.maxScrollY&&newPosY>that.maxScrollY)) momentumY={ dist: 0,time: 0 };
-
                 }
 
                 if(momentumX.dist||momentumY.dist) {
                     newDuration=m.max(m.max(momentumX.time,momentumY.time),10);
+
 
                     that.scrollTo(m.round(newPosX),m.round(newPosY),newDuration);
                     return;
                 }
 
             }
-        },
-
-        initialize: function() {
         },
 
         _momentum: function(dist,time,maxDistUpper,maxDistLower,size) {
@@ -136,19 +136,41 @@
             return { dist: newDist,time: m.round(newTime) };
         },
 
-        scrollTo: function(x,y) {
-            var that=this;
-            that.el.scrollLeft=x;
-            that.el.scrollTop=y;
-            that.x=x;
-            that.y=y;
+        initialize: function() {
         },
-        log: function() {
-            var that=this,
-                args=Array.prototype.slice.apply(arguments);
-            !that.$log&&(that.$log=$('<div style="position:absolute;top:0;left:0;z-index:5000;background:#000;color:#fff;"></div>').appendTo('body'));
-            that.$log.html(args.join(','));
-        }
+        scrollTo: function(x,y,duration) {
+            var that=this;
+
+            if(duration&&duration!==0) {
+
+                var start=0,
+                    during=duration,
+                    fromX=that.x,
+                    fromY=that.y,
+                    startTime=Date.now(),
+                    _run=function() {
+                        if(that.stop) return;
+                        start=Date.now()-startTime;
+
+                        var cx=util.easeOut(start,fromX,x-fromX,during),
+                        cy=util.easeOut(start,fromY,y-fromY,during);
+
+                        that.scrollTo(cx,cy);
+
+                        if(start<during) requestAnimationFrame(_run);
+                        else that.stop=true;
+                    };
+                that.stop=false;
+                _run();
+
+            } else {
+                that.el.scrollLeft=x;
+                that.el.scrollTop=y;
+                that.x=x;
+                that.y=y;
+            }
+        },
+        log: function() { }
     });
 
     return Scroll;
