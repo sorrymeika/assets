@@ -1,7 +1,8 @@
-﻿define(['$','util','./../view'],function (require,exports,module) {
+﻿define(['$','util','./../view'],function(require,exports,module) {
     var $=require('$'),
         _=require('util'),
-        view=require('./../view');
+        view=require('./../view'),
+        tmpl=require('./../tmpl');
 
     var Slider=view.extend({
         events: {
@@ -11,82 +12,86 @@
         },
         options: {
             index: -1,
-            loop: true,
-            width: 50,
+            width: '100%',
             onChange: null,
             data: [],
-            render: null,
+            dots: false,
             imagelazyload: false,
             arrow: false
         },
-        loop: true,
-        data: [],
+        loop: false,
         index: 0,
-        render: function (dataItem) {
-            this.$slider.append('<li>'+dataItem.TypeName+'</li>');
+        appendItem: function() {
+            var item=$(this.renderItem(''));
+            this.$slider.append(item);
+            this.length++;
+            this._adjustWidth();
+
+            return item;
         },
-        template: '<div class="slider"><ul class="js_items"></ul><ol class="js_navs"></ol></div>',
-        init: function () {
-            var that=this;
+        prependItem: function() {
+            var item=$(this.renderItem(''));
+            this.$slider.prepend(item);
+            this.length++;
+            this._adjustWidth();
 
-            $.extend(that,_.pick(that.options,['loop','render','template']));
+            return item;
+        },
+        render: function(dataItem) {
+            return this.renderItem(this.itemTemplate(dataItem));
+        },
+        renderItem: tmpl('<li class="js_slide_item">{%html $data%}</li>'),
+        itemTemplate: '${TypeName}',
+        navTemplate: tmpl('<ol class="js_slide_navs">{%each(i,item) items%}<li class="slide_nav_item${current}"></li>{%/each%}</ol>'),
+        template: tmpl('<div class="slider"><ul class="js_slider">{%html items%}</ul>{%html navs%}</div>'),
+        initialize: function() {
+            $.extend(this,_.pick(this.options,['data','width','loop','render','template','itemTemplate','navTemplate']));
 
-            if(typeof that.options.width=='string')
-                that.options.width=parseInt(that.options.width.replace('%',''));
+            var that=this,
+                data=that.data,
+                items=[],
+                item,
+                $slider,
+                index=that.options.index;
 
-            var $slider=that.$('.js_items');
+            typeof that.itemTemplate==='string'&&(that.itemTemplate=tmpl(that.itemTemplate));
+            typeof that.width=='string'&&(that.width=parseInt(that.width.replace('%','')));
 
-            if(!$slider.length) {
-                that.$slider=$slider=$('<ul></ul>').appendTo(that.$el);
-                that.data=that.options.data;
+            !$.isArray(data)&&(data=[data]);
 
-                $.each(that.data,function (i,item) {
-                    that.render(item,i);
-                });
-                that.$items=$slider.children();
+            that.length=data.length;
 
-            } else {
-                that.$slider=$slider;
-                that.data=that.$items=$slider.children();
+            for(var i=0,n=data.length;i<n;i++) {
+                items.push(that.render(data[i]));
             }
 
-            that.length=that.$items.length;
+            that.$root=$(that.template({
+                items: items.join('')
+            })).appendTo(that.$el);
 
-            that.index=that.options.index== -1?that.length%2==0?that.length/2-1:Math.floor(that.length/2):that.options.index;
-            that.currData=that.data[that.index];
+            $slider=that.$slider=that.$('.js_slider');
+            that.$items=$slider.children();
+            that.slider=$slider[0];
+            that.slider.style['-webkit-transition']="-webkit-transform 0ms ease 0ms";
 
-            if(that.length<2) {
-                console.log('传入data的length必须大于2');
-                that.destory();
-                return;
-            }
-            else if(that.length<4) that.loop=false;
+            that.index=index== -1?that.length%2==0?that.length/2-1:Math.floor(that.length/2):index;
+            if(that.length<2) that.loop=false;
+            else if(that.width<100) that.loop=false;
 
             var length;
             if(that.loop) {
-                length=that.length+2;
-                that.$items.eq(0).before(that.$items.eq(that.length-1).clone());
-                that.$items.eq(that.length-1).after(that.$items.eq(0).clone());
+                $slider.prepend(that.$items.eq(that.length-1).clone());
+                $slider.append(that.$items.eq(0).clone());
             } else {
                 length=that.length;
             }
 
-            $slider.css({ width: length*that.options.width+'%' });
-            $slider.children().css({ width: 100/length+'%' });
+            that._adjustWidth();
 
-            that.itemWidth=that.$items.width();
-            $slider.css({ 'margin-left': (100-that.options.width*3)/2-(that.loop?that.options.width:0)+'%' });
-
-            that.minX= -1*that.itemWidth*(that.length-2);
-            that.slider=that.$slider[0];
-
-            that.slider.style['-webkit-transform']='translate('+that.itemWidth*(that.index-1)* -1+'px,0px)';
-            that.slider.style['-webkit-transition']="-webkit-transform 0ms ease 0ms";
-
-            that._getXY();
+            that._refreshXY();
 
             if(that.options.imagelazyload) {
-                that.bind("Change",function () {
+                that.bind("Change",function() {
                     that._loadImage();
                 });
                 that._loadImage();
@@ -96,21 +101,21 @@
                 that._prev=$('<span class="slider-pre js_pre"></span>').appendTo(that.$el);
                 that._next=$('<span class="slider-next js_next"></span>').appendTo(that.$el);
 
-                that.listen('tap .js_pre',function (e) {
+                that.listen('tap .js_pre',function(e) {
                     that.slideTo(that.index-1);
                 })
-                .listen('tap .js_next',function (e) {
+                .listen('tap .js_next',function(e) {
                     that.slideTo(that.index+1);
                 });
             }
 
-            $(window).on('ortchange',function () {
+            $(window).on('ortchange',function() {
                 that.itemWidth=that.$items.width();
                 that._pos(that.itemWidth*(that.index-1)* -1,that.y);
             });
         },
 
-        _loadImage: function () {
+        _loadImage: function() {
             var that=this;
 
             var item=that.$items.eq(that.index);
@@ -124,7 +129,7 @@
                     }
                 }
 
-                item.find('img[lazyload]').each(function () {
+                item.find('img[lazyload]').each(function() {
                     this.src=this.getAttribute('lazyload');
                     this.removeAttribute('lazyload');
                 });
@@ -133,19 +138,36 @@
             }
         },
 
-        _getXY: function () {
+        _adjustWidth: function() {
+
             var that=this,
-                matix=getComputedStyle(that.$slider[0],null)["-webkit-transform"].replace(/[^0-9\-.,]/g,'').split(',');
+                slider=that.$slider,
+                children=slider.children(),
+                length=children.length;
+
+            slider.css({ 'margin-left': (100-that.width)/2-(that.loop?that.width:0)+'%' });
+            children.css({ width: 100/length+'%' });
+            slider.css({ width: length*that.width+'%' });
+
+            that.itemWidth=that.$items.width();
+            that.minX= -1*that.itemWidth*(that.length-1);
+            that.slider.style['-webkit-transform']='translate('+that.itemWidth*that.index* -1+'px,0px)';
+
+        },
+
+        _refreshXY: function() {
+            var that=this,
+                matix=getComputedStyle(that.slider,null)["-webkit-transform"].replace(/[^0-9\-.,]/g,'').split(',');
 
             that.x=parseInt(matix[4]);
             that.y=parseInt(matix[5]);
         },
 
-        _transitionTime: function (time) {
+        _transitionTime: function(time) {
             time+='ms';
             this.slider.style['-webkit-transition-duration']=time;
         },
-        _start: function (e) {
+        _start: function(e) {
             var that=this,
                 point=e.touches[0];
 
@@ -160,14 +182,14 @@
             that._isStart=true;
             that._transitionTime(0);
 
-            that._getXY();
+            that._refreshXY();
 
             that.startX=that.x;
             that.startY=that.y;
             that.pointX=point.pageX;
             that.pointY=point.pageY;
         },
-        _move: function (e) {
+        _move: function(e) {
             if(!this._isStart) return;
 
             var that=this,
@@ -182,45 +204,43 @@
                 e.preventDefault();
 
             if(!that.loop) {
-                x=x>that.itemWidth?that.itemWidth:x<that.minX?that.minX:x;
+                x=x>0?0:x<that.minX?that.minX:x;
             }
 
             that._stopChange();
 
             that._pos(x,that.startY);
         },
-        _pos: function (x,y) {
+        _pos: function(x,y) {
             var that=this,
                 slider=that.slider;
 
             that.x=x||0;
             that.y=y||0;
 
-            slider.style["-webkit-transform"]='translate('+that.x+'px,'+that.y+'px)';
+            slider.style["-webkit-transform"]='translate('+that.x+'px,'+that.y+'px) translateZ(0)';
         },
-        _transitionEnd: function () {
+        _transitionEnd: function() {
             var that=this;
             that._transitionTime(0);
         },
-        _change: function (currData) {
+        _delayChange: function() {
             var that=this;
 
-            that._changeTimer=setTimeout(function () {
-                that._changeTimer=false;
-                that.currData=currData;
-                that.options.onChange&&that.options.onChange.call(that,currData,that.index);
+            that.timer=setTimeout(function() {
+                that.timer=false;
+                that.options.onChange&&that.options.onChange.call(that,that.index);
+                that.trigger('Change',that.index);
             },400);
-
-            that.trigger('Change',currData,that.index);
         },
-        _stopChange: function () {
+        _stopChange: function() {
             var that=this;
-            if(that._changeTimer) {
-                that._changeTimer=false;
-                clearTimeout(that._changeTimer);
+            if(that.timer) {
+                clearTimeout(that.timer);
+                that.timer=false;
             }
         },
-        _end: function (e) {
+        _end: function(e) {
             var that=this,
                 point=e.changedTouches[0],
                 changeX=that.pointX-point.pageX,
@@ -229,9 +249,8 @@
             if(!that._isStart) return;
             that._isStart=false;
 
-            if(!that.loop&&(that.startX-changeX>that.itemWidth||that.startX-changeX<that.minX)) {
+            if(!that.loop&&(that.startX-changeX>0||that.startX-changeX<that.minX)) {
             } else {
-
                 var index=that.index;
                 if(changeX>20) {
                     index++;
@@ -243,39 +262,33 @@
                 that.slideTo(index);
             }
         },
-        guid: 0,
-        slideTo: function (to) {
-            var that=this,
-                data=that.data[to];
-
+        slideTo: function(to) {
+            var that=this;
 
             if(that.isTransition) return;
             that.isTransition=true;
 
             that._transitionTime(200);
 
-            x=that.itemWidth*(to-1)* -1;
+            x=that.itemWidth*to* -1;
 
             if(to>=that.length) to=0;
             else if(to<0) to=that.length-1;
 
-            that.$slider.one($.fx.transitionEnd,function () {
+            that.$slider.one($.fx.transitionEnd,function() {
                 that.isTransition=false;
                 that._transitionEnd();
 
                 if(to==that.length-1||to==0) {
-                    that._pos(that.itemWidth*(to-1)* -1,that.startY);
+                    that._pos(that.itemWidth*to* -1,that.startY);
                 }
             });
             that._pos(x,that.startY);
 
             if(that.index!=to) {
                 that.index=to;
-                that._change(data);
+                that._delayChange();
             }
-        },
-        getData: function () {
-            return this.currData;
         }
     });
 

@@ -74,7 +74,7 @@
                 hybrid('pickImage',f);
             },
             takePhoto: function(f) {
-                setTimeout(function(){
+                setTimeout(function() {
                     hybrid('takePhoto',f);
                 },0);
             },
@@ -89,7 +89,7 @@
             },
             isDevelopment: navigator.platform=="Win32"||navigator.platform=="Win64",
             url: function(url) {
-                return /^http\:\/\//.test(url)?url:navigator.platform=="Win32"||navigator.platform=="Win64"?url:('http://273.ie1e.com'+url);
+                return /^http\:\/\//.test(url)?url:navigator.platform=="Win32"||navigator.platform=="Win64"?('/assets/index.cshtml?path='+encodeURIComponent(url)):('http://photo.ie1e.com'+url);
             },
             post: function(url,data,files,callback) {
                 callback=typeof files==='function'?files:callback;
