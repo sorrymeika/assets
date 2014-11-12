@@ -7,12 +7,6 @@
     var Dropdown=view.extend({
         el: '<div class="dropdown hide"><ul class="dropdown_bd js_dropdown">{%each(i,item) data%}<li>${item.text}</li>{%/each%}</ul></div>',
         events: {
-            'Destory': function() {
-                this.mask.off('tap').remove();
-            },
-            'Hide': function() {
-                this.$el.removeClass('visible');
-            },
             'tap .js_dropdown>li': function(e) {
                 var $target=$(e.currentTarget);
 
@@ -31,6 +25,13 @@
         },
         initialize: function() {
             var that=this;
+
+            that.on('Destory', function() {
+                this.mask.off('tap').remove();
+            };
+            that.on('Hide', function() {
+                this.$el.removeClass('visible');
+            });
 
             that.$bd=that.$('.js_dropdown');
             that._template=tmpl(that.$bd.html());

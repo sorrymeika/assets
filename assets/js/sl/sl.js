@@ -7,7 +7,6 @@
         tmpl=require('./tmpl'),
         view=require('./view'),
         style=require('./style'),
-        store=require('./store'),
         plugin=require('./plugins/template');
 
     var noop=sl.noop,
@@ -698,7 +697,6 @@
             this.text(actionName).show(3000);
         }),
         common: {},
-        store: store,
         noop: noop,
         simplelize: simplelize
     });
