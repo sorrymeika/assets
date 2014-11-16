@@ -167,3 +167,10 @@ ul.table li > p { display: table-cell; text-align: center; padding-top: 5px; }
 .about_logo:before, .login_logo:before { content: ''; display: block; background: url(images/site.png) no-repeat 0px -150px; background-size: 320px auto; width: 153px; height: 81px; margin: 0 auto; }
 
 .userwrap { background: #f0eff4; }
+
+.designerwrap { padding-top: 16px;padding-bottom: 25px; }
+.designer_list {width: 133px; margin: 0 auto; min-height: 200px;}
+.designer_list>li{ padding-top: 45px; width: 133px; text-align: center; }
+.designer_list .img { width: 133px; height: 133px; display: block; border-radius: 66px; }
+.designer_list .name { padding-top: 16px; line-height: 26px; }
+.designer_list .desc { line-height: 26px; border-top: 1px solid #cdcdcd; }
