@@ -169,8 +169,7 @@
                 that.x=x;
                 that.y=y;
             }
-        },
-        log: function() { }
+        }
     });
 
     return Scroll;
