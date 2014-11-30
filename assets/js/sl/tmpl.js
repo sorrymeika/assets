@@ -123,14 +123,14 @@
         return $(tmpl(this[0].innerHTML,data).join(''));
     };
 
-    $.tmpl=module.exports=function(html,data) {
+    $.tmpl=module.exports=function (html,data) {
         if(typeof data==='undefined') {
             var fn=buildTmplFn(html);
 
-            return function(data) {
+            return function (data) {
                 return fn($,{
                     data: data,
-                    nest: function(s,d) {
+                    nest: function (s,d) {
                         return tmpl(s,d);
                     }
                 }).join('');
