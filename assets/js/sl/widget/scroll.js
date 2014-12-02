@@ -186,7 +186,7 @@
                     that.y=y;
                 }
 
-                that.$el.trigger('Scroll',[x,y]);
+                that.$el.trigger('scrollChange',[x,y]);
             }
         }
     });
