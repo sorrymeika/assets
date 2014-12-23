@@ -1,11 +1,12 @@
-﻿define(['$','sl/sl','app','sl/widget/loading','sl/widget/slider'],function(require,exports,module) {
+﻿define(['$','bridge','sl/activity','sl/widget/loading','sl/widget/slider'],function(require,exports,module) {
     var $=require('$'),
-        sl=require('sl/sl'),
-        app=require('app'),
+        Activity=require('sl/activity'),
+        App=require('sl/app'),
+        app=require('bridge'),
         Loading=require('sl/widget/loading'),
         Slider=require('sl/widget/slider');
 
-    module.exports=sl.Activity.extend({
+    return Activity.extend({
         template: 'views/index.html',
 
         onCreate: function() {

@@ -1,4 +1,4 @@
-﻿define('app',['$','util'],function(require,exports,module) {
+﻿define(['$','util'],function(require,exports,module) {
 
     var $=require('$'),
         util=require('util'),

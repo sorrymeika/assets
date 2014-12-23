@@ -1,7 +1,8 @@
-﻿define('sl/plugins/template',['$','app','./../tmpl'],function(require,exports,module) {
+﻿define('sl/plugins/template',['$','bridge','./../tmpl'],function(require,exports,module) {
     var $=require('$'),
-        app=require('app'),
+        bridge=require('bridge'),
         tmpl=require('./../tmpl'),
+        view=require('./../view'),
         slice=Array.prototype.slice;
 
     var templatesRecords={},
@@ -75,69 +76,69 @@
         };
 
 
-    module.exports=function(Class) {
-        Class.plugin({
-            options: {
-                templateEnabled: true
-            },
-            initWithTemplate: function() {
-                var that=this;
-                return buildTemplate(that.template,function(record) {
-                    that.$el.html(record.main);
-                    that.templates=record;
-                });
-            },
-            template: 'views/home.html',
-            _getTemplate: function(name,tmpl) {
-                var that=this;
+    return view.Plugin({
+        options: {
+            templateEnabled: true
+        },
+        initWithTemplate: function() {
 
-                tmpl=tmpl||this.templates;
+            var that=this;
+            return buildTemplate(that.template,function(record) {
+                that.$el.html(record.main);
+                that.templates=record;
+            });
+        },
+        template: 'views/home.html',
+        _getTemplate: function(name,tmpl) {
+            var that=this;
 
-                if(!name) return tmpl.template;
-                else if(typeof name=='number') return tmpl.templates[name];
+            tmpl=tmpl||this.templates;
 
-                var templates=tmpl._templates;
+            if(!name) return tmpl.template;
+            else if(typeof name=='number') return tmpl.templates[name];
 
-                if(typeof templates[name]!=='undefined') {
-                    return tmpl.templates[templates[name]];
-                }
+            var templates=tmpl._templates;
 
-                for(var i=0,n=tmpl.includes.length,res;i<n;i++) {
-                    res=that._getTemplate(name,tmpl.includes[i]);
-                    if(res) return res;
-                }
-                return null;
-            },
-            tmpl: function(/*name[,url][,data]*/) {
-                var that=this,
+            if(typeof templates[name]!=='undefined') {
+                return tmpl.templates[templates[name]];
+            }
+
+            for(var i=0,n=tmpl.includes.length,res;i<n;i++) {
+                res=that._getTemplate(name,tmpl.includes[i]);
+                if(res) return res;
+            }
+            return null;
+        },
+        tmpl: function(/*name[,url][,data]*/) {
+            var that=this,
                 args=slice.apply(arguments),
                 i=0,
                 name=args[i++],
                 url=args[i++],
                 data=args.pop();
 
-                template=that._getTemplate(name);
+            template=that._getTemplate(name);
 
-                if(typeof url==='string') {
-                    var dfd=$.Deferred();
-                    $.ajax({
-                        url: app.url(url),
-                        data: data,
-                        dataType: 'json',
-                        type: 'post',
-                        success: function(res) {
-                            dfd.resolveWith(that,[tmpl(template,res)]);
-                        },
-                        error: function() {
-                            dfd.reject();
-                        }
-                    });
-                    return dfd.promise();
+            if(typeof url==='string') {
+                var dfd=$.Deferred();
+                $.ajax({
+                    url: bridge.url(url),
+                    data: data,
+                    dataType: 'json',
+                    type: 'post',
+                    success: function(res) {
+                        dfd.resolveWith(that,[tmpl(template,res)]);
+                    },
+                    error: function() {
+                        dfd.reject();
+                    }
+                });
+                return dfd.promise();
 
-                } else {
-                    return tmpl(template,data);
-                }
+            } else {
+                return tmpl(template,data);
             }
-        });
-    };
+        }
+    });
+
 });

@@ -1,30 +1,30 @@
-﻿define('views/news',['zepto','ui/sl','ui/tabs','app','views/loading'],function (require,exports,module) {
+﻿define('views/news',['zepto','sl/activity','ui/tabs','app','views/loading'],function(require,exports,module) {
     var $=require('zepto'),
-        sl=require('ui/sl'),
+        Activity=require('sl/activity'),
         app=require('app'),
         Loading=require('views/loading');
 
-    module.exports=sl.Activity.extend({
+    module.exports=Activity.extend({
         template: 'views/news.html',
         events: {
             'tap .J_Back': 'back'
         },
-        onCreate: function () {
+        onCreate: function() {
             var that=this;
 
             that.$('#main').loading('load',{
                 url: '/api/CPService/queryCpNewsContent/?ct=json&newsid='+that.route.data.id,
-                success: function (res) {
+                success: function(res) {
                     that.$('#main').html(that.tmpl('article',res));
                 }
             });
 
         },
-        onStart: function () {
+        onStart: function() {
         },
-        onResume: function () {
+        onResume: function() {
         },
-        onDestory: function () {
+        onDestory: function() {
         }
     });
 });

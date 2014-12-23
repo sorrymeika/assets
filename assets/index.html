@@ -17,8 +17,8 @@
             }
         });
 
-        seajs.use(['$','sl/sl','app'],function ($,sl,_app) {
-            var app=new sl.Application();
+        seajs.use(['$','sl/app','bridge'],function($,Application,bridge) {
+            var app=new Application();
 
             app.mapRoute({
                 '': 'index',
@@ -36,11 +36,9 @@
 
             app.start();
 
-            sl.activedApp=app;
-
-            if(_app.isAndroid)
-                setTimeout(function () {
-                    _app.load(function () {
+            if(bridge.isAndroid)
+                setTimeout(function() {
+                    bridge.load(function() {
                     });
                 },1500);
 
