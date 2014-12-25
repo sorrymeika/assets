@@ -159,7 +159,7 @@
         },
 
         _to: function(url,duration,animationName,type,callback) {
-            if(!duration) duration=400;
+            if(!duration) duration=300;
 
             var that=this,
                 application=that.application;

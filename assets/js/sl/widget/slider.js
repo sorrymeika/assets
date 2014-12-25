@@ -187,6 +187,7 @@
             that.startY=that.y;
             that.pointX=point.pageX;
             that.pointY=point.pageY;
+            that.isMoved=0;
         },
         _move: function(e) {
             if(!this._isStart) return;
@@ -197,10 +198,27 @@
                 changeY=that.pointY-point.pageY,
                 x=that.startX-changeX;
 
-            that.moveX=point.pageX;
-
-            if(changeY<20||changeX>changeY)
+            if(that.isMoved===1) {
                 e.preventDefault();
+            } else if(that.isMoved===0) {
+
+                changeX=Math.abs(changeX);
+                changeY=Math.abs(changeY);
+
+                if(changeX>6&&changeX>changeY) {
+                    that.isMoved=1;
+                    e.preventDefault();
+                } else if(changeY>6&&changeY>changeX) {
+                    that.isMoved=2;
+                }
+                return;
+
+            } else {
+                this._isStart=false;
+                return;
+            }
+
+            that.moveX=point.pageX;
 
             if(!that.loop) {
                 x=x>0?0:x<that.minX?that.minX:x;

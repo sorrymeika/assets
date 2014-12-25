@@ -49,10 +49,23 @@ input[type="password"].prompt-text { letter-spacing: 2px; }
 .open_exit_animation-from { z-index: 1; -webkit-transform: translate(0,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; }
 .open_exit_animation-to { -webkit-transform: translate(-50%,0) translateZ(0); }
 
+.view:before{z-index: -1; background:rgba(0,0,0,0); position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px;content: ''; -webkit-transition: background 300ms ease 0ms, z-index 0ms ease 300ms; }
+.open_exit_animation-to:before,.menu-open_exit_animation-to:before{background:rgba(0,0,0,.5);z-index: 1000; -webkit-transition: background 300ms ease 0ms, z-index 0ms ease 0ms; }
+
 .close_enter_animation-from { z-index: 1; -webkit-transform: translate(-50%,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; }
 .close_enter_animation-to { -webkit-transform: translate(0,0) translateZ(0); }
 .close_exit_animation-from { z-index: 3; -webkit-transform: translate(0,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease-out 0ms; }
 .close_exit_animation-to { -webkit-transform: translate(100%,0) translateZ(0); }
+
+.menu-open_enter_animation-from { z-index: 2; -webkit-transform: translate(-80%,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; }
+.menu-open_enter_animation-to { -webkit-transform: translate(0,0) translateZ(0); }
+.menu-open_exit_animation-from { -webkit-transform: translate(0,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; }
+.menu-open_exit_animation-to { -webkit-transform: translate(80%,0) translateZ(0); }
+
+.menu-close_enter_animation-from { -webkit-transform: translate(80%,0) translateZ(0); z-index: 1; -webkit-transition: -webkit-transform 0ms ease 0ms; }
+.menu-close_enter_animation-to { -webkit-transform: translate(0,0) translateZ(0); }
+.menu-close_exit_animation-from { -webkit-transform: translate(0,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; z-index: 3; }
+.menu-close_exit_animation-to { -webkit-transform: translate(-80%,0) translateZ(0); }
 
 
 .dataloading { top: 50%; left: 50%; margin: -20px 0 0 -20px; position: absolute; width: 40px; height: 40px; text-indent: -10000px; background: url('images/dataloading.png') 0 0 no-repeat; background-size: 100% 100%; -webkit-animation-name: ui-loading-anim; -webkit-animation-duration: 1s; -webkit-animation-iteration-count: infinite; -webkit-animation-timing-function: step-start; }
@@ -112,17 +125,6 @@ footer { position: fixed; bottom: 0px; left: 0px; width: 100%; z-index: 200; ove
 ul.table { width: 100%; display: table; }
 ul.table > li { display: table-row; }
 ul.table li > p { display: table-cell; text-align: center; padding-top: 5px; }
-
-.menu-open_enter_animation-from { z-index: 2; -webkit-transform: translate(-80%,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; }
-.menu-open_enter_animation-to { -webkit-transform: translate(0,0) translateZ(0); }
-.menu-open_exit_animation-from { -webkit-transform: translate(0,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; }
-.menu-open_exit_animation-to { -webkit-transform: translate(80%,0) translateZ(0); }
-
-.menu-close_enter_animation-from { -webkit-transform: translate(80%,0) translateZ(0); z-index: 1; -webkit-transition: -webkit-transform 0ms ease 0ms; }
-.menu-close_enter_animation-to { -webkit-transform: translate(0,0) translateZ(0); }
-.menu-close_exit_animation-from { -webkit-transform: translate(0,0) translateZ(0); -webkit-transition: -webkit-transform 0ms ease 0ms; z-index: 3; }
-.menu-close_exit_animation-to { -webkit-transform: translate(-80%,0) translateZ(0); }
-
 
 .menu { width: 80%; background: #1f1f21; height: 100%; position: relative; }
 .menu div { width: 100%; position: relative; }

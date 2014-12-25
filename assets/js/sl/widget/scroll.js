@@ -44,7 +44,14 @@
         },
 
         _move: function(e) {
+
             if(!this._isStart) return;
+            if(e.isDefaultPrevented()) {
+
+                console.log(this._isStart)
+                this._isStart=false;
+                return;
+            }
             e.preventDefault();
 
             var that=this,
