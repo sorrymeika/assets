@@ -1,5 +1,35 @@
-﻿@{
-    
+﻿@functions{
+    private void copyResource(string origin, string dest)
+    {
+        System.IO.FileInfo file = new FileInfo(origin);
+
+        if (file.Attributes == FileAttributes.Directory)
+        {
+            System.IO.Directory.CreateDirectory(dest);
+            foreach (string dirPath in Directory.GetDirectories(origin, "*", SearchOption.AllDirectories))
+            {
+                Directory.CreateDirectory(dirPath.Replace(origin, dest));
+            }
+
+            foreach (string newPath in Directory.GetFiles(origin, "*.*", SearchOption.AllDirectories))
+            {
+                File.Copy(newPath, newPath.Replace(origin, dest), true);
+            }
+        }
+        else
+        {
+            string saveDir = System.IO.Path.GetDirectoryName(dest);
+
+            if (!System.IO.Directory.Exists(saveDir))
+            {
+                System.IO.Directory.CreateDirectory(saveDir);
+            }
+
+            file.CopyTo(dest, true);
+        }
+    }
+}
+@{
     string dir = Request.QueryString["dir"];
     string action = Request.QueryString["action"];
 
@@ -22,43 +52,60 @@
 
         resourcePath.Split(',').All(path =>
         {
-            var oringinPath = Server.MapPath("~/") + "/" + path;
-            var dest = (string.IsNullOrEmpty(dir) ? Server.MapPath("~/dest") : dir) + "/" + path;
+            var origin = Server.MapPath("~/" + path);
+            var dest = (string.IsNullOrEmpty(dir) ? Server.MapPath("~/dest") : dir) + "\\" + path.Replace("/", "\\");
 
-            System.IO.FileInfo file = new FileInfo(oringinPath);
-
-            if (file.Attributes == FileAttributes.Directory)
-            {
-                if (!System.IO.Directory.Exists(dest))
-                {
-                    System.IO.Directory.CreateDirectory(dest);
-                }
-
-                System.IO.DirectoryInfo resource = new DirectoryInfo(oringinPath);
-                var files = resource.GetFiles();
-                files.All(a =>
-                {
-                    a.CopyTo(dest + "/" + a.Name, true);
-                    return true;
-                });
-            }
-            else
-            {
-                string saveDir = System.IO.Path.GetDirectoryName(dest);
-
-                if (!System.IO.Directory.Exists(saveDir))
-                {
-                    System.IO.Directory.CreateDirectory(saveDir);
-                }
-
-                file.CopyTo(dest, true);
-            }
+            copyResource(origin, dest);
             return true;
         });
 
+    }
+    else if ("template" == action)
+    {
+        var resourcePath = Request.Unvalidated().Form["template"].Trim();
+
+        IDictionary<string, string> result = new Dictionary<string, string>();
+        var dest = (string.IsNullOrEmpty(dir) ? Server.MapPath("~/dest") : dir) + "\\js\\views.text.js";
+
+        resourcePath.Split(',').All(path =>
+        {
+            var origin = Server.MapPath("~/" + path);
+
+            string saveDir = System.IO.Path.GetDirectoryName(dest);
+
+            if (!System.IO.Directory.Exists(saveDir))
+            {
+                System.IO.Directory.CreateDirectory(saveDir);
+            }
+
+            System.IO.FileInfo file = new FileInfo(origin);
+
+            if (file.Attributes == FileAttributes.Directory)
+            {
+                foreach (string newPath in Directory.GetFiles(origin, "*.*", SearchOption.AllDirectories))
+                {
+                    if (!result.ContainsKey(newPath))
+                    {
+                        result.Add(newPath, File.ReadAllText(newPath));
+                    }
+                }
+            }
+            else
+            {
+                if (!result.ContainsKey(path))
+                {
+                    using (var sr = file.OpenText())
+                    {
+                        result.Add(path, sr.ReadToEnd());
+                    }
+                }
+            }
+
+            File.WriteAllText(dest, "define('views.text',function(){return " + Json.Encode(result).Replace("\\u003c", "<").Replace("\\u003e", ">") + "})");
+            return true;
+        });
 
     }
-
 
     Output.Write("success");
     return;

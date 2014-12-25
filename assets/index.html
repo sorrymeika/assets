@@ -17,7 +17,7 @@
             }
         });
 
-        seajs.use(['$','sl/app','bridge'],function($,Application,bridge) {
+        seajs.use(['$','sl/app','bridge'],function ($,Application,bridge) {
             var app=new Application();
 
             app.mapRoute({
@@ -36,37 +36,64 @@
 
             app.start();
 
-            bridge.isAndroid&&setTimeout(function() {
-                bridge.load(function() { });
+            bridge.isAndroid&&setTimeout(function () {
+                bridge.load(function () { });
             },1500);
         });
     </script>
     <script debug>
-        seajs.use(['$','tools/tools'],function($,tools) {
+        seajs.use(['$','tools/tools','sl/app','bridge'],function ($,tools) {
 
             tools.build({
+                compress: [
+                    'seajs/sea.js',
+                    'anim.css',
+                    'style.css'
+                    ],
                 js: {
-                    sl: ['sl/base',
+                    sl: [
+                        'zepto',
+                        'extend/matchMedia',
+                        'extend/throttle',
+                        'extend/ortchange',
+                        'extend/scrollStop',
+                        'util',
+                        'bridge',
+                        'sl/base',
                         'sl/event',
                         'sl/tmpl',
                         'sl/view',
                         'sl/app',
                         'sl/activity',
                         'sl/style',
+                        'sl/tween',
                         'sl/plugins/template',
                         'sl/widget/scroll',
                         'sl/widget/loading',
                         'sl/widget/slider',
-                        'sl/widget/loading',
                         'sl/widget/imglazyload',
                         'sl/widget/dropdown'
+                        ],
+                    views: [
+                        'views/index',
+                        'views/cart',
+                        'views/menu',
+                        'views/about',
+                        'views/ourdesigner',
+                        'views/support'
                         ]
                 },
                 html: ['index.html'],
+                template: [
+                    'views/index.html',
+                    'views/cart.html',
+                    'views/menu.html',
+                    'views/about.html',
+                    'views/ourdesigner.html',
+                    'views/support.html'
+                    ],
                 resource: ['images',
-                    'views',
-                    'anim.css',
-                    'style.css']
+                    'views']
             });
         });
         

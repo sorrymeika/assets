@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','./activity','./tmpl','./view','./plugins/template'],function(require,exports,module) {
+﻿define(['$','util','bridge','./activity','./tmpl','./view','./plugins/template'],function (require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
@@ -13,7 +13,7 @@
         indexOf=util.indexOf,
         lastIndexOf=util.lastIndexOf,
         slice=Array.prototype.slice,
-        getUrlPath=function(url) {
+        getUrlPath=function (url) {
             var index=url.indexOf('?');
             if(index!= -1) {
                 url=url.substr(0,index);
@@ -23,7 +23,7 @@
 
     var Application=view.extend({
         events: {
-            'tap,click a:not(.js-link-default)': function(e) {
+            'tap,click a:not(.js-link-default)': function (e) {
                 var that=this,
                     target=$(e.currentTarget);
 
@@ -41,7 +41,7 @@
 
                 return false;
             },
-            'tap [data-href]': function(e) {
+            'tap [data-href]': function (e) {
                 var that=this,
                     target=$(e.currentTarget);
 
@@ -49,13 +49,13 @@
                     that.to(target.attr('data-href'));
                 }
             },
-            'tap [data-back]': function(e) {
+            'tap [data-back]': function (e) {
                 this._currentActivity.back($(e.currentTarget).attr('data-back'));
             },
-            'tap [data-forward]': function(e) {
+            'tap [data-forward]': function (e) {
                 this._currentActivity.forward($(e.currentTarget).attr('data-forward'));
             },
-            'touchmove header,footer': function(e) {
+            'touchmove header,footer': function (e) {
                 e.preventDefault();
             }
         },
@@ -63,13 +63,13 @@
         el: '<div class="viewport"></div>',
 
         routes: [],
-        mapRoute: function(options) {
+        mapRoute: function (options) {
             var routes=this.routes;
-            $.each(options,function(k,opt) {
+            $.each(options,function (k,opt) {
                 var parts=[],
                     routeOpt={};
 
-                var reg='^(?:\/{0,1})'+k.replace(/(\/|^|\?){([^\/\?]+)}/g,function(r0,r1,r2) {
+                var reg='^(?:\/{0,1})'+k.replace(/(\/|^|\?){([^\/\?]+)}/g,function (r0,r1,r2) {
                     var ra=r2.split(':');
 
                     if(ra.length>1) {
@@ -92,7 +92,7 @@
                 routes.push(routeOpt);
             });
         },
-        matchRoute: function(url) {
+        matchRoute: function (url) {
             var result=null,
                 queries={},
                 hash=url.replace(/^#/,'')||'/';
@@ -106,7 +106,7 @@
 
                 url=url.substr(0,index);
 
-                query.replace(/(?:^|&)([^=&]+)=([^&]*)/g,function(r0,r1,r2) {
+                query.replace(/(?:^|&)([^=&]+)=([^&]*)/g,function (r0,r1,r2) {
                     queries[r1]=decodeURIComponent(r2);
                     return '';
                 })
@@ -114,7 +114,7 @@
                 query='';
             }
 
-            $.each(this.routes,function(i,route) {
+            $.each(this.routes,function (i,route) {
                 var m=route.reg?url.match(route.reg):null;
 
                 if(m) {
@@ -126,7 +126,7 @@
                         queryString: query,
                         query: queries
                     };
-                    $.each(route.parts,function(i,name) {
+                    $.each(route.parts,function (i,name) {
                         result.data[name]=m[i+1];
                     });
                     return false;
@@ -136,10 +136,10 @@
             return result;
         },
 
-        initialize: function() {
+        initialize: function () {
             var that=this;
 
-            that.mask=$('<div class="screen" style="position:fixed;top:0px;bottom:0px;right:0px;width:100%;background:rgba(0,0,0,0);z-index:2000;display:none"></div>').on('tap click touchend touchmove touchstart',function(e) {
+            that.mask=$('<div class="screen" style="position:fixed;top:0px;bottom:0px;right:0px;width:100%;background:rgba(0,0,0,0);z-index:2000;display:none"></div>').on('tap click touchend touchmove touchstart',function (e) {
                 e.preventDefault();
             }).appendTo(document.body);
         },
@@ -149,7 +149,7 @@
         _historyCursor: -1,
         _currentActivity: null,
 
-        start: function() {
+        start: function () {
             sl.app=this;
 
             var that=this;
@@ -157,17 +157,18 @@
             if(!location.hash) location.hash='/';
             that.hash=location.hash.replace(/^#/,'')||'/';
 
-            that._getOrCreateActivity(that.hash,function(activity) {
+            that._getOrCreateActivity(that.hash,function (activity) {
                 that._currentActivity=activity;
                 that._history.push(activity.hash);
                 that._historyCursor++;
+
                 activity.$el.appendTo(that.$el);
-                activity.then(function() {
+                activity.then(function () {
                     activity.trigger('Resume');
                     activity.trigger('Show');
                 });
 
-                $(window).on('hashchange',function() {
+                $(window).on('hashchange',function () {
                     that.hash=location.hash.replace(/^#/,'')||'/';
 
                     var index=lastIndexOf(that._history,that.hash),
@@ -197,7 +198,7 @@
             that.$el.appendTo(document.body);
         },
 
-        to: function(url) {
+        to: function (url) {
             url=url.replace(/^#/,'')||'/';
 
             var that=this,
@@ -220,27 +221,27 @@
             }
         },
 
-        navigate: function(url) {
+        navigate: function (url) {
             this.skip++;
             this.to(url);
         },
 
         _activities: {},
 
-        get: function(url) {
+        get: function (url) {
             return this._activities[getUrlPath(url)];
         },
 
-        set: function(url,activity) {
+        set: function (url,activity) {
             this._activities[getUrlPath(url)]=activity;
         },
 
-        remove: function(url) {
+        remove: function (url) {
             this._activities[getUrlPath(url)]=undefined;
         },
 
-        siblings: function(url,url1) {
-            $.each(this._activities,function(k,activity) {
+        siblings: function (url,url1) {
+            $.each(this._activities,function (k,activity) {
                 if(typeof activity!=='undefined'&&k!=url&&k!=url1) {
                     activity.$el.addClass('stop');
                 }
@@ -249,7 +250,7 @@
 
         viewPath: 'views/',
 
-        _getOrCreateActivity: function(url,callback) {
+        _getOrCreateActivity: function (url,callback) {
             var that=this,
                 route=that.matchRoute(url);
 
@@ -258,7 +259,7 @@
             var activity=that.get(route.url);
 
             if(activity==null) {
-                seajs.use(that.viewPath+route.view,function(ActivityClass) {
+                seajs.use(that.viewPath+route.view,function (ActivityClass) {
                     if(ActivityClass!=null) {
                         activity=new ActivityClass({
                             application: that,
@@ -266,7 +267,7 @@
                         });
                         that.set(route.url,activity);
 
-                        activity.then(function() {
+                        activity.then(function () {
                             callback.call(that,activity,route);
                         });
 
@@ -283,13 +284,13 @@
         }
     });
 
-    var Tip=function(text) {
+    var Tip=function (text) {
         this._tip=$('<div class="tip" style="display:none">'+(text||'')+'</div>').appendTo('body');
     };
 
     Tip.prototype={
         _hideTimer: null,
-        _clearHideTimer: function() {
+        _clearHideTimer: function () {
             var me=this;
             if(me._hideTimer) {
                 clearTimeout(me._hideTimer);
@@ -297,7 +298,7 @@
             }
         },
         _visible: false,
-        show: function(msec) {
+        show: function (msec) {
 
             var me=this,
                 tip=me._tip;
@@ -305,7 +306,7 @@
             me._clearHideTimer();
 
             if(msec)
-                me._hideTimer=setTimeout(function() {
+                me._hideTimer=setTimeout(function () {
                     me._hideTimer=null;
                     me.hide();
                 },msec);
@@ -327,7 +328,7 @@
 
             return me;
         },
-        hide: function() {
+        hide: function () {
             var me=this,
                 tip=me._tip;
 
@@ -339,7 +340,7 @@
             tip.animate({
                 scale: ".2,.2",
                 opacity: 0
-            },200,'ease-in',function() {
+            },200,'ease-in',function () {
                 tip.hide().css({
                     '-webkit-transform': 'scale(1,1)'
                 })
@@ -348,7 +349,7 @@
             me._clearHideTimer();
             return me;
         },
-        text: function(msg) {
+        text: function (msg) {
             var me=this,
                 tip=me._tip;
 
@@ -375,7 +376,7 @@
 
     $.extend(sl,{
         Application: Application,
-        tip: sl.functionlize(Tip,function(actionName) {
+        tip: sl.functionlize(Tip,function (actionName) {
             this.text(actionName).show(3000);
         })
     });

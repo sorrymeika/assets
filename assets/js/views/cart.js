@@ -1,7 +1,7 @@
-﻿define(['$','sl/activity','ui/tabs','bridge','sl/widget/loading'],function(require,exports,module) {
+﻿define(['$','sl/activity','bridge','sl/widget/loading'],function (require,exports,module) {
     var $=require('$'),
-        Activity=require('sl/activity'),
         bridge=require('bridge'),
+        Activity=require('sl/activity'),
         Loading=require('sl/widget/loading');
 
     module.exports=Activity.extend({
@@ -9,14 +9,14 @@
         events: {
             'tap .js_back': 'back'
         },
-        onCreate: function() {
+        onCreate: function () {
             var that=this;
         },
-        onStart: function() {
+        onStart: function () {
         },
-        onResume: function() {
+        onResume: function () {
         },
-        onDestory: function() {
+        onDestory: function () {
         }
     });
 });

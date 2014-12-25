@@ -1,4 +1,4 @@
-﻿define(['$','bridge','sl/activity','sl/widget/loading','sl/widget/slider'],function(require,exports,module) {
+﻿define(['$','bridge','sl/activity','sl/widget/loading','sl/widget/slider'],function (require,exports,module) {
     var $=require('$'),
         Activity=require('sl/activity'),
         App=require('sl/app'),
@@ -9,7 +9,7 @@
     return Activity.extend({
         template: 'views/index.html',
 
-        onCreate: function() {
+        onCreate: function () {
             var that=this,
                 $list=that.$('.js_list');
 
@@ -18,19 +18,19 @@
                 url: '/Json/Product/GetProducts',
                 pageIndex: 1,
                 pageSize: 5,
-                success: function(res) {
+                success: function (res) {
                     that.slider=new Slider($list,{
                         data: res.data,
-                        itemTemplate: '<div style="position:relative"><img class="home_tee_img" src="${Picture}" onerror="this.src=\'\'" /><b class="home_buy_btn"></b></div>'
+                        itemTemplate: '<div style="position:relative"><img class="home_tee_img" src="${Picture}" onerror="this.removeAttribute(\'src\')" /><b class="home_buy_btn"></b></div>'
                     });
                 }
             });
         },
-        onStart: function() {
+        onStart: function () {
         },
-        onResume: function() {
+        onResume: function () {
         },
-        onDestory: function() {
+        onDestory: function () {
         }
     });
 });

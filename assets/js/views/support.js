@@ -1,21 +1,21 @@
-﻿define(['$','sl/activity','app','sl/widget/loading'],function(require,exports,module) {
+﻿define(['$','sl/activity','bridge','sl/widget/loading'],function (require,exports,module) {
     var $=require('$'),
         Activity=require('sl/activity'),
-        app=require('app'),
+        bridge=require('bridge'),
         Loading=require('sl/widget/loading');
 
     module.exports=Activity.extend({
         template: 'views/support.html',
         events: {},
-        onCreate: function() {
+        onCreate: function () {
             var that=this;
 
         },
-        onStart: function() {
+        onStart: function () {
         },
-        onResume: function() {
+        onResume: function () {
         },
-        onDestory: function() {
+        onDestory: function () {
         }
     });
 });

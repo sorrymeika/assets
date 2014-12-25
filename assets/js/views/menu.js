@@ -1,7 +1,7 @@
-﻿define('views/menu',['zepto','sl/activity','app'],function(require,exports,module) {
+﻿define('views/menu',['zepto','sl/activity','bridge'],function(require,exports,module) {
     var $=require('zepto'),
         Activity=require('sl/activity'),
-        app=require('app');
+        bridge=require('bridge');
 
     module.exports=Activity.extend({
         template: 'views/menu.html',

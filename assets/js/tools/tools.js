@@ -1,4 +1,4 @@
-﻿define(function(require) {
+﻿define(function (require) {
     require('./uglify');
 
     var compressor=UglifyJS.Compressor({
@@ -23,7 +23,7 @@
         global_defs: {}
     });
 
-    var parse=function(code) {
+    var parse=function (code) {
         var ast=UglifyJS.parse(code);
         ast.figure_out_scope();
         ast=ast.transform(compressor);
@@ -32,24 +32,37 @@
         code=ast.print_to_string();
 
         return code;
-    }
+    };
+
+    var replaceDefine=function (id,code) {
+
+        return code.replace(/^\s*define\(([^\(]+?,){0,1}function/,function (r0,p) {
+
+            p=eval('['+(p||'')+']');
+            typeof p[0]==='string'?(p[0]=id):p.splice(0,0,id);
+
+            return 'define('+JSON.stringify(p).replace(/(^\[)|(\]$)/g,'')+',function';
+        })
+    };
+
 
     var tools={
-        save: function(path,text) {
+        save: function (path,text) {
             $.post('tools.cshtml?action=save',{
                 path: path,
                 text: text
 
-            },function(res) {
+            },function (res) {
                 console.log(res);
             });
         },
-        compress: function(path) {
+
+        js: function (path) {
             var that=this;
 
-            $.each(path,function(i,items) {
+            $.each(path,function (i,items) {
                 var result=[];
-                var combine=function() {
+                var combine=function () {
 
                     if(!items.length) {
                         var code=result.join('\n');
@@ -61,16 +74,9 @@
                     var id=items.shift();
                     var url=seajs.resolve(id);
 
-                    $.get(url+'?'+new Date().getTime(),function(res) {
+                    $.get(url+'?'+new Date().getTime(),function (res) {
 
-                        res=res.replace(/^\s*define\((.+?,){0,1}function/,function(r0,p) {
-
-                            p=eval('['+(p||'')+']');
-                            typeof p[0]==='string'?(p[0]=id):p.splice(0,0,id);
-
-                            return 'define('+JSON.stringify(p).replace(/(^\[)|(\]$)/g,'')+',function';
-                        });
-                        res=parse(res);
+                        res=parse(replaceDefine(id,res));
 
                         result.push(res);
 
@@ -84,25 +90,27 @@
             return this;
         },
 
-        html: function(path,js) {
+        html: function (path,js) {
 
-            var that=this;
+            var that=this,
+                scriptOpen='<script src="js/',
+                scriptClose='.js"></script>';
 
-            $.each(path,function(i,url) {
-                $.get(url+'?'+new Date().getTime(),function(res) {
+            $.each(path,function (i,url) {
+                $.get(url+'?'+new Date().getTime(),function (res) {
                     res=res.replace(/<script[^>]+debug[^>]*>[\S\s]*?<\/script>/img,'')
-                            .replace(/<script[^>]*>([\S\s]*?)<\/script>/img,function(r0,r1) {
+                            .replace(/<script[^>]*>([\S\s]*?)<\/script>/img,function (r0,r1) {
                                 if(!$.trim(r1)) return r0;
                                 return '<script>'+parse(r1)+'</script>';
                             });
 
                     if(js) {
-                        var list=$.isArray(js)?js:(function(arr) {
-                            $.each(js,function(k) { arr.push(k); });
+                        var list=$.isArray(js)?js:(function (arr) {
+                            $.each(js,function (k) { arr.push(k); });
                             return arr;
                         })([]);
 
-                        res=res.replace(/<\/head>/i,'<script src="'+list.join('"></script><script src="')+'"></script></head>');
+                        res=res.replace(/<\/head>/i,scriptOpen+list.join(scriptClose+scriptOpen)+scriptClose+'</head>');
                     }
                     that.save(url,res);
                 });
@@ -111,19 +119,58 @@
             return this;
         },
 
-        resource: function(resource) {
+        resource: function (resource) {
             $.post('tools.cshtml?action=resource',{
                 resource: resource.join(',')
 
-            },function(res) {
+            },function (res) {
                 console.log("resource"+res);
             });
         },
 
-        build: function(options) {
-            options.js&&this.compress(options.js);
+        compress: function (path) {
+
+            var that=this;
+
+            $.each(path,function (i,url) {
+                var index=url.lastIndexOf('.');
+                var ext=index== -1?'.js':url.substr(index);
+
+                if(ext==='.js') {
+                    var id=url.replace(/\.js$/,'');
+                    url="js/"+url;
+                    $.get(url+'?'+new Date().getTime(),function (res) {
+                        res=parse(replaceDefine(id,res));
+                        that.save(url,res);
+                    });
+                } else if(ext==='.css') {
+                    $.get(url+'?'+new Date().getTime(),function (res) {
+                        res=res.replace(/\s*([;|\:|,|\{|\}])\s*/img,'$1').replace(/[\r\n]/mg,'')
+                                .replace(/;}/mg,'}');
+                        that.save(url,res);
+                    });
+                }
+
+            });
+
+            return this;
+        },
+
+        template: function (template) {
+            $.post('tools.cshtml?action=template',{
+                template: template.join(',')
+
+            },function (res) {
+                console.log("template"+res);
+            });
+        },
+
+        build: function (options) {
+            options.js&&this.js(options.js);
             options.html&&this.html(options.html,options.js);
             options.resource&&this.resource(options.resource);
+            options.compress&&this.compress(options.compress);
+            options.template&&this.template(options.template);
         }
     };
 

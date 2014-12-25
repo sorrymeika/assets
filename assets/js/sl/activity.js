@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','./tmpl','./view','./widget/scroll','./plugins/template'],function(require,exports,module) {
+﻿define(['$','util','bridge','./tmpl','./view','./widget/scroll','./plugins/template'],function (require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
@@ -12,7 +12,7 @@
     var noop=util.noop,
         indexOf=util.indexOf,
         slice=Array.prototype.slice,
-        getUrlPath=function(url) {
+        getUrlPath=function (url) {
             var index=url.indexOf('?');
             if(index!= -1) {
                 url=url.substr(0,index);
@@ -30,13 +30,13 @@
         application: null,
         el: '<div class="view"></div>',
 
-        _setRoute: function(route) {
+        _setRoute: function (route) {
             this.route=route;
             this.hash=route.hash;
             this.url=route.url;
         },
 
-        initialize: function() {
+        initialize: function () {
             var that=this;
 
             that.className&&that.$el.addClass(that.className);
@@ -52,14 +52,13 @@
             that.on('QueryChange',that.onQueryChange);
 
             that._dfd=$.when(that.options.templateEnabled&&that.initWithTemplate())
-                .then(function() {
-                    that.$('.main,.scroll').each(function() {
+                .then(function () {
+                    that.$('.main,.scroll').each(function () {
                         new Scroll(this);
                     });
-
                 })
                 .then($.proxy(that.onCreate,that))
-                .then(function() {
+                .then(function () {
                     that.trigger('Start');
                 });
         },
@@ -78,21 +77,21 @@
 
         onQueryChange: noop,
 
-        then: function(f) {
+        then: function (f) {
             return (this._dfd=this._dfd.then($.proxy(f,this)));
         },
 
-        listenResult: function(event,f) {
+        listenResult: function (event,f) {
             this.listenTo(this.application,event,f);
         },
 
-        setResult: function() {
+        setResult: function () {
             var args=slice.call(arguments);
             this.application.trigger.apply(this.application,args);
         },
 
         isPrepareExitAnimation: false,
-        prepareExitAnimation: function() {
+        prepareExitAnimation: function () {
             if(this.isPrepareExitAnimation) return;
             this.isPrepareExitAnimation=true;
 
@@ -104,7 +103,7 @@
             that.application.mask.show();
         },
 
-        finishEnterAnimation: function() {
+        finishEnterAnimation: function () {
             var that=this;
 
             that.$el.addClass('active');
@@ -112,50 +111,50 @@
             that.application.mask.hide();
 
             that.isPrepareExitAnimation=false;
-            that.then(function() {
+            that.then(function () {
                 that.trigger('Show');
             });
         },
 
-        compareUrl: function(url) {
+        compareUrl: function (url) {
             return getUrlPath(url)===this.route.url.toLowerCase();
         },
 
         //onShow后才可调用
-        redirect: function(url) {
+        redirect: function (url) {
             var that=this,
                 application=that.application;
 
-            application._getOrCreateActivity(url,function(activity,route) {
+            application._getOrCreateActivity(url,function (activity,route) {
                 activity.el.className=activity.className+' active';
                 application.$el.append(activity.$el);
                 application._currentActivity=activity;
                 that.$el.remove();
                 that.trigger('Pause');
 
-                activity.then(function() {
+                activity.then(function () {
                     activity.trigger('Resume');
                     activity.trigger('Show');
                 });
             });
         },
 
-        _transitionTime: app.ios&&parseFloat(app.osVersion)<7?function(time) {
+        _transitionTime: app.ios&&parseFloat(app.osVersion)<7?function (time) {
             this.el.style.webkitTransition="all "+(time||0)+'ms ease-out 0ms';
-        } :function(time) {
+        } :function (time) {
             this.el.style.webkitTransitionDuration=(time||0)+'ms';
         },
 
-        _animationFrom: function(name,type) {
+        _animationFrom: function (name,type) {
             this.el.className=this.className+' '+(name?name+'-':'')+type;
         },
 
-        _animationTo: function(name,type) {
+        _animationTo: function (name,type) {
             this.$el.addClass((name?name+'-':'')+type);
         },
 
-        _to: function(url,duration,animationName,type,callback) {
-            if(!duration) duration=300;
+        _to: function (url,duration,animationName,type,callback) {
+            if(!duration) duration=400;
 
             var that=this,
                 application=that.application;
@@ -164,7 +163,7 @@
                 application.navigate(url);
             }
 
-            application._getOrCreateActivity(url,function(activity,route) {
+            application._getOrCreateActivity(url,function (activity,route) {
                 animationName=animationName||(type=='open'?activity:that).animationName;
 
                 if(activity.route.hash!=route.hash) {
@@ -183,7 +182,7 @@
 
                 application._currentActivity=activity;
 
-                activity.then(function() {
+                activity.then(function () {
                     activity.trigger('Resume');
                 });
                 if(that.useAnimation) {
@@ -195,7 +194,7 @@
                     activity._transitionTime(duration);
 
                     var isTransitionEnd=false;
-                    $(activity.$el).add(that.$el).one($.fx.transitionEnd,function() {
+                    $(activity.$el).add(that.$el).one($.fx.transitionEnd,function () {
                         if(isTransitionEnd) return;
                         isTransitionEnd=true;
                         that._transitionTime(0);
@@ -213,15 +212,15 @@
             });
         },
 
-        forward: function(url,duration,animationName) {
+        forward: function (url,duration,animationName) {
             var that=this;
 
-            that._to(url,duration,animationName,'open',function() {
+            that._to(url,duration,animationName,'open',function () {
                 that.trigger('Pause');
             });
         },
 
-        back: function(url,duration,animationName) {
+        back: function (url,duration,animationName) {
             var that=this;
 
             if(typeof url!=='string') {
@@ -234,17 +233,17 @@
                     duration=null;
                 }
 
-                that._to(url,duration,animationName,'close',function() {
+                that._to(url,duration,animationName,'close',function () {
                     that.destory();
                 });
             }
         },
 
-        finish: function() {
+        finish: function () {
             this.destory();
         },
 
-        destory: function() {
+        destory: function () {
             this.application.remove(this.url);
             view.fn.destory.apply(this,arguments);
         }
