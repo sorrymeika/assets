@@ -1,9 +1,9 @@
-﻿define('views/menu',['zepto','sl/sl','app'],function(require,exports,module) {
+﻿define('views/menu',['zepto','sl/activity','app'],function(require,exports,module) {
     var $=require('zepto'),
-        sl=require('sl/sl'),
+        Activity=require('sl/activity'),
         app=require('app');
 
-    module.exports=sl.Activity.extend({
+    module.exports=Activity.extend({
         template: 'views/menu.html',
         events: {
             'tap': function(e) {

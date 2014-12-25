@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
     <meta charset="utf-8" />
     <meta name="format-detection" content="telephone=no">
     <title></title>
@@ -10,15 +10,15 @@
     <script src="js/seajs/sea.js"></script>
 </head>
 <body>
-    <script type="text/javascript">
+    <script>
         seajs.config({
             alias: {
                 "$": "zepto"
             }
         });
 
-        seajs.use(['$','sl/sl','app'],function ($,sl,_app) {
-            var app=new sl.Application();
+        seajs.use(['$','sl/app','bridge'],function($,Application,bridge) {
+            var app=new Application();
 
             app.mapRoute({
                 '': 'index',
@@ -36,15 +36,40 @@
 
             app.start();
 
-            sl.activedApp=app;
-
-            if(_app.isAndroid)
-                setTimeout(function () {
-                    _app.load(function () {
-                    });
-                },1500);
-
+            bridge.isAndroid&&setTimeout(function() {
+                bridge.load(function() { });
+            },1500);
         });
+    </script>
+    <script debug>
+        seajs.use(['$','tools/tools'],function($,tools) {
+
+            tools.build({
+                js: {
+                    sl: ['sl/base',
+                        'sl/event',
+                        'sl/tmpl',
+                        'sl/view',
+                        'sl/app',
+                        'sl/activity',
+                        'sl/style',
+                        'sl/plugins/template',
+                        'sl/widget/scroll',
+                        'sl/widget/loading',
+                        'sl/widget/slider',
+                        'sl/widget/loading',
+                        'sl/widget/imglazyload',
+                        'sl/widget/dropdown'
+                        ]
+                },
+                html: ['index.html'],
+                resource: ['images',
+                    'views',
+                    'anim.css',
+                    'style.css']
+            });
+        });
+        
     </script>
 </body>
 </html>

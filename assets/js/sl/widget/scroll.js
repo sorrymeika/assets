@@ -1,4 +1,4 @@
-﻿define(function (require,exports,module) {
+﻿define(['$','./../base','./../view','./../tween'],function(require,exports,module) {
     var $=require('$'),
         sl=require('./../base'),
         view=require('./../view'),
@@ -14,7 +14,7 @@
             'touchend': '_end'
         },
 
-        _start: function (e) {
+        _start: function(e) {
             var that=this,
                 point=hasTouch?e.touches[0]:e;
             that.stop=true;
@@ -43,17 +43,23 @@
             that._isStart=that.wrapperW<that.scrollerW||that.wrapperH<that.scrollerH;
         },
 
-        _move: function (e) {
+        _move: function(e) {
+
             if(!this._isStart) return;
+            if(e.isDefaultPrevented()) {
+
+                this._isStart=false;
+                return;
+            }
             e.preventDefault();
 
             var that=this,
-                    point=hasTouch?e.touches[0]:e,
-                    deltaX=that.pointX-point.pageX,
-                    deltaY=that.pointY-point.pageY,
-                    newX=that.x+deltaX,
-                    newY=that.y+deltaY,
-                    timestamp=e.timeStamp||Date.now();
+                point=hasTouch?e.touches[0]:e,
+                deltaX=that.pointX-point.pageX,
+                deltaY=that.pointY-point.pageY,
+                newX=that.x+deltaX,
+                newY=that.y+deltaY,
+                timestamp=e.timeStamp||Date.now();
 
             that.pointX=point.pageX;
             that.pointY=point.pageY;
@@ -82,7 +88,7 @@
 
         },
 
-        _end: function (e) {
+        _end: function(e) {
             if(hasTouch&&e.touches.length!==0) return;
 
             var that=this,
@@ -98,6 +104,8 @@
             if(!that.moved) {
                 return;
             }
+
+            e.preventDefault();
 
             if(duration<300) {
                 momentumX=newPosX?that._momentum(newPosX-that.startX,duration,that.maxScrollX-that.x,that.x,that.options.bounce?that.wrapperW:0):momentumX;
@@ -119,7 +127,7 @@
 
         },
 
-        _momentum: function (dist,time,maxDistUpper,maxDistLower,size) {
+        _momentum: function(dist,time,maxDistUpper,maxDistLower,size) {
             var deceleration=0.0006,
                 speed=m.abs(dist)/time,
                 newDist=(speed*speed)/(2*deceleration),
@@ -143,10 +151,10 @@
             return { dist: newDist,time: m.round(newTime) };
         },
 
-        initialize: function () {
+        initialize: function() {
         },
 
-        scrollTo: function (x,y,duration) {
+        scrollTo: function(x,y,duration) {
             var that=this;
 
             if(duration&&duration!==0) {
@@ -156,7 +164,7 @@
                     fromX=that.x,
                     fromY=that.y,
                     startTime=Date.now(),
-                    _run=function () {
+                    _run=function() {
                         if(that.stop) return;
                         start=Date.now()-startTime;
 

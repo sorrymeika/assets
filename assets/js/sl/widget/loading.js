@@ -1,9 +1,11 @@
-﻿define(['$','util','app','./../view'],function(require,exports,module) {
+﻿define(['$','util','bridge','./../view'],function(require,exports,module) {
     var $=require('$'),
         _=require('util'),
         sl=require('./../base'),
         view=require('./../view'),
-        app=require('app');
+        app=require('bridge');
+
+    _.style('.server_error{}');
 
     var records=[];
 
@@ -35,7 +37,7 @@
         },
 
         initialize: function() {
-            $.extend(this,_.pick(this.options,['check','hasData','KEY_PAGE','KEY_PAGESIZE','DATAKEY_TOTAL']))
+            $.extend(this,_.pick(this.options,['check','hasData','KEY_PAGE','KEY_PAGESIZE','DATAKEY_TOTAL']));
         },
 
         showMsg: function(msg) {
@@ -48,45 +50,50 @@
             }
         },
 
-        showError: function() {
+        showError: function(msg) {
             var that=this;
 
             if(that.isError) {
                 if(this.pageIndex==1) {
-                    that.showMsg('<div class="data-reload js_reload">加载失败，请点击重试<i class="i-refresh"></i></div>');
+                    this.$loading.animate({
+                        opacity: 0
+                    },300,'ease-out',function() {
+                        that.$loading.hide().css({ opacity: '' });
+                    });
+
+                    var $error=(that.$error||(that.$error=$(that.error)).appendTo(that.$el));
+                    $error.find('.js_msg').html(msg||'加载失败');
+                    $error.show();
+
                 } else {
                     that.showMsg('<div class="data-reload js_reload">加载失败，请点击重试<i class="i-refresh"></i></div>');
                 }
             }
         },
 
-        template: '<div class="dataloading"><div class="msg js_msg"></div><p class="loading js_loading"></p></div>',
+        template: '<div class="dataloading"></div>',
         refresh: '<div class="refreshing"><p class="msg js_msg"></p><p class="loading js_loading"></p></div>',
+        error: '<div class="server_error"><i class="msg js_msg"></i><i class="ico_reload js_reload"></i></div>',
 
         showLoading: function() {
             var that=this;
 
-            if(that.pageIndex==1) {
-                var position=that.$el.css('position'),
-                    isLayout=$.inArray(position,['absolute','relative','fix'])!= -1;
+            this.$error&&this.$error.hide();
 
+            if(that.pageIndex==1) {
                 if(!that.$loading) {
                     that.$loading=$(that.template);
                 }
 
                 that.$loading.css({
-                    top: that.el.tagName=='body'?'':isLayout?0:that.$el.position().top
+                    display: 'block'
                 })
-                .appendTo(that.$el)
-                .show()
-                .find('.js_msg').html('');
-
-                that.$loading.find('.js_loading').show();
+                .appendTo(that.$el);
 
                 that.$refreshing&&that.$refreshing.hide();
 
             } else {
-                var $refreshing=(that.$refreshing||(that.$refreshing=$(that.refresh))).appendTo(that.$el);
+                var $refreshing=(that.$refreshing||(that.$refreshing=$(that.refresh)).appendTo(that.$el));
                 $refreshing.show().find('.js_msg').html('正在载入...');
                 $refreshing.find('.js_loading').show();
                 that.$loading&&that.$loading.hide();
@@ -94,6 +101,7 @@
         },
 
         hideLoading: function() {
+            this.$error&&this.$error.hide();
             this.$refreshing&&this.$refreshing.hide();
             this.$loading.hide();
         },
@@ -126,9 +134,11 @@
                 pageIndex: that.pageIndex,
                 pageSize: that.pageSize,
                 timeout: 15,
-                success: sl.noop,
+                success: _.noop,
                 refresh: null,
-                error: sl.noop
+                error: function() {
+                    that.showError();
+                }
 
             },options);
 
@@ -165,7 +175,6 @@
                 error: function(xhr) {
                     that._xhr=null;
                     that.isError=true;
-                    that.showError();
                     that.isLoading=false;
                     that.loadingOptions.error.call(that,{ msg: '网络错误' },xhr);
                 },
@@ -181,12 +190,11 @@
                             that.loadingOptions.success.call(that,res,status,xhr);
 
                         } else {
-                            that._dataNotFound(res);
+                            that.dataNotFound(res);
                         }
                     } else {
                         that.isError=true;
                         that.isLoading=false;
-                        that.showError();
                         that.loadingOptions.error.call(that,res);
                     }
                 },
@@ -199,12 +207,11 @@
             this._load();
         },
 
-        _dataNotFound: function(e,res) {
+        dataNotFound: function(e,res) {
             var that=this;
 
-            that.showMsg('暂无数据');
-
             if(that.pageIndex==1) {
+                that.showError('暂无数据');
             } else {
                 setTimeout(function() {
                     that.$refreshing.animate({ height: 0 },300,'ease-out',function() {
@@ -214,16 +221,17 @@
             }
         },
 
-        _scroll: function() {
+        _scroll: function(e,x,y) {
             var that=this;
 
             if(!that.isLoading
-                &&that._scrollY<window.scrollY
-                &&window.scrollY+window.innerHeight>=document.body.scrollHeight-40) {
+                &&that._scrollY<y
+                &&y+that.$container.height()>=that.$refreshing.position().top) {
 
                 that._refresh();
             }
-            that._scrollY=window.scrollY;
+
+            that._scrollY=y;
         },
 
         _autoRefreshingEnabled: false,
@@ -246,14 +254,11 @@
             if(this._autoRefreshingEnabled) return;
             this._autoRefreshingEnabled=true;
 
-            records.push(this);
+            this.$container.on('scrollChange',$.proxy(this._scroll,this));
 
-            $(window).on('scroll',$.proxy(this._scroll,this));
-            this.bind('Destory',this.disableAutoRefreshing);
+            this._scrollY=this.$el.scrollTop;
 
-            this._scrollY=window.scrollY;
-
-            if(window.innerHeight==document.body.scrollHeight) {
+            if(this.el.scrollTop+this.$el.height()>=this.$refreshing.offset().top) {
                 this._refresh();
             }
         },
@@ -262,16 +267,8 @@
             if(!this._autoRefreshingEnabled) return;
             this._autoRefreshingEnabled=false;
 
-            for(var i=records.length-1;i>=0;i--) {
-                if(records[i]==this) {
-                    records.splice(i,1);
-                    break;
-                }
-            }
+            this.$el.off('scrollChange',this._scroll);
 
-            $(window).off('scroll',this._scroll);
-
-            this.unbind('Destory',this.disableAutoRefreshing);
             this.$refreshing&&this.$refreshing.remove();
         },
 

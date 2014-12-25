@@ -1,20 +1,22 @@
-﻿define(['$','sl/sl','ui/tabs','app','views/loading'],function (require,exports,module) {
+﻿define(['$','sl/activity','ui/tabs','bridge','sl/widget/loading'],function(require,exports,module) {
     var $=require('$'),
-        sl=require('sl/sl'),
-        app=require('app'),
+        Activity=require('sl/activity'),
+        bridge=require('bridge'),
         Loading=require('sl/widget/loading');
 
-    module.exports=sl.Activity.extend({
+    module.exports=Activity.extend({
         template: 'views/cart.html',
-        events: {},
-        onCreate: function () {
+        events: {
+            'tap .js_back': 'back'
+        },
+        onCreate: function() {
             var that=this;
         },
-        onStart: function () {
+        onStart: function() {
         },
-        onResume: function () {
+        onResume: function() {
         },
-        onDestory: function () {
+        onDestory: function() {
         }
     });
 });

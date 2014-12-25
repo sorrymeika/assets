@@ -1,5 +1,4 @@
-﻿define(function(require,exports,module) {
-
+﻿define(function(require) {
     var Class=function() {
         var that=this,
             args=Array.prototype.slice.call(arguments),
@@ -48,8 +47,38 @@
         return childClass;
     };
 
-    module.exports={
-        noop: function() { },
-        Class: Class
+    var sl={
+        Class: Class,
+        functionlize: function(Class,defaultFunc) {
+
+            return function() {
+                var one=Class._single,
+                    args=slice.apply(arguments);
+
+                if(!one) one=Class._single=new Class();
+
+                if(!args.length) return one;
+
+                var actionName=args.shift()+'',
+                    key,
+                    val,
+                    action;
+
+                for(var key in one) {
+                    if(key==actionName) {
+                        action=val;
+                        break;
+                    }
+                }
+
+                typeof action==='function'?
+                    action.apply(one,args):
+                    (defaultFunc&&defaultFunc.call(one,actionName));
+
+                return this;
+            }
+        }
     };
+
+    return sl;
 });

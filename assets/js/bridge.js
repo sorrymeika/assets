@@ -1,32 +1,31 @@
-﻿define('app',['$','util'],function (require,exports,module) {
+﻿define(['$','util'],function(require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
         ua=navigator.userAgent,
         ios=ua.match(/(iPhone|iPad|iPod).*OS\s([\d_]+)/i),
         android=ua.match(/(Android);?[\s\/]+([\d.]+)?/),
-        osVersion,
         isAndroid=!!android,
         slice=Array.prototype.slice,
-        blankFn=function () { };
+        blankFn=function() { };
 
     ios&&(osVersion=ios[2].replace(/_/g,'.'));
     android&&(osVersion=android[2]);
 
     window.hybridFunctions={};
-    window.complete=function () {
+    window.complete=function() {
         if(ios&&queue.length!=0) {
             queue.shift();
             if(queue.length!=0) location.href=queue.shift();
         }
     };
 
-    window.trigger=window.app_trigger=function () {
+    window.trigger=window.app_trigger=function() {
         $.fn.trigger.apply($(window),arguments);
     };
 
     var queue=[],funcguid=0,
-        hybrid=function (method,params,hybridCallback) {
+        hybrid=function(method,params,hybridCallback) {
 
             var data={
                 method: method
@@ -42,7 +41,7 @@
                 hybridReturn="hybridCallback"+(++funcguid);
 
                 data.callback=hybridReturn;
-                hybridFunctions[hybridReturn]=function () {
+                hybridFunctions[hybridReturn]=function() {
                     hybridCallback.apply(null,arguments);
                     delete hybridFunctions[hybridReturn];
                 };
@@ -69,37 +68,43 @@
             ios: !!ios,
             osVersion: osVersion,
             versionName: isAndroid?'1.0':"1.0",
+            needRefresh: /^HUAWEI_P7/.test(ua),
+            log: function(msg) {
+                !this.$log&&(this.$log=$('<div style="position:absolute;overflow:hidden;height:1px;width:1px;left:0px;top:0px;margin:0;padding:0;"></div>').appendTo(document.body));
+
+                this.$log.html(msg);
+            },
             exec: hybrid,
-            exitLauncher: function (f) {
-                hybrid('exitLauncher',function () {
+            exitLauncher: function(f) {
+                hybrid('exitLauncher',function() {
                     f&&f();
                 });
             },
-            tip: function (msg) {
+            tip: function(msg) {
                 hybrid('tip',msg+"");
             },
-            pickImage: function (f) {
+            pickImage: function(f) {
                 hybrid('pickImage',f);
             },
-            takePhoto: function (f) {
-                setTimeout(function () {
+            takePhoto: function(f) {
+                setTimeout(function() {
                     hybrid('takePhoto',f);
                 },0);
             },
-            queryThumbnailList: function (f) {
+            queryThumbnailList: function(f) {
                 hybrid('queryThumbnailList',f);
             },
-            pickColor: function (f) {
+            pickColor: function(f) {
                 hybrid('pickColor',f);
             },
-            share: function () {
+            share: function() {
                 hybrid('share');
             },
             isDevelopment: navigator.platform=="Win32"||navigator.platform=="Win64",
-            url: function (url) {
+            url: function(url) {
                 return /^http\:\/\//.test(url)?url:navigator.platform=="Win32"||navigator.platform=="Win64"?('/assets/index.cshtml?path='+encodeURIComponent(url)):('http://photo.ie1e.com'+url);
             },
-            post: function (url,data,files,callback) {
+            post: function(url,data,files,callback) {
                 callback=typeof files==='function'?files:callback;
                 files=typeof files==='function'?null:files;
 
@@ -109,10 +114,10 @@
                     data: data
                 },callback);
             },
-            exit: function () {
+            exit: function() {
                 hybrid('exit');
             },
-            update: function (downloadUrl,versionName,f) {
+            update: function(downloadUrl,versionName,f) {
                 hybrid('updateApp',{
                     downloadUrl: downloadUrl,
                     versionName: versionName

@@ -1,31 +1,17 @@
-﻿define(function (require,exports,module) {
+﻿define(function(require,exports,module) {
 
     var $=require('$'),
         sl=require('./base'),
         Event=require('./event'),
         tmpl=require('./tmpl'),
         slice=Array.prototype.slice,
-        record=(function () {
-            var data={},
-                id=0,
-                ikey='_gid';    // internal key.
 
-            return function (obj,key,val) {
-                var dkey=obj[ikey]||(obj[ikey]= ++id),
-                    store=data[dkey]||(data[dkey]={});
-
-                val!==undefined&&(store[key]=val);
-                val===null&&delete store[key];
-
-                return store[key];
-            };
-        })(),
-        plugin=function (host,options) {
+        plugin=function(host,options) {
             var obj,
-                original,
-                type,
-                override=options.override,
-                prototype=host.prototype;
+            original,
+            type,
+            override=options.override,
+            prototype=host.prototype;
 
             for(var i in options) {
                 obj=options[i];
@@ -38,11 +24,10 @@
                 if(type==='undefined') {
                     prototype[i]=obj;
 
-
                 } else if(type==='function') {
-                    prototype[i]=(function (key,fn) {
+                    prototype[i]=(function(key,fn) {
 
-                        return function () {
+                        return function() {
                             this._pluginFnCursorRecords[key]=fn;
                             fn.apply(this,arguments);
                         };
@@ -62,55 +47,9 @@
                 for(var i in override) {
                     prototype[i]=override[i];
                 }
-        },
-        zeptolize=function (name,Class) {
-            var key=name.substring(0,1).toLowerCase()+name.substring(1),
-            old=$.fn[key];
-
-            $.fn[key]=function (opts) {
-                var args=slice.call(arguments,1),
-                method=typeof opts==='string'&&opts,
-                ret,
-                obj;
-
-                $.each(this,function (i,el) {
-
-                    // 从缓存中取，没有则创建一个
-                    obj=record(el,name)||record(el,name,new Class(el,$.isPlainObject(opts)?opts:undefined));
-
-                    // 取实例
-                    if(method==='this') {
-                        ret=obj;
-                        return false;    // 断开each循环
-                    } else if(method) {
-
-                        // 当取的方法不存在时，抛出错误信息
-                        if(!$.isFunction(obj[method])) {
-                            throw new Error('组件没有此方法：'+method);
-                        }
-
-                        ret=obj[method].apply(obj,args);
-
-                        // 断定它是getter性质的方法，所以需要断开each循环，把结果返回
-                        if(ret!==undefined&&ret!==obj) {
-                            return false;
-                        }
-
-                        // ret为obj时为无效值，为了不影响后面的返回
-                        ret=undefined;
-                    }
-                });
-
-                return ret!==undefined?ret:this;
-            };
-
-            $.fn[key].noConflict=function () {
-                $.fn[key]=old;
-                return this;
-            };
         };
 
-    var View=sl.Class.extend(function () {
+    var View=sl.Class.extend(function() {
         var that=this,
             options,
             args=slice.call(arguments),
@@ -128,7 +67,7 @@
 
         if(options&&options.override) {
             var overrideFn;
-            $.each(options.override,function (key,fn) {
+            $.each(options.override,function(key,fn) {
                 overrideFn=that[key];
                 (typeof overrideFn!='undefined')&&(that.sealed[key]=overrideFn,fn.sealed=overrideFn);
                 that[key]=fn;
@@ -157,20 +96,20 @@
         sealed: {},
         options: {},
         events: null,
-        _bind: function (el,name,f) {
+        _bind: function(el,name,f) {
             this._bindDelegateAttrs.push([el,name,f]);
             this.$el.delegate(el,name,$.proxy(f,this));
 
             return this;
         },
-        _listenEvents: function (events) {
+        _listenEvents: function(events) {
             var that=this;
 
-            events&&$.each(events,function (evt,f) {
+            events&&$.each(events,function(evt,f) {
                 that.listen(evt,f);
             });
         },
-        listen: function (evt,f) {
+        listen: function(evt,f) {
             var that=this;
 
             if(!f) {
@@ -194,7 +133,7 @@
             return that;
         },
 
-        listenTo: function (target) {
+        listenTo: function(target) {
 
             var args=slice.apply(arguments),
                 fn=args[args.length-1];
@@ -217,26 +156,26 @@
         trigger: Event.trigger,
 
         _pluginFnCursorRecords: {},
-        host: function () {
+        host: function() {
             var args=slice.call(arguments),
                 fn=args.shift();
 
             this._pluginFnCursorRecords[fn].__host.apply(this,args);
         },
 
-        $: function (selector) {
+        $: function(selector) {
             if(typeof selector==="string"&&selector[0]=='#') {
                 selector='[id="'+selector.substr(1)+'"]';
             }
             return $(selector,this.$el);
         },
 
-        bind: function (name,f) {
+        bind: function(name,f) {
             this._bindAttrs.push([name,f]);
             this.$el.bind(name,$.proxy(f,this));
             return this;
         },
-        unbind: function (name,f) {
+        unbind: function(name,f) {
             var that=this,
                 $el=that.$el;
 
@@ -252,27 +191,27 @@
             return this;
         },
 
-        initialize: function () {
+        initialize: function() {
         },
 
-        onDestory: function () { },
+        onDestory: function() { },
 
-        destory: function () {
+        destory: function() {
             var $el=this.$el,
                 that=this,
                 target;
 
-            $.each(this._bindDelegateAttrs,function (i,attrs) {
+            $.each(this._bindDelegateAttrs,function(i,attrs) {
                 $.fn.undelegate.apply($el,attrs);
             });
 
-            $.each(this._bindListenTo,function (i,attrs) {
+            $.each(this._bindListenTo,function(i,attrs) {
                 target=attrs.shift();
                 target.off.apply(target,attrs);
             });
 
-            that.one('Destory',function () {
-                $.each(that._bindAttrs,function (i,attrs) {
+            that.one('Destory',function() {
+                $.each(that._bindAttrs,function(i,attrs) {
                     $.fn.unbind.apply($el,attrs);
                 });
                 that.$el.remove();
@@ -282,23 +221,25 @@
         }
     });
 
-    View.extend=function (childClass,prop) {
+    View.extend=function(childClass,prop) {
         var that=this;
+
+        var plugins=(typeof prop!=='undefined'?prop:childClass).plugins;
 
         childClass=sl.Class.extend.call(that,childClass,prop);
 
         childClass.events=$.extend({},childClass.superClass.events,childClass.prototype.events);
 
         childClass.extend=arguments.callee;
-        childClass.plugin=function (plugin) {
-            that.plugin.call(childClass,plugin);
-        };
+        childClass.loadPlugins=that.loadPlugins;
+
+        plugins&&childClass.loadPlugins(plugins);
 
         return childClass;
     };
 
 
-    View.loadPlugins=function (plugins) {
+    View.loadPlugins=function(plugins) {
         var that=this,
             item;
 
@@ -313,48 +254,14 @@
         }
     };
 
-    View.plugin=function (plugin) {
-        var that=this,
-            prototype=this.prototype;
+    View.Plugin=function(options) {
 
-        if(plugin.events) {
-            $.extend(prototype.events,plugin.events);
-            delete plugin.events;
+        return function(host) {
+            plugin(host,options);
         }
-
-        if(plugin.override) {
-            var overrideFn;
-            $.each(plugin.override,function (key,fn) {
-                overrideFn=prototype[key];
-                (typeof overrideFn!='undefined')&&(prototype.sealed[key]=overrideFn,fn.sealed=overrideFn);
-                prototype[key]=fn;
-            });
-            delete plugin.override;
-        }
-
-        $.each(plugin,function (key,fn) {
-            var proto=prototype[key];
-
-            if(typeof proto==='undefined') {
-                prototype[key]=fn;
-
-            } else if($.isFunction(proto)&&$.isFunction(fn)) {
-                prototype[key]=function () {
-                    proto.apply(this,arguments);
-                    return fn.apply(this,arguments);
-                };
-
-            } else if($.isPlainObject(proto)&&$.isPlainObject(fn)) {
-                prototype[key]=$.extend({},fn,prototype[key]);
-
-            } else
-                prototype[key]=fn;
-
-        });
     };
 
     sl.View=View;
-    sl.zeptolize=zeptolize;
 
     module.exports=View;
 });

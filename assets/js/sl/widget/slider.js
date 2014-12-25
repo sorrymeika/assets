@@ -1,4 +1,4 @@
-﻿define(['$','util','./../view'],function (require,exports,module) {
+﻿define(['$','util','./../view','./../tmpl'],function(require,exports,module) {
     var $=require('$'),
         _=require('util'),
         view=require('./../view'),
@@ -21,7 +21,7 @@
         },
         loop: false,
         index: 0,
-        appendItem: function () {
+        appendItem: function() {
             var item=$(this.renderItem(''));
             this.$slider.append(item);
             this.length++;
@@ -29,7 +29,7 @@
 
             return item;
         },
-        prependItem: function () {
+        prependItem: function() {
             var item=$(this.renderItem(''));
             this.$slider.prepend(item);
             this.length++;
@@ -37,14 +37,14 @@
 
             return item;
         },
-        render: function (dataItem) {
+        render: function(dataItem) {
             return this.renderItem(this.itemTemplate(dataItem));
         },
         renderItem: tmpl('<li class="js_slide_item">{%html $data%}</li>'),
         itemTemplate: '${TypeName}',
         navTemplate: tmpl('<ol class="js_slide_navs">{%each(i,item) items%}<li class="slide_nav_item${current}"></li>{%/each%}</ol>'),
         template: tmpl('<div class="slider"><ul class="js_slider">{%html items%}</ul>{%html navs%}</div>'),
-        initialize: function () {
+        initialize: function() {
             $.extend(this,_.pick(this.options,['data','width','loop','render','template','itemTemplate','navTemplate']));
 
             var that=this,
@@ -91,7 +91,7 @@
             that._refreshXY();
 
             if(that.options.imagelazyload) {
-                that.bind("Change",function () {
+                that.bind("Change",function() {
                     that._loadImage();
                 });
                 that._loadImage();
@@ -101,21 +101,21 @@
                 that._prev=$('<span class="slider-pre js_pre"></span>').appendTo(that.$el);
                 that._next=$('<span class="slider-next js_next"></span>').appendTo(that.$el);
 
-                that.listen('tap .js_pre',function (e) {
+                that.listen('tap .js_pre',function(e) {
                     that.slideTo(that.index-1);
                 })
-                .listen('tap .js_next',function (e) {
+                .listen('tap .js_next',function(e) {
                     that.slideTo(that.index+1);
                 });
             }
 
-            $(window).on('ortchange',function () {
+            $(window).on('ortchange',function() {
                 that.itemWidth=that.$items.width();
                 that._pos(that.itemWidth*(that.index-1)* -1,that.y);
             });
         },
 
-        _loadImage: function () {
+        _loadImage: function() {
             var that=this;
 
             var item=that.$items.eq(that.index);
@@ -129,7 +129,7 @@
                     }
                 }
 
-                item.find('img[lazyload]').each(function () {
+                item.find('img[lazyload]').each(function() {
                     this.src=this.getAttribute('lazyload');
                     this.removeAttribute('lazyload');
                 });
@@ -138,7 +138,7 @@
             }
         },
 
-        _adjustWidth: function () {
+        _adjustWidth: function() {
 
             var that=this,
                 slider=that.$slider,
@@ -155,7 +155,7 @@
 
         },
 
-        _refreshXY: function () {
+        _refreshXY: function() {
             var that=this,
                 matix=getComputedStyle(that.slider,null)["-webkit-transform"].replace(/[^0-9\-.,]/g,'').split(',');
 
@@ -163,11 +163,11 @@
             that.y=parseInt(matix[5]);
         },
 
-        _transitionTime: function (time) {
+        _transitionTime: function(time) {
             time+='ms';
             this.slider.style['-webkit-transition-duration']=time;
         },
-        _start: function (e) {
+        _start: function(e) {
             var that=this,
                 point=e.touches[0];
 
@@ -187,8 +187,9 @@
             that.startY=that.y;
             that.pointX=point.pageX;
             that.pointY=point.pageY;
+            that.isMoved=0;
         },
-        _move: function (e) {
+        _move: function(e) {
             if(!this._isStart) return;
 
             var that=this,
@@ -197,10 +198,27 @@
                 changeY=that.pointY-point.pageY,
                 x=that.startX-changeX;
 
-            that.moveX=point.pageX;
-
-            if(changeY<20||changeX>changeY)
+            if(that.isMoved===1) {
                 e.preventDefault();
+            } else if(that.isMoved===0) {
+
+                changeX=Math.abs(changeX);
+                changeY=Math.abs(changeY);
+
+                if(changeX>6&&changeX>changeY) {
+                    that.isMoved=1;
+                    e.preventDefault();
+                } else if(changeY>6&&changeY>changeX) {
+                    that.isMoved=2;
+                }
+                return;
+
+            } else {
+                this._isStart=false;
+                return;
+            }
+
+            that.moveX=point.pageX;
 
             if(!that.loop) {
                 x=x>0?0:x<that.minX?that.minX:x;
@@ -210,7 +228,7 @@
 
             that._pos(x,that.startY);
         },
-        _pos: function (x,y) {
+        _pos: function(x,y) {
             var that=this,
                 slider=that.slider;
 
@@ -219,27 +237,27 @@
 
             slider.style["-webkit-transform"]='translate('+that.x+'px,'+that.y+'px) translateZ(0)';
         },
-        _transitionEnd: function () {
+        _transitionEnd: function() {
             var that=this;
             that._transitionTime(0);
         },
-        _delayChange: function () {
+        _delayChange: function() {
             var that=this;
 
-            that.timer=setTimeout(function () {
+            that.timer=setTimeout(function() {
                 that.timer=false;
                 that.options.onChange&&that.options.onChange.call(that,that.index);
                 that.trigger('Change',that.index);
             },400);
         },
-        _stopChange: function () {
+        _stopChange: function() {
             var that=this;
             if(that.timer) {
                 clearTimeout(that.timer);
                 that.timer=false;
             }
         },
-        _end: function (e) {
+        _end: function(e) {
             var that=this,
                 point=e.changedTouches[0],
                 changeX=that.pointX-point.pageX,
@@ -261,7 +279,7 @@
                 that.slideTo(index);
             }
         },
-        slideTo: function (to) {
+        slideTo: function(to) {
             var that=this;
 
             if(that.isTransition) return;
@@ -274,12 +292,12 @@
             if(to>=that.length) to=0;
             else if(to<0) to=that.length-1;
 
-            var timer=setTimeout(function () {
+            var timer=setTimeout(function() {
                 timer=false;
                 that.isTransition=false;
             },300);
 
-            that.$slider.one($.fx.transitionEnd,function () {
+            that.$slider.one($.fx.transitionEnd,function() {
                 timer&&clearTimeout(timer);
                 that.isTransition=false;
                 that._transitionEnd();

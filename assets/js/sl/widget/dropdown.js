@@ -26,10 +26,10 @@
         initialize: function() {
             var that=this;
 
-            that.on('Destory', function() {
+            that.on('Destory',function() {
                 this.mask.off('tap').remove();
-            };
-            that.on('Hide', function() {
+            });
+            that.on('Hide',function() {
                 this.$el.removeClass('visible');
             });
 
@@ -92,5 +92,5 @@
         }
     });
 
-    module.exports=Dropdown;
+    return Dropdown;
 });

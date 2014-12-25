@@ -1,0 +1,65 @@
+﻿@{
+    
+    string dir = Request.QueryString["dir"];
+    string action = Request.QueryString["action"];
+
+    if ("save" == action)
+    {
+        var formPath = Request.Unvalidated().Form["path"];
+        var path = (string.IsNullOrEmpty(dir) ? Server.MapPath("~/dest") : dir) + "/" + formPath;
+
+        string saveDir = System.IO.Path.GetDirectoryName(path);
+
+        if (!System.IO.Directory.Exists(saveDir))
+        {
+            System.IO.Directory.CreateDirectory(saveDir);
+        }
+        System.IO.File.WriteAllText(path, Request.Unvalidated().Form["text"]);
+    }
+    else if ("resource" == action)
+    {
+        var resourcePath = Request.Unvalidated().Form["resource"].Trim();
+
+        resourcePath.Split(',').All(path =>
+        {
+            var oringinPath = Server.MapPath("~/") + "/" + path;
+            var dest = (string.IsNullOrEmpty(dir) ? Server.MapPath("~/dest") : dir) + "/" + path;
+
+            System.IO.FileInfo file = new FileInfo(oringinPath);
+
+            if (file.Attributes == FileAttributes.Directory)
+            {
+                if (!System.IO.Directory.Exists(dest))
+                {
+                    System.IO.Directory.CreateDirectory(dest);
+                }
+
+                System.IO.DirectoryInfo resource = new DirectoryInfo(oringinPath);
+                var files = resource.GetFiles();
+                files.All(a =>
+                {
+                    a.CopyTo(dest + "/" + a.Name, true);
+                    return true;
+                });
+            }
+            else
+            {
+                string saveDir = System.IO.Path.GetDirectoryName(dest);
+
+                if (!System.IO.Directory.Exists(saveDir))
+                {
+                    System.IO.Directory.CreateDirectory(saveDir);
+                }
+
+                file.CopyTo(dest, true);
+            }
+            return true;
+        });
+
+
+    }
+
+
+    Output.Write("success");
+    return;
+}
