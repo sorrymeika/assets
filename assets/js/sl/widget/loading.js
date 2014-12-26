@@ -5,8 +5,6 @@
         view=require('./../view'),
         app=require('bridge');
 
-    _.style('.server_error{}');
-
     var records=[];
 
     var Loading=view.extend({

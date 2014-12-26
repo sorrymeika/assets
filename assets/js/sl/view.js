@@ -210,12 +210,10 @@
                 target.off.apply(target,attrs);
             });
 
-            that.one('Destory',function() {
-                $.each(that._bindAttrs,function(i,attrs) {
-                    $.fn.unbind.apply($el,attrs);
-                });
-                that.$el.remove();
+            $.each(that._bindAttrs,function(i,attrs) {
+                $.fn.unbind.apply($el,attrs);
             });
+            that.$el.remove();
 
             that.trigger('Destory');
         }

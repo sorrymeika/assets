@@ -107,6 +107,28 @@
 
             return style;
         },
+
+        template: function(str,data) {
+            var tmpl='var __p=[];var $data=obj||{};with($data){__p.push(\''+
+                str.replace(/\\/g,'\\\\')
+                .replace(/'/g,'\\\'')
+                .replace(/<%=([\s\S]+?)%>/g,function(match,code) {
+                    return '\','+code.replace(/\\'/,'\'')+',\'';
+                })
+                .replace(/<%([\s\S]+?)%>/g,function(match,code) {
+                    return '\');'+code.replace(/\\'/,'\'')
+                            .replace(/[\r\n\t]/g,' ')+'__p.push(\'';
+                })
+                .replace(/\r/g,'\\r')
+                .replace(/\n/g,'\\n')
+                .replace(/\t/g,'\\t')+
+                '\');}return __p.join("");',
+
+            func=new Function('obj',tmpl);
+
+            return data?func(data):func;
+        },
+
         cookie: function(a,b,c,p) {
             if(typeof b==='undefined') {
                 var res=document.cookie.match(new RegExp("(^| )"+a+"=([^;]*)(;|$)"));

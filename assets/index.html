@@ -17,32 +17,33 @@
             }
         });
 
-        seajs.use(['$','sl/app','bridge'],function ($,Application,bridge) {
+        seajs.use(['$','sl/app','bridge','sl/widget/tip'],function($,Application,bridge) {
             var app=new Application();
 
             app.mapRoute({
                 '': 'index',
                 'menu/{name:\\w+}.html': 'menu',
+                'login.html': 'login',
+                'register.html': 'register',
                 'cart.html': 'cart',
                 'about.html': 'about',
                 'ourdesigner.html': 'ourdesigner',
                 'credit/{id:\\d+}.html': 'credit',
                 'credits.html': 'credits',
                 'support.html': 'support',
-                'login.html': 'login',
                 'user.html': 'user',
                 'news/{id:\\d+}.html': 'news'
             });
 
             app.start();
 
-            bridge.isAndroid&&setTimeout(function () {
-                bridge.load(function () { });
+            bridge.isAndroid&&setTimeout(function() {
+                bridge.exitLauncher(function() { });
             },1500);
         });
     </script>
     <script debug>
-        seajs.use(['$','tools/tools','sl/app','bridge'],function ($,tools) {
+        seajs.use(['$','tools/tools','sl/app','bridge'],function($,tools) {
 
             tools.build({
                 compress: [
@@ -65,9 +66,10 @@
                         'sl/view',
                         'sl/app',
                         'sl/activity',
-                        'sl/style',
                         'sl/tween',
                         'sl/plugins/template',
+                        'sl/widget/tip',
+                        'sl/widget/button',
                         'sl/widget/scroll',
                         'sl/widget/loading',
                         'sl/widget/slider',
@@ -76,7 +78,10 @@
                         ],
                     views: [
                         'views/index',
+                        'views/auth',
                         'views/cart',
+                        'views/login',
+                        'views/register',
                         'views/menu',
                         'views/about',
                         'views/ourdesigner',
@@ -87,13 +92,16 @@
                 template: [
                     'views/index.html',
                     'views/cart.html',
+                    'views/login.html',
+                    'views/register.html',
                     'views/menu.html',
                     'views/about.html',
                     'views/ourdesigner.html',
                     'views/support.html'
                     ],
-                resource: ['images',
-                    'views']
+                resource: [
+                    'images'
+                    ]
             });
         });
         

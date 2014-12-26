@@ -80,5 +80,7 @@
         }
     };
 
+    window.sl=sl;
+
     return sl;
 });

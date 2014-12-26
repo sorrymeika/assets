@@ -1,22 +1,18 @@
-﻿define(['$','sl/activity','bridge','sl/widget/loading'],function (require,exports,module) {
+﻿define(['$','views/auth','bridge','sl/widget/loading'],function(require,exports,module) {
     var $=require('$'),
         bridge=require('bridge'),
-        Activity=require('sl/activity'),
+        AuthActivity=require('views/auth'),
         Loading=require('sl/widget/loading');
 
-    module.exports=Activity.extend({
+    module.exports=AuthActivity.extend({
         template: 'views/cart.html',
         events: {
             'tap .js_back': 'back'
         },
-        onCreate: function () {
+        onCreate: function() {
             var that=this;
         },
-        onStart: function () {
-        },
-        onResume: function () {
-        },
-        onDestory: function () {
+        onDestory: function() {
         }
     });
 });

@@ -28,10 +28,13 @@
         }
 
         request.ContentType = "application/x-www-form-urlencoded";
-        
-        using (StreamWriter sw = new StreamWriter(request.GetRequestStream(), System.Text.Encoding.UTF8))
+
+        System.Text.Encoding encoding = System.Text.Encoding.UTF8;
+        byte[] postData = encoding.GetBytes(qs);
+        request.ContentLength = postData.Length;
+        using (Stream requestStream = request.GetRequestStream())
         {
-            sw.Write(qs);
+            requestStream.Write(postData, 0, postData.Length);
         }
     }
 
