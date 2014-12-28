@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','sl/base','sl/activity','sl/widget/button'],function(require,exports,module) {
+﻿define(['$','util','bridge','sl/base','sl/activity','sl/widget/button'],function (require,exports,module) {
     var $=require('$'),
         util=require('util'),
         bridge=require('bridge'),
@@ -10,49 +10,41 @@
         template: 'views/register.html',
         events: {
             'tap .js_back': 'back',
-            'tap .js_register': 'register'
+            'tap .js_continue': 'register',
+            'tap .licence': function (e) {
+                var $target=$(e.currentTarget);
+                $target.find('.checkbox').toggleClass('checked');
+            }
         },
-        onCreate: function() {
+        onCreate: function () {
             var that=this;
         },
-        onStart: function() {
+        onStart: function () {
         },
-        onResume: function() {
+        onResume: function () {
         },
-        onDestory: function() {
+        onDestory: function () {
         },
 
-        register: button.sync(function(e) {
+        register: function (e) {
             var that=this;
+            var account=this.$('.js_account').val();
 
-            var data={
-                account: $.trim(this.$('.js_account').val()),
-                password: $.trim(this.$('.js_password').val())
-            }
-
-            if(!data.account) {
-                sl.tip('请输入登录账号');
-                return;
-            }
-            if(!data.password) {
-                sl.tip('请输入密码');
+            if(!account) {
+                sl.tip('请输入EMAIL');
                 return;
             }
 
-            return {
-                url: '/json/user/login',
-                data: data,
-                success: function(res) {
-                    if(res.success) {
-                        util.store("USERINFO",res.userinfo);
-                        that.setResult('login');
-                        that.back();
-                    } else {
-                        sl.tip(res.msg);
-                    }
-                }
+            if(!util.validateEmail(account)) {
+                sl.tip('请输入正确的EMAIL');
+                return;
             }
 
-        })
+            util.store('register',{
+                account: account
+            });
+
+            this.forward('/registerS1.html');
+        }
     });
 });

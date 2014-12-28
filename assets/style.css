@@ -113,16 +113,18 @@ input[type="password"].prompt-text { letter-spacing: 2px; }
 .slider-pre, .slider-next { position: absolute; width: 44px; height: 44px; left: 0px; top: 50%; margin-top: -22px; background: rgba(0,0,0,0) url(images/site.png) no-repeat -276px -0px; background-size: 320px auto; z-index: 1; }
 .slider-next { background-position: -237px 0px; right: 0px; left: auto; }
 
-.btn { display: inline-block; height: 35px; line-height: 35px; vertical-align: top;text-align: center; background:#0f1423; color:#fff; }
-.btn.greybtn{ background:#999; }
-.action { display: -webkit-box;display: box; text-align: center; }
-.action .btn{-webkit-box-flex: 1; display: block; margin-right:20px}
-.action .btn:last-child{margin-right: 0;}
-.disabled{ opacity: .5; }
+.btn { display: inline-block; height: 35px; line-height: 35px; vertical-align: top; text-align: center; background: #0f1423; color: #fff; }
+.btn.greybtn { background: #999; }
+.action { display: -webkit-box; display: box; text-align: center; }
+.action .btn { -webkit-box-flex: 1; display: block; margin-right: 20px; }
+.action .btn:last-child { margin-right: 0; }
+.disabled { opacity: .5; }
 
-.btn-radio { width: 44px; height: 44px; display: block; }
-.btn-radio:before { background: url(images/site.png) no-repeat -304px -156px; background-size: 320px auto; display: block; content: ''; width: 18px; height: 18px; margin: 13px; }
-.btn-radio.selected:before { background-position: -272px -156px; }
+.checkbox { width: 16px; height: 16px; display: inline-block; border: 1px solid #333; vertical-align: -2px; margin-right: 5px; }
+.checkbox.checked:before { margin: 1px; width: 12px; height: 12px; content: ''; display: inline-block; background: #333; vertical-align: top; }
+
+.radio { width: 44px; height: 44px; display: block; }
+.radio.checked:before { }
 
 .blockBox { width: 100%; }
 .blockBox li { display: -webkit-box; }
@@ -176,10 +178,17 @@ ul.table li > p { display: table-cell; text-align: center; padding-top: 5px; }
 .about_logo, .login_logo { padding-top: 25px; }
 .about_logo:before, .login_logo:before { content: ''; display: block; background: url(images/site.png) no-repeat 0px -150px; background-size: 320px auto; width: 153px; height: 81px; margin: 0 auto; }
 
-.login_form { padding-top: 20px;}
-.login_form  li { display: -webkit-box; display: box; padding: 20px 20px 0px 20px; }
-.login_form  li input{ -webkit-box-flex: 1; display: block; height: 30px; padding-left: 10px; background: url(images/text_bg.png); border: 1px solid #bdbdbd; }
-.login_form  li.action { padding-top: 30px; }
+.login_form { padding-top: 20px; }
+.login_form li { display: -webkit-box; display: box; padding: 20px 20px 0px 20px; }
+.login_form li input { -webkit-box-flex: 1; display: block; height: 30px; padding-left: 10px; background: url(images/text_bg.png); border: 1px solid #bdbdbd; }
+.login_form li.action { padding-top: 30px; }
+
+.register_form { padding-top: 20px; }
+.register_form dt { padding: 10px 20px 0px 20px; }
+.register_form dd { display: -webkit-box; display: box; padding: 10px 20px 0px 20px; }
+.register_form .action { padding-top: 30px; }
+.register_form dd input { -webkit-box-flex: 1; display: block; height: 30px; padding-left: 10px; border: 1px solid #bdbdbd; }
+.register_form .licence { text-decoration: underline; }
 
 .userwrap { background: #f0eff4; }
 

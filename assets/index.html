@@ -3,49 +3,18 @@
 <head>
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
     <meta charset="utf-8" />
-    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="telephone=no" />
     <title></title>
     <link href="anim.css" rel="stylesheet" type="text/css" />
     <link href="style.css" rel="stylesheet" type="text/css" />
     <script src="js/seajs/sea.js"></script>
+    <script debug src="js/tools/tools.js"></script>
 </head>
 <body>
-    <script>
-        seajs.config({
-            alias: {
-                "$": "zepto"
-            }
-        });
-
-        seajs.use(['$','sl/app','bridge','sl/widget/tip'],function($,Application,bridge) {
-            var app=new Application();
-
-            app.mapRoute({
-                '': 'index',
-                'menu/{name:\\w+}.html': 'menu',
-                'login.html': 'login',
-                'register.html': 'register',
-                'cart.html': 'cart',
-                'about.html': 'about',
-                'ourdesigner.html': 'ourdesigner',
-                'credit/{id:\\d+}.html': 'credit',
-                'credits.html': 'credits',
-                'support.html': 'support',
-                'user.html': 'user',
-                'news/{id:\\d+}.html': 'news'
-            });
-
-            app.start();
-
-            bridge.isAndroid&&setTimeout(function() {
-                bridge.exitLauncher(function() { });
-            },1500);
-        });
-    </script>
     <script debug>
-        seajs.use(['$','tools/tools','sl/app','bridge'],function($,tools) {
-
+        seajs.use(['zepto','tools/tools'],function ($,tools,bridge) {
             tools.build({
+                api: 'http://photo.ie1e.com',
                 compress: [
                     'seajs/sea.js',
                     'anim.css',
@@ -82,6 +51,8 @@
                         'views/cart',
                         'views/login',
                         'views/register',
+                        'views/registerS1',
+                        'views/registerS2',
                         'views/menu',
                         'views/about',
                         'views/ourdesigner',
@@ -94,6 +65,8 @@
                     'views/cart.html',
                     'views/login.html',
                     'views/register.html',
+                    'views/registerS1.html',
+                    'views/registerS2.html',
                     'views/menu.html',
                     'views/about.html',
                     'views/ourdesigner.html',
@@ -105,6 +78,39 @@
             });
         });
         
+    </script>
+    <script>
+        seajs.config({
+            alias: {
+                "$": "zepto"
+            }
+        });
+
+        seajs.use(['$','sl/app','bridge'],function ($,Application,bridge) {
+            var app=new Application();
+
+            app.mapRoute({
+                '': 'index',
+                'menu/{name:\\w+}.html': 'menu',
+                'login.html': 'login',
+                'register.html': 'register',
+                'registerS1.html': 'registerS1',
+                'cart.html': 'cart',
+                'about.html': 'about',
+                'ourdesigner.html': 'ourdesigner',
+                'credit/{id:\\d+}.html': 'credit',
+                'credits.html': 'credits',
+                'support.html': 'support',
+                'user.html': 'user',
+                'news/{id:\\d+}.html': 'news'
+            });
+
+            app.start();
+
+            bridge.isAndroid&&setTimeout(function () {
+                bridge.exitLauncher(function () { });
+            },1500);
+        });
     </script>
 </body>
 </html>

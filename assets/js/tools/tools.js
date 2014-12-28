@@ -1,5 +1,19 @@
 ﻿define(function (require) {
+    var $=require('$');
+
     require('./uglify');
+
+    var meta=document.createElement('meta');
+    meta.name="api-base-url";
+    meta.content="index.cshtml?path=";
+
+    var head=document.querySelector('head');
+    head.insertBefore(meta,head.firstChild);
+
+    var bridge=require('bridge');
+    bridge.url=function (url) {
+        return /^http\:\/\//.test(url)?url:('index.cshtml?path='+encodeURIComponent(url));
+    };
 
     var compressor=UglifyJS.Compressor({
         sequences: true,  // join consecutive statemets with the “comma operator”
@@ -47,13 +61,36 @@
 
 
     var tools={
+        times: 0,
+
+        finish: function (path,text) {
+            if(this.times==0) {
+                $.post('tools.cshtml?action=finish',{
+                    path: path,
+                    text: text
+
+                },function (res) {
+                    console.log(res);
+                });
+            }
+        },
+
+        ajax: function (url,data) {
+            var that=this;
+            that.times++;
+
+            $.post(url,data,function (res) {
+                console.log(url+' '+res);
+
+                that.times--;
+                that.finish();
+            });
+        },
+
         save: function (path,text) {
-            $.post('tools.cshtml?action=save',{
+            this.ajax('tools.cshtml?action=save',{
                 path: path,
                 text: text
-
-            },function (res) {
-                console.log(res);
             });
         },
 
@@ -90,8 +127,8 @@
             return this;
         },
 
-        html: function (path,js) {
-
+        html: function (path,js,api) {
+            var api='<meta name="api-base-url" content="'+api+'" />';
             var that=this,
                 scriptOpen='<script src="js/',
                 scriptClose='.js"></script>';
@@ -99,6 +136,7 @@
             $.each(path,function (i,url) {
                 $.get(url+'?'+new Date().getTime(),function (res) {
                     res=res.replace(/<script[^>]+debug[^>]*>[\S\s]*?<\/script>/img,'')
+                            .replace('<head>','<head>'+api)
                             .replace(/<script[^>]*>([\S\s]*?)<\/script>/img,function (r0,r1) {
                                 if(!$.trim(r1)) return r0;
                                 return '<script>'+parse(r1)+'</script>';
@@ -120,11 +158,9 @@
         },
 
         resource: function (resource) {
-            $.post('tools.cshtml?action=resource',{
+            this.ajax('tools.cshtml?action=resource',{
                 resource: resource.join(',')
 
-            },function (res) {
-                console.log("resource"+res);
             });
         },
 
@@ -156,18 +192,18 @@
             return this;
         },
 
-        template: function (template) {
-            $.post('tools.cshtml?action=template',{
-                template: template.join(',')
 
-            },function (res) {
-                console.log("template"+res);
+        template: function (template) {
+            var that=this;
+
+            this.ajax('tools.cshtml?action=template',{
+                template: template.join(',')
             });
         },
 
         build: function (options) {
             options.js&&this.js(options.js);
-            options.html&&this.html(options.html,options.js);
+            options.html&&this.html(options.html,options.js,options.api);
             options.resource&&this.resource(options.resource);
             options.compress&&this.compress(options.compress);
             options.template&&this.template(options.template);

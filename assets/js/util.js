@@ -1,17 +1,17 @@
-﻿define(function() {
+﻿define(function () {
     var ArrayProto=Array.prototype,
         push=ArrayProto.push,
         slice=ArrayProto.slice,
         concat=ArrayProto.concat;
 
-    var indexOf=function(array,key,compareItem) {
+    var indexOf=function (array,key,compareItem) {
         if(typeof compareItem==='undefined') {
             compareItem=key;
             key=null;
         };
         var result= -1,
             value;
-        $.each(array,function(i,item) {
+        $.each(array,function (i,item) {
             value=key!==null?item[key]:item;
 
             if(compareItem===value) {
@@ -22,7 +22,7 @@
         return result;
     };
 
-    var lastIndexOf=function(array,key,compareItem) {
+    var lastIndexOf=function (array,key,compareItem) {
         if(typeof compareItem==='undefined') {
             compareItem=key;
             key=null;
@@ -47,7 +47,7 @@
         indexOf: indexOf,
         lastIndexOf: lastIndexOf,
 
-        pick: function(obj,iteratee) {
+        pick: function (obj,iteratee) {
             var result={},key;
             if(obj==null) return result;
             if(typeof iteratee==='function') {
@@ -64,15 +64,15 @@
             }
             return result;
         },
-        s2i: function(s) {
+        s2i: function (s) {
             return parseInt(s.replace(/^0+/,'')||0);
         },
-        pad: function(num,n) {
+        pad: function (num,n) {
             var a='0000000000000000'+num;
             return a.substr(a.length-(n||2));
         },
 
-        formatDate: function(d,f) {
+        formatDate: function (d,f) {
             if(typeof d==="string"&&/^\/Date\(\d+\)\/$/.test(d)) {
                 d=new Function("return new "+d.replace(/\//g,''))();
             }
@@ -90,11 +90,11 @@
                 .replace(/m/,m)
                 .replace(/s{2,}/,pad(s))
                 .replace(/s/,s)
-                .replace(/f+/,function(w) {
+                .replace(/f+/,function (w) {
                     return mill.substr(0,w.length)
                 })
         },
-        style: function(css) {
+        style: function (css) {
             var doc=document,style=doc.createElement("style");
             style.type="text/css";
             try {
@@ -108,14 +108,14 @@
             return style;
         },
 
-        template: function(str,data) {
+        template: function (str,data) {
             var tmpl='var __p=[];var $data=obj||{};with($data){__p.push(\''+
                 str.replace(/\\/g,'\\\\')
                 .replace(/'/g,'\\\'')
-                .replace(/<%=([\s\S]+?)%>/g,function(match,code) {
+                .replace(/<%=([\s\S]+?)%>/g,function (match,code) {
                     return '\','+code.replace(/\\'/,'\'')+',\'';
                 })
-                .replace(/<%([\s\S]+?)%>/g,function(match,code) {
+                .replace(/<%([\s\S]+?)%>/g,function (match,code) {
                     return '\');'+code.replace(/\\'/,'\'')
                             .replace(/[\r\n\t]/g,' ')+'__p.push(\'';
                 })
@@ -129,7 +129,7 @@
             return data?func(data):func;
         },
 
-        cookie: function(a,b,c,p) {
+        cookie: function (a,b,c,p) {
             if(typeof b==='undefined') {
                 var res=document.cookie.match(new RegExp("(^| )"+a+"=([^;]*)(;|$)"));
                 if(res!=null)
@@ -149,14 +149,14 @@
                 document.cookie=a+"="+escape(b)+(c||"")+";path="+(p||'/')
             }
         },
-        store: window.localStorage?function(key,value) {
+        store: window.localStorage?function (key,value) {
             if(typeof value==='undefined')
                 return JSON.parse(localStorage.getItem(key));
             if(value===null)
                 localStorage.removeItem(key);
             else
                 localStorage.setItem(key,JSON.stringify(value));
-        } :function() {
+        } :function () {
             if(typeof value==='undefined')
                 return JSON.parse(this.cookie(key));
             if(value===null)
@@ -164,7 +164,14 @@
             else
                 this.cookie(key,JSON.stringify(value));
         },
-        noop: function() { }
+        noop: function () { },
+
+        validateEmail: function (email) {
+            return /^[-_a-zA-Z0-9\.]+@([-_a-zA-Z0-9]+\.)+[a-zA-Z0-9]{2,3}$/.test(email)
+        },
+        validateMobile: function (str) {
+            return /^1[0-9]{10}$/.test(str)
+        }
     };
 
     return util;

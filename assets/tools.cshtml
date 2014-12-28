@@ -28,15 +28,24 @@
             file.CopyTo(dest, true);
         }
     }
+
+    private string GetDestDir()
+    {
+        return System.IO.Path.Combine(Server.MapPath("~/"), "..\\..\\Android\\assets");
+    }
 }
 @{
     string dir = Request.QueryString["dir"];
     string action = Request.QueryString["action"];
+    if (string.IsNullOrEmpty(dir))
+    {
+        dir = GetDestDir();
+    }
 
     if ("save" == action)
     {
         var formPath = Request.Unvalidated().Form["path"];
-        var path = (string.IsNullOrEmpty(dir) ? Server.MapPath("~/dest") : dir) + "/" + formPath;
+        var path = dir + "/" + formPath;
 
         string saveDir = System.IO.Path.GetDirectoryName(path);
 
@@ -53,7 +62,7 @@
         resourcePath.Split(',').All(path =>
         {
             var origin = Server.MapPath("~/" + path);
-            var dest = (string.IsNullOrEmpty(dir) ? Server.MapPath("~/dest") : dir) + "\\" + path.Replace("/", "\\");
+            var dest = dir + "\\" + path.Replace("/", "\\");
 
             copyResource(origin, dest);
             return true;
@@ -65,7 +74,7 @@
         var resourcePath = Request.Unvalidated().Form["template"].Trim();
 
         IDictionary<string, string> result = new Dictionary<string, string>();
-        var dest = (string.IsNullOrEmpty(dir) ? Server.MapPath("~/dest") : dir) + "\\js\\views.text.js";
+        var dest = dir + "\\js\\views.text.js";
 
         resourcePath.Split(',').All(path =>
         {
@@ -104,9 +113,12 @@
             File.WriteAllText(dest, "define('views.text',function(){return " + Json.Encode(result).Replace("\\u003c", "<").Replace("\\u003e", ">") + "})");
             return true;
         });
-
+    }
+    else if ("finish" == action)
+    {
+        copyResource(dir, Server.MapPath("~/dest"));
+        Output.Write("finish");
     }
 
-    Output.Write("success");
     return;
 }
