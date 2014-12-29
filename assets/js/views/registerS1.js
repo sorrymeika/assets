@@ -26,7 +26,7 @@
             var that=this;
             var mobile=this.$('.js_mobile').val();
 
-            if(!account) {
+            if(!mobile) {
                 sl.tip('请输入手机号');
                 return;
             }

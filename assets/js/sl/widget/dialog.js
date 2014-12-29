@@ -1,49 +1,54 @@
-﻿define(['$','./../view','./../tmpl'],function (require,exports,module) {
+﻿define(['$','util','./../view','./../tmpl'],function(require,exports,module) {
     var $=require('$'),
         tmpl=require('./../tmpl'),
         sl=require('./../base'),
         view=require('./../view');
 
-    var mask=null,
-        template='<div class="dialog"><div class="dialog-title"><h3>${title}</h3></div><div class="dialog-content">{%html content%}</div><div class="dialog-btns"><a class="dialog-btn js_hide">${cancelText}</a><a class="dialog-btn js_ok">${okText}</a></div></div>';
+    var util=require('util');
+    var mask=null;
 
     var Dialog=view.extend({
         events: {
-            'tap .js_hide': 'cancel',
-            'tap .js_ok': 'ok',
-            'touchmove': function (e) {
+            'tap .js_close_dialog': 'hide',
+            'tap .js_dialog_btn': 'action',
+            'touchmove': function(e) {
                 e.preventDefault();
             }
         },
-        el: template,
+        className: 'dialog',
+        el: '<div></div>',
+        template: tmpl('<div class="dialog">{%if(isShowClose)%}<div class="dialog-close js_close_dialog"></div>{%/if%}<div class="dialog-title"><h3>${title}</h3></div><div class="dialog-content js_content">{%html content%}</div><div class="dialog-btns">{%each(i,button) buttons%}<a class="dialog-btn js_dialog_btn${button.className?" "+button.className:" "}">${button.text}</a>{%/each%}</div></div>'),
         options: {
-            title: "提示",
+            isShowClose: false,
+            title: null,
             content: null,
-            cancelText: '取消',
-            okText: '确定'
+            buttons: []
         },
 
-        title: function (title) {
-            this.$title.html(title);
-        },
-
-        initialize: function () {
+        initialize: function() {
             var that=this;
 
-            that._template=tmpl(that.$el.html());
-            that.$el.html(that._template(that.options));
-            that.$title=that.$('.dialog-title h3');
+            var options=util.pick(that.options,['isShowClose','title','content','buttons']);
+
+            that.$el.html(that.template(options));
+
+            that.$content=that.$('.js_content');
         },
 
-        hide: function () {
-            this.$el.hide();
+        action: function(e) {
+            this.options.buttons[$(e.currentTarget).index()].click.call(this,e);
+        },
+
+        hide: function() {
             mask.hide();
+
+            this.$el.hide();
+            this.trigger('Hide');
         },
 
-        show: function () {
-
+        show: function() {
             if(!mask) {
-                mask=$('<div class="winheight" style="position:fixed;top:0px;bottom:0px;right:0px;width:100%;background: #888;opacity: 0.5;z-index:2000;display:none"></div>').appendTo('body');
+                mask=$('<div style="position:fixed;top:0px;bottom:0px;right:0px;width:100%;background: #888;opacity: 0.5;z-index:2000;display:none"></div>').appendTo(document.body);
             }
 
             mask.show();
@@ -52,21 +57,21 @@
                 .css({
                     top: window.scrollY+(window.innerHeight-this.$el.height())/2
                 });
+
+            this.trigger('Show');
         },
 
-        ok: function () {
-            this.options.onOk&&(this.options.onOk.call(this)===false)||this.hide();
-        },
+        content: function(content) {
+            if(typeof content==='undefined')
+                return this.$content;
 
-        cancel: function () {
-            this.options.onCancel&&this.options.onCancel.call(this);
-            this.hide();
+            this.$content.html(content);
         }
     });
 
     var _prompt=null;
 
-    sl.prompt=function (title,callback,type) {
+    sl.prompt=function(title,callback,type) {
         if(!callback) {
             callback=title;
             title="请输入";
@@ -82,24 +87,24 @@
         }
         _prompt.$('input.prompt-text').val('').hide().filter('[type="'+(type||'text')+'"]').show();
 
-        _prompt.options.onOk=function () {
+        _prompt.options.onOk=function() {
             return callback.call(this,this.$('input[type="'+(type||'text')+'"].prompt-text').val());
         }
 
-        _prompt.options.onCancel=function () {
+        _prompt.options.onCancel=function() {
             callback.call(this);
         }
 
         _prompt.show();
 
-        $(window).one('hashchange',function () {
+        $(window).one('hashchange',function() {
             _prompt.hide();
         });
     };
 
     var _confirm=null;
 
-    sl.confirm=function (title,text,ok,cancel) {
+    sl.confirm=function(title,text,ok,cancel) {
         var options={};
         if($.isPlainObject(title)) {
             cancel=ok;
@@ -126,17 +131,17 @@
             _confirm.$('.js_ok').html(options.okText||'确定');
         }
 
-        _confirm.options.onOk=function () {
+        _confirm.options.onOk=function() {
             ok.call(this);
         }
 
-        _confirm.options.onCancel=function () {
+        _confirm.options.onCancel=function() {
             cancel&&cancel.call(this);
         }
 
         _confirm.show();
 
-        $(window).one('hashchange',function () {
+        $(window).one('hashchange',function() {
             _confirm.hide();
         });
     };

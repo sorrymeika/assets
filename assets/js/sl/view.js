@@ -81,6 +81,7 @@
         that._bindListenTo=[];
 
         that.el=that.$el[0];
+        that.className&&that.$el.addClass(that.className);
 
         that.listen(that.events);
         that.listen(that.options.events);
@@ -92,7 +93,7 @@
 
     },{
         $el: null,
-        template: '',
+        className: null,
         sealed: {},
         options: {},
         events: null,

@@ -11,6 +11,7 @@
         },
         onCreate: function() {
             var that=this;
+
         },
         onDestory: function() {
         }

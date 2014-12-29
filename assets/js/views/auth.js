@@ -16,6 +16,8 @@
 
             if(userInfo==null) {
                 this.redirectToLogin();
+            } else {
+                this.userInfo=util.store("USERINFO");
             }
         }
     });

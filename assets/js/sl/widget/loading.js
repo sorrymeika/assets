@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','./../view'],function (require,exports,module) {
+﻿define(['$','util','bridge','./../view'],function(require,exports,module) {
     var $=require('$'),
         _=require('util'),
         sl=require('./../base'),
@@ -9,7 +9,7 @@
 
     var Loading=view.extend({
         events: {
-            'tap .js_reload': function () {
+            'tap .js_reload': function() {
                 this.reload();
             }
         },
@@ -25,20 +25,20 @@
         DATAKEY_TOTAL: 'total',
         DATAKEY_PAGENUM: '',
 
-        check: function (res) {
+        check: function(res) {
             var flag=!!(res&&res.success);
             return flag;
         },
 
-        hasData: function (res) {
+        hasData: function(res) {
             return res.data&&res.data.length;
         },
 
-        initialize: function () {
+        initialize: function() {
             $.extend(this,_.pick(this.options,['check','hasData','KEY_PAGE','KEY_PAGESIZE','DATAKEY_TOTAL']));
         },
 
-        showMsg: function (msg) {
+        showMsg: function(msg) {
             if(this.pageIndex==1) {
                 this.$loading.find('.js_msg').show().html(msg);
                 this.$loading.show().find('.js_loading').hide();
@@ -48,14 +48,14 @@
             }
         },
 
-        showError: function (msg) {
+        showError: function(msg) {
             var that=this;
 
             if(that.isError) {
                 if(this.pageIndex==1) {
                     this.$loading.animate({
                         opacity: 0
-                    },300,'ease-out',function () {
+                    },300,'ease-out',function() {
                         that.$loading.hide().css({ opacity: '' });
                     });
 
@@ -73,7 +73,7 @@
         refresh: '<div class="refreshing"><p class="msg js_msg"></p><p class="loading js_loading"></p></div>',
         error: '<div class="server_error"><i class="msg js_msg"></i><i class="ico_reload js_reload"></i></div>',
 
-        showLoading: function () {
+        showLoading: function() {
             var that=this;
 
             this.$error&&this.$error.hide();
@@ -98,13 +98,13 @@
             }
         },
 
-        hideLoading: function () {
+        hideLoading: function() {
             this.$error&&this.$error.hide();
             this.$refreshing&&this.$refreshing.hide();
             this.$loading.hide();
         },
 
-        reload: function () {
+        reload: function() {
             var that=this;
 
             if(that.isLoading) return;
@@ -116,7 +116,7 @@
             that._load();
         },
 
-        load: function (options) {
+        load: function(options) {
             var that=this;
 
             if(that.isLoading) return;
@@ -134,7 +134,7 @@
                 timeout: 15,
                 success: _.noop,
                 refresh: null,
-                error: function () {
+                error: function() {
                     that.showError();
                 }
 
@@ -151,7 +151,7 @@
             that._load();
         },
 
-        _load: function () {
+        _load: function() {
             var that=this;
 
             for(var i=records.length-1;i>=0;i--) {
@@ -170,17 +170,18 @@
                 data: that.params,
                 type: that.loadingOptions.type,
                 dataType: that.loadingOptions.dataType||'json',
-                error: function (xhr) {
+                error: function(xhr) {
                     that._xhr=null;
                     that.isError=true;
                     that.isLoading=false;
                     that.loadingOptions.error.call(that,{ msg: '网络错误' },xhr);
                 },
-                success: function (res,status,xhr) {
+                success: function(res,status,xhr) {
                     that._xhr=null;
                     that.isLoading=false;
 
                     if(that.loadingOptions.check===false||that.check(res)) {
+                        that.hideLoading();
 
                         if(that.loadingOptions.checkData===false||that.hasData(res)) {
                             that.loadingOptions.success.call(that,res,status,xhr);
@@ -195,30 +196,30 @@
                         that.loadingOptions.error.call(that,res);
                     }
                 },
-                complete: function () {
+                complete: function() {
                 }
             });
         },
 
-        _refresh: function () {
+        _refresh: function() {
             this._load();
         },
 
-        dataNotFound: function (e,res) {
+        dataNotFound: function(e,res) {
             var that=this;
 
             if(that.pageIndex==1) {
                 that.showError('暂无数据');
             } else {
-                setTimeout(function () {
-                    that.$refreshing.animate({ height: 0 },300,'ease-out',function () {
+                setTimeout(function() {
+                    that.$refreshing.animate({ height: 0 },300,'ease-out',function() {
                         that.$refreshing.hide().css({ height: '' });
                     });
                 },3000);
             }
         },
 
-        _scroll: function (e,x,y) {
+        _scroll: function(e,x,y) {
             var that=this;
 
             if(!that.isLoading
@@ -233,7 +234,7 @@
 
         _autoRefreshingEnabled: false,
 
-        checkAutoRefreshing: function (res) {
+        checkAutoRefreshing: function(res) {
             var that=this,
                 data=that.params;
 
@@ -247,7 +248,7 @@
             }
         },
 
-        enableAutoRefreshing: function () {
+        enableAutoRefreshing: function() {
             if(this._autoRefreshingEnabled) return;
             this._autoRefreshingEnabled=true;
 
@@ -260,7 +261,7 @@
             }
         },
 
-        disableAutoRefreshing: function () {
+        disableAutoRefreshing: function() {
             if(!this._autoRefreshingEnabled) return;
             this._autoRefreshingEnabled=false;
 
@@ -269,7 +270,7 @@
             this.$refreshing&&this.$refreshing.remove();
         },
 
-        abort: function () {
+        abort: function() {
             if(this._xhr) {
                 this.isLoad=false;
                 this._xhr.abort();
@@ -279,7 +280,7 @@
             }
         },
 
-        destory: function () {
+        destory: function() {
             this.abort();
 
             view.fn.destory.apply(this,arguments);

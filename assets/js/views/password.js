@@ -7,16 +7,13 @@
         button=require('sl/widget/button');
 
     module.exports=Activity.extend({
-        template: 'views/registerS2.html',
+        template: 'views/password.html',
         events: {
             'tap .js_back': 'back',
-            'tap .js_continue': 'register'
+            'tap .js_register': 'register'
         },
         onCreate: function() {
             var that=this;
-            var registerInfo=util.store('register');
-
-            this.$('.js_mobile').html(registerInfo.mobile);
         },
         onStart: function() {
         },
@@ -27,10 +24,15 @@
 
         register: button.sync(function(e) {
             var that=this;
-            var validCode=this.$('.js_validcode').val();
+            var password=this.$('.js_password').val();
+            var password1=this.$('.js_password1').val();
 
-            if(!validCode) {
-                sl.tip('请输入验证码');
+            if(!password) {
+                sl.tip('请输入密码');
+                return;
+            }
+            if(password1!=password) {
+                sl.tip('请再次输入密码');
                 return;
             }
 
@@ -41,16 +43,19 @@
             }
 
             return {
-                url: '/json/user/checkValidCode',
+                url: '/json/user/register',
                 data: {
                     mobile: registerInfo.mobile,
-                    validCode: validCode
+                    account: registerInfo.account,
+                    password: password
                 },
                 success: function(res) {
                     if(res.success) {
-                        that.forward('/password.html');
+                        sl.tip('恭喜，注册成功！');
+                        util.store("USERINFO",res.userinfo);
+                        that.back('/');
                     } else {
-                        sl.tip(res.msg);
+                        sl.tip(sl.msg);
                     }
                 }
             }

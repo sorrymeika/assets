@@ -12,7 +12,7 @@
 </head>
 <body>
     <script debug>
-        seajs.use(['zepto','tools/tools'],function ($,tools,bridge) {
+        seajs.use(['zepto','tools/tools'],function($,tools,bridge) {
             tools.build({
                 api: 'http://photo.ie1e.com',
                 compress: [
@@ -37,6 +37,7 @@
                         'sl/activity',
                         'sl/tween',
                         'sl/plugins/template',
+                        'sl/widget/dialog',
                         'sl/widget/tip',
                         'sl/widget/button',
                         'sl/widget/scroll',
@@ -54,7 +55,9 @@
                         'views/registerS1',
                         'views/registerS2',
                         'views/menu',
+                        'views/product',
                         'views/about',
+                        'views/create',
                         'views/ourdesigner',
                         'views/support'
                         ]
@@ -68,8 +71,10 @@
                     'views/registerS1.html',
                     'views/registerS2.html',
                     'views/menu.html',
+                    'views/product.html',
                     'views/about.html',
                     'views/ourdesigner.html',
+                    'views/create.html',
                     'views/support.html'
                     ],
                 resource: [
@@ -86,7 +91,7 @@
             }
         });
 
-        seajs.use(['$','sl/app','bridge'],function ($,Application,bridge) {
+        seajs.use(['$','sl/app','bridge'],function($,Application,bridge) {
             var app=new Application();
 
             app.mapRoute({
@@ -95,8 +100,12 @@
                 'login.html': 'login',
                 'register.html': 'register',
                 'registerS1.html': 'registerS1',
+                'registerS2.html': 'registerS2',
+                'password.html': 'password',
                 'cart.html': 'cart',
                 'about.html': 'about',
+                'create/{id:\\d+}.html': 'create',
+                'product/{id:\\d+}.html': 'product',
                 'ourdesigner.html': 'ourdesigner',
                 'credit/{id:\\d+}.html': 'credit',
                 'credits.html': 'credits',
@@ -107,8 +116,8 @@
 
             app.start();
 
-            bridge.isAndroid&&setTimeout(function () {
-                bridge.exitLauncher(function () { });
+            bridge.isAndroid&&setTimeout(function() {
+                bridge.exitLauncher(function() { });
             },1500);
         });
     </script>

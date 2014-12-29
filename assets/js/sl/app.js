@@ -124,7 +124,7 @@
                         view: route.view,
                         data: {},
                         queryString: query,
-                        query: queries
+                        queries: queries
                     };
                     $.each(route.parts,function(i,name) {
                         result.data[name]=m[i+1];
@@ -151,13 +151,24 @@
 
         _queue: [],
 
-        queue: function(context,fn,args) {
+        queue: function(context,fn) {
             var queue=this._queue;
+            var args=slice.call(arguments,2);
+            queue.push(context,fn,args);
 
-            if(queue.length===0) {
+            if(queue.length===3)
                 fn.apply(context,args);
-            } else {
-                queue.push(context,fn,args);
+        },
+
+        turning: function() {
+            var that=this;
+            var queue=that._queue;
+
+            if(queue.length>=3) {
+                queue.splice(0,3);
+                if(queue.length) {
+                    queue[1].apply(queue[0],queue[2]);
+                }
             }
         },
 
@@ -170,7 +181,7 @@
             if(!location.hash) location.hash='/';
             that.hash=hash=location.hash.replace(/^#/,'')||'/';
 
-            that._getOrCreateActivity(hash,function(activity) {
+            that.queue(that,that._getOrCreateActivity,hash,function(activity) {
                 that._currentActivity=activity;
                 that._history.push(activity.hash);
                 that._historyCursor++;
@@ -211,15 +222,15 @@
             that.$el.appendTo(document.body);
         },
 
-        to: function(url) {
-            url=url.replace(/^#/,'')||'/';
-
+        _to: function(url) {
             var that=this,
                 activity=that._currentActivity,
                 index=lastIndexOf(that._history,url);
 
             if(!activity.compareUrl(url)) {
                 activity.prepareExitAnimation();
+            } else {
+                that.turning();
             }
 
             if(index== -1) {
@@ -229,9 +240,15 @@
                 that._skipRecordHistory=true;
                 location.hash=url;
 
-            } else {
+            } else if(index!=that._historyCursor) {
                 history.go(index-that._historyCursor);
+            } else {
+                that.turning();
             }
+        },
+
+        to: function(url) {
+            this.queue(this,this._to,url.replace(/^#/,'')||'/');
         },
 
         navigate: function(url) {
@@ -281,11 +298,7 @@
                         that.set(route.url,activity);
 
                         activity.on('Show',function() {
-                            var queue=that._queue;
-                            if(queue.length) {
-                                queue[1].apply(queue[0],queue[2]);
-                                queue.splice(0,3);
-                            }
+                            that.turning();
                         })
                         .then(function() {
                             callback.call(that,activity,route);
