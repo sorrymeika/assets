@@ -177,15 +177,12 @@
             that.isPrepareExitAnimation=true;
 
             that.application.mask.show();
-            that.$('header,footer').css({ position: 'absolute' });
-
         },
 
         finishEnterAnimation: function () {
             var that=this;
 
             that.$el.addClass('active');
-            //that.$('header,footer').css({ position: '' });
 
             that.application.mask.hide();
 

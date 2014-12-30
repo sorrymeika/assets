@@ -69,6 +69,7 @@
         bridge={
             isAndroid: isAndroid,
             android: isAndroid,
+            android2: isAndroid&&/^2/.test(osVersion),
             ios: !!ios,
             osVersion: osVersion,
             versionName: isAndroid?'1.0':"1.0",
