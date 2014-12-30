@@ -1,21 +1,21 @@
 ﻿<header class="hd_white"><em class="ico-back js_back" hl></em><h1>INSTAFABRIC</h1></header>
 <section class="main js_main">
     <div class="cartwrap">
-        <div class="js_list cartlist"></div>
-        <div class="cart_toolbar"><i class="checkbox js_check"></i><em class="js_select_all">全选</em><em>删除所选项目</em></div>
+        <div class="orderaddress js_address"></div>
+        <div class="js_list cartlist orderlist"></div>
         <ul class="cartinfo">
-            <li><input type="text" placeholder="PROMO CODE / COUPON" /><b class="btn">应用</b></li>
+            <li><input class="js_txt_message" type="text" placeholder="LEAVE A MESSAGE" /></li>
             <li><span>金额</span><p class="js_amount">￥0</p></li>
-            <li><span>优惠券</span><p class="js_coupon_price">￥0</p></li>
+            <li><span>物理费用</span><p class="js_coupon_price">￥0</p></li>
             <li><span>合计</span><p class="js_total">￥0</p></li>
         </ul>
-        <div class="action"><b class="btn js_create">生成订单</b></div>
+        <div class="action"><b class="btn js_create">确认</b></div>
     </div>
 </section>
 <script id="list" type="text/template">
     {%each(i,item) data%}
-    <li data-id="${item.CartID}">
-    <div class="info"><i class="checkbox" data-id="${item.CartID}" data-price="${item.Price}" data-qty="${item.Qty}"></i>
+    <li data-id="${item.CartID}" data-price="${item.Price}" data-qty="${item.Qty}">
+    <div class="info">
         <img class="img" src="${item.Picture}" />
         <p class="detail">
         <span class="name">${item.ProductName}</span>

@@ -3,7 +3,7 @@
         sl=require('ui/sl');
 
     var mask=null,
-        template='<div class="dialog"><div class="dialog-title"><h3>${title}</h3></div><div class="dialog-content">{%html content%}</div><div class="dialog-btns"><a class="dialog-btn js_hide">${cancelText}</a><a class="dialog-btn js_ok">${okText}</a></div></div>';
+        template='<div class="dialog-title"><h3>${title}</h3></div><div class="dialog-content">{%html content%}</div><div class="dialog-btns"><a class="dialog-btn js_hide">${cancelText}</a><a class="dialog-btn js_ok">${okText}</a></div>';
 
     var Dialog=sl.View.extend({
         events: {

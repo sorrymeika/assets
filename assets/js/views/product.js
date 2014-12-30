@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','sl/base','views/auth','sl/widget/button','sl/widget/loading'],function(require,exports,module) {
+﻿define(['$','util','bridge','sl/base','views/auth','sl/widget/button','sl/widget/loading'],function (require,exports,module) {
     var $=require('$'),
         util=require('util'),
         bridge=require('bridge'),
@@ -11,11 +11,13 @@
     module.exports=AuthActivity.extend({
         template: 'views/product.html',
         events: {
-            'tap .js_back': 'back',
+            'tap .js_back': function(){
+                this.back('/')
+            },
             'tap .js_select': 'select',
             'tap .js_buy': 'buy'
         },
-        onCreate: function() {
+        onCreate: function () {
             var that=this;
             var data=util.store('product');
 
@@ -24,17 +26,23 @@
             that.data=data;
             that.$('.js_bg').css({ backgroundImage: 'url('+data.Picture+')' });
 
-            this.$('.js_price').html('￥'+data.Price);
-            this.$('.js_name').html(data.WorkName+data.ProductName);
+            that.$('.js_price').html('￥'+data.Price);
+            that.$('.js_name').html(data.WorkName+data.ProductName);
 
-            var $color=this.$('.js_color');
+            var $color=that.$('.js_color');
 
-            this.$('.js_buy').addClass('disabled');
-            this.dialog=this.createDialog({
+            that.$btn=that.$('.js_buy').addClass('disabled');
+            that.dialog=this.createDialog({
                 isShowClose: true,
-                content: 'asdf'
+                isShowTitle: false,
+                content: '',
+                buttons: [{
+                    text: '确认',
+                    click: function () {
+                        that.$btn.trigger('tap');
+                    }
+                }]
             });
-            this.dialog.show();
 
             that.loading=new Loading($content);
             that.loading.load({
@@ -43,29 +51,41 @@
                     WorkID: data.WorkID
                 },
                 checkData: false,
-                success: function(res) {
+                success: function (res) {
                     that.data=res.data;
                     that.$('.js_buy').removeClass('disabled');
 
                     var colors=[];
-                    $.each(res.data.Colors,function(i,color) {
+                    $.each(res.data.Colors,function (i,color) {
                         colors.push('<i'+(i==0?' class="current"':'')+' data-id="'+color.ColorID+'" style="background-color:'+color.ColorCode+'"></i>');
                     });
 
                     $color.html(colors.join(''));
 
                     $content.html(res.data.Content);
+
+                    var sizes=['<ul class="productbuy"><li><span>数量</span><input type="number" value="1" /></li><li><span>尺寸</span><p>'];
+                    $.each(res.data.Size,function (i,size) {
+                        sizes.push('<i'+(i==0?' class="current"':'')+' data-id="'+size.SizeID+'">'+size.SizeName+'</i>')
+                    })
+                    sizes.push('</p></li></ul>');
+                    that.dialog.content(sizes.join(''));
                 }
             });
         },
 
-        onDestory: function() {
+        onResume: function () {
+            this.dialog.hide();
         },
 
-        select: function() {
+        onDestory: function () {
         },
 
-        buy: button.sync(function() {
+        select: function () {
+            this.dialog.show();
+        },
+
+        buy: button.sync(function () {
             var that=this;
             var data=that.data;
 
@@ -76,15 +96,16 @@
                     Auth: this.userInfo.Auth,
                     WorkID: data.WorkID,
                     ProductID: data.ProductID,
-                    ColorID: this.$('.js_color .current').data('id'),
+                    ColorID: that.$('.js_color .current').data('id'),
+                    SizeID: that.dialog.$('i.current').data('id'),
                     StyleID: 0,
-                    SizeID: 0,
                     Qty: 1,
                     UseDefault: true
                 },
-                success: function(res) {
+                success: function (res) {
                     if(res.success) {
-                        sl.tip('加入购物车成功')
+                        sl.tip('加入购物车成功');
+                        that.dialog.hide();
                     } else
                         sl.tip(res.msg);
                 }

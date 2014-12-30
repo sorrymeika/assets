@@ -129,6 +129,10 @@
             return data?func(data):func;
         },
 
+        encodeHTML: function (text) {
+            return (""+text).split("<").join("&lt;").split(">").join("&gt;").split('"').join("&#34;").split("'").join("&#39;");
+        },
+
         cookie: function (a,b,c,p) {
             if(typeof b==='undefined') {
                 var res=document.cookie.match(new RegExp("(^| )"+a+"=([^;]*)(;|$)"));
