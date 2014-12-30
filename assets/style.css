@@ -44,7 +44,7 @@ header.big_hd em { padding-top: 3px; }
 
 .scroll { overflow: hidden; overflow-y: auto; }
 
-.main { padding-top: 50px; height: 100%; width: 100%; overflow: hidden; overflow-y: auto; }
+.main { position: absolute; bottom: 0px; right: 0px; left: 0px; top: 43px; width: 100%; overflow: hidden; overflow-y: auto; }
 .content { width: 100%; padding: 10px 3%; border-top: 2px solid #d31145; margin-top: 5px; background: #fff; }
 
 .clearfix:after { height: 0px; display: block; font-size: 0px; content: ''; clear: both; }
@@ -139,23 +139,23 @@ ul.table { width: 100%; display: table; }
 ul.table > li { display: table-row; }
 ul.table li > p { display: table-cell; text-align: center; padding-top: 5px; }
 
-.menu { width: 80%; background: #1f1f21; height: 100%; position: relative; }
-.menu div { width: 100%; position: relative; }
+.menu { width: 80%; background: #1f1f21; height: 100%; position: relative; overflow: hidden; }
+.menu div {width: 100%; position: relative; background:#1f1f21;}
 .menu img { width: 100%; min-height: 186px; display: block; }
 .menu span { width: 100%; display: block; position: absolute; bottom: 0px; color: #aeafb4; }
-.menu ul { padding-bottom: 50px; }
+.menu ul { padding-bottom: 50px; background:#1f1f21; }
 .menu li, .menu span { height: 45px; line-height: 45px; color: #aeafb4; padding-left: 40px; }
 .menu ul > li:first-child:before { border: 0; height: 0; }
 .menu li:before, .menu p:before { border-top: 1px solid #212121; border-bottom: 1px solid #303030; height: 1px; background-color: #252525; content: ''; display: block; width: 100%; margin-left: -40px; padding-left: 40px; }
 .menu p:before { padding: 0; margin: 0; }
 
-.menu .menu_action { position: fixed; right: 20%; width: 80%; bottom: 0px; display: -webkit-box; height: 50px; background: #1f1f21; }
-.menu .menu_action i { display: block; height: 100%; -webkit-box-flex: 1; }
-.menu .menu_action i:active { background: #555; }
-.menu .menu_action .ico_takephoto:before, .menu .menu_action .ico_settings:before { content: ''; display: inline-block; background: url(images/site.png) no-repeat -100px -25px; background-size: 320px auto; height: 30px; width: 30px; margin: 10px 20px 0 20px; }
-.menu .menu_action .ico_takephoto { text-align: center; }
-.menu .menu_action .ico_settings { text-align: center; }
-.menu .menu_action .ico_settings:before { background-position: -150px -25px; }
+.menu_action { position: absolute; right: 20%; width: 80%; bottom: 0px; display: -webkit-box; height: 50px; background: #1f1f21; }
+.menu_action i { display: block; height: 100%; -webkit-box-flex: 1; }
+.menu_action i:active { background: #555; }
+.menu_action .ico_takephoto:before, .menu_action .ico_settings:before { content: ''; display: inline-block; background: url(images/site.png) no-repeat -100px -25px; background-size: 320px auto; height: 30px; width: 30px; margin: 10px 20px 0 20px; }
+.menu_action .ico_takephoto { text-align: center; }
+.menu_action .ico_settings { text-align: center; }
+.menu_action .ico_settings:before { background-position: -150px -25px; }
 
 .menu li.ico-menu-update.ico_loading:before { width: 25px; height: 25px; background: url('images/dataloading.png') 0 0 no-repeat; -webkit-background-size: 25px 25px; -webkit-animation-name: ui-loading-anim; -webkit-animation-duration: 1s; -webkit-animation-iteration-count: infinite; -webkit-animation-timing-function: step-start; }
 .menu li.curr, .menu span.curr { color: #fff; border-left: 3px solid #ff0300; padding-left: 20px; }
