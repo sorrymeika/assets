@@ -1,4 +1,4 @@
-﻿define(['$','util','views/auth','bridge','sl/widget/loading','sl/widget/button'],function (require,exports,module) {
+﻿define(['$','util','views/auth','bridge','sl/widget/loading','sl/widget/button'],function(require,exports,module) {
     var $=require('$'),
         bridge=require('bridge'),
         AuthActivity=require('views/auth'),
@@ -15,13 +15,23 @@
             'tap .btn_delete': 'deleteAddress',
             'tap .js_avatars': 'pickImage',
             'tap .js_update': 'update',
-            'tap .commonuse': function (e) {
+            'tap .js_address .commonuse': function(e) {
                 var $target=$(e.currentTarget);
+                var $con=$target.closest('div');
+                var id=$con.data('id');
                 $target.find('.checkbox').addClass('checked');
-                $target.siblings(".commonuse").find('.checked').removeClass('checked');
+                $con.siblings("[data-id]").find('.checked').removeClass('checked');
+                $.post(bridge.url('/json/user/setCommonUseAddress'),{
+                    Account: this.userInfo.Account,
+                    Auth: this.userInfo.Auth,
+                    AddressID: id
+                });
+            },
+            'tap .js_address_add .checkbox': function(e) {
+                $(e.currentTarget).toggleClass('checked');
             }
         },
-        onCreate: function () {
+        onCreate: function() {
             var that=this;
 
             that.$list=that.$('.js_list');
@@ -30,7 +40,7 @@
 
             var userInfo=util.store("USERINFO");
 
-            that.onActivityResult('login',function () {
+            that.onActivityResult('login',function() {
                 that.loadData();
             });
 
@@ -39,7 +49,8 @@
             }
         },
 
-        addAddress: button.sync(function () {
+        addAddress: button.sync(function() {
+            var that=this;
             var data={
                 Account: this.userInfo.Account,
                 Auth: this.userInfo.Auth,
@@ -53,7 +64,7 @@
             return {
                 url: '/json/user/addaddress',
                 data: data,
-                success: function (res) {
+                success: function(res) {
                     if(res.success) {
                         sl.tip("添加成功");
                         that.$('.js_address_add').hide();
@@ -64,16 +75,16 @@
             }
         }),
 
-        pickImage: function () {
+        pickImage: function() {
             var that=this;
 
-            bridge.pickImage(function (res) {
+            bridge.pickImage(function(res) {
                 that.avatars=res.path;
                 that.$('.js_avatars').attr({ src: res.src });
             });
         },
 
-        update: button.sync(function () {
+        update: button.sync(function() {
 
             if(that.avatars) {
                 bridge.post("/json/user/uploadAvatars",{
@@ -81,7 +92,7 @@
                     Auth: this.userInfo.Auth
                 },{
                     Avatars: that.avatars
-                },function () {
+                },function() {
                 });
             }
 
@@ -95,7 +106,7 @@
                     Birthday: that.$('.js_birthday').html(),
                     Mobile: that.$('.js_mobile').html()
                 },
-                success: function (res) {
+                success: function(res) {
                     if(res.success) {
                         sl.tip('更新成功！')
                     } else {
@@ -106,11 +117,11 @@
 
         }),
 
-        showAddressAdding: function () {
+        showAddressAdding: function() {
             this.$('.js_address_add').show();
         },
 
-        deleteAddress: function () {
+        deleteAddress: function() {
             var $checked=that.$('.js_address').find('.checked');
             var $con=$checked.closest('[data-id]');
 
@@ -121,7 +132,7 @@
             }
         },
 
-        loadData: function () {
+        loadData: function() {
             var that=this;
             var userInfo=util.store("USERINFO");
 
@@ -132,7 +143,7 @@
                     Auth: userInfo.Auth
                 },
                 checkData: false,
-                success: function (res) {
+                success: function(res) {
 
                     if(res.success&&res.userinfo) {
                         var item=res.userinfo;
@@ -141,7 +152,7 @@
                         that.$('.js_name').html(item.UserName);
                         that.$('.js_realname').html(item.RealName);
                         that.$('.js_mobile').html(item.Mobile);
-                        that.$('.js_birthday').html(item.Birthday.Replace(/\s00\:00\:00$/,''));
+                        that.$('.js_birthday').html(item.Birthday?item.Birthday.replace(/\s00\:00\:00$/,''):'');
 
                         that.$('.js_gender').html(item.Gender==1?"男":item.Gender==0?"女":"保密");
 
@@ -156,11 +167,11 @@
                     Auth: userInfo.Auth
                 },
                 checkData: false,
-                success: function (res) {
+                success: function(res) {
 
                     if(res.success&&res.data&&res.data.length) {
                         var html=[];
-                        $.each(res.data,function (i,item) {
+                        $.each(res.data,function(i,item) {
                             html.push('<div data-id="'+item.AddressID+'"><span>地址'+(i+1)+'</span><p>'+item.Address+'</p><p class="commonuse"><i class="checkbox'+(item.IsCommonUse?' checked':'')+'"></i>设为收货地址</p></div>');
                         });
                         that.$('.js_address').html(html.join(''));
@@ -173,7 +184,7 @@
 
         },
 
-        onDestory: function () {
+        onDestory: function() {
         }
     });
 });

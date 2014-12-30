@@ -124,7 +124,7 @@ input[type="password"].prompt-text { letter-spacing: 2px; }
 .action .btn:last-child { margin-right: 0; }
 .disabled { opacity: .5; }
 
-.checkbox { width: 16px; height: 16px; display: inline-block; border: 1px solid #333; vertical-align: -2px; margin-right: 5px; }
+.checkbox { width: 16px; height: 16px; display: inline-block; border: 1px solid #333; overflow: hidden;vertical-align: -2px; margin-right: 5px; }
 .checkbox.checked:before { margin: 1px; width: 12px; height: 12px; content: ''; display: inline-block; background: #333; vertical-align: top; }
 
 .radio { width: 44px; height: 44px; display: block; }
@@ -285,7 +285,7 @@ ul.table li > p { display: table-cell; text-align: center; padding-top: 5px; }
 .userinfo .action b.btn:before { display: inline-block; content: ''; width: 25px; height: 25px; background: url(images/site.png) no-repeat -150px 0px; background-size: 320px auto; vertical-align: -7px; }
 .userinfo .action b.btn.btn_delete:before { background-position: -175px 0px; }
 .userinfo .commonuse { font-size: 12px; }
-.userinfo .commonuse .checkbox { vertical-align: 0; }
+.userinfo .commonuse .checkbox { vertical-align: -3px; }
 .userinfo .commonuse .btn { height: 25px; line-height: 25px; font-size: 12px; font-weight: normal; width: 40px; vertical-align: middle; }
 .userinfo .img { width: 80px; height: 80px; }
 .js_address_add { display: none; }

@@ -1,21 +1,21 @@
-﻿define(['$','ui/sl','app'],function (require,exports,module) {
+﻿define(['$','sl/activity','bridge'],function(require,exports,module) {
     var $=require('$'),
-        sl=require('sl/sl'),
+        Activity=require('sl/activity'),
         app=require('app'),
         util=require('util');
 
-    module.exports=sl.Activity.extend({
-        template: 'views/credit.html',
+    module.exports=Activity.extend({
+        template: 'views/credits.html',
         events: {},
-        onCreate: function () {
+        onCreate: function() {
             var that=this;
 
         },
-        onStart: function () {
+        onStart: function() {
         },
-        onResume: function () {
+        onResume: function() {
         },
-        onDestory: function () {
+        onDestory: function() {
         }
     });;
 });
