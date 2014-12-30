@@ -233,6 +233,7 @@ ul.table li > p { display: table-cell; text-align: center; padding-top: 5px; }
 .productcon { background: #fff; padding: 10px 20px; margin-top: 10px; }
 .productcon .hd { text-align: center; font-weight: bold; font-size: 20px; line-height: 24px; padding: 10px; border-bottom: 1px solid #ddd; }
 .productcon .bd { padding: 10px; }
+.productcon .bd img{ width: 100%; }
 
 .productbuy li { display: -webkit-box; padding: 10px 0 0 20px; font-size: 14px; line-height: 30px; margin-left: 20px; }
 .productbuy span { margin-right: 10px; }
