@@ -157,30 +157,33 @@
                         that.$('.js_gender').html(item.Gender==1?"男":item.Gender==0?"女":"保密");
 
                     }
-                }
-            });
-
-            that.addressLoading.load({
-                url: '/json/user/getaddress',
-                data: {
-                    Account: userInfo.Account,
-                    Auth: userInfo.Auth
                 },
-                checkData: false,
-                success: function(res) {
+                complete: function() {
+                    that.addressLoading.load({
+                        url: '/json/user/getaddress',
+                        data: {
+                            Account: userInfo.Account,
+                            Auth: userInfo.Auth
+                        },
+                        checkData: false,
+                        success: function(res) {
 
-                    if(res.success&&res.data&&res.data.length) {
-                        var html=[];
-                        $.each(res.data,function(i,item) {
-                            html.push('<div data-id="'+item.AddressID+'"><span>地址'+(i+1)+'</span><p>'+item.Address+'</p><p class="commonuse"><i class="checkbox'+(item.IsCommonUse?' checked':'')+'"></i>设为收货地址</p></div>');
-                        });
-                        that.$('.js_address').html(html.join(''));
+                            if(res.success&&res.data&&res.data.length) {
+                                var html=[];
+                                $.each(res.data,function(i,item) {
+                                    html.push('<div data-id="'+item.AddressID+'"><span>地址'+(i+1)+'</span><p>'+item.Address+'</p><p class="commonuse"><i class="checkbox'+(item.IsCommonUse?' checked':'')+'"></i>设为收货地址</p></div>');
+                                });
+                                that.$('.js_address').html(html.join(''));
 
-                    } else {
-                        that.$('.js_address').html('<div class="nodata">您还未添加收货地址</div>');
-                    }
+                            } else {
+                                that.$('.js_address').html('<div class="nodata">您还未添加收货地址</div>');
+                            }
+                        }
+                    });
                 }
             });
+
+
 
         },
 

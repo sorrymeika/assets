@@ -136,7 +136,8 @@
                 refresh: null,
                 error: function() {
                     that.showError();
-                }
+                },
+                complete: _.noop
 
             },options);
 
@@ -196,8 +197,7 @@
                         that.loadingOptions.error.call(that,res);
                     }
                 },
-                complete: function() {
-                }
+                complete: $.proxy(that.loadingOptions.complete)
             });
         },
 

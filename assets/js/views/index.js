@@ -4,8 +4,34 @@
         Activity=require('sl/activity'),
         App=require('sl/app'),
         bridge=require('bridge'),
+        Touch=require('sl/widget/touch'),
         Loading=require('sl/widget/loading'),
         Slider=require('sl/widget/slider');
+
+    var Selector=Touch.extend({
+        start: function() {
+            var that=this;
+            that.$items=that.$('li');
+            that.length=that.$items.length;
+            that.height=that.el.offsetHeight;
+            that.minY=0;
+            that.minY=that.height* -1;
+            that.maxY=that.height;
+            return true;
+        },
+        move: function(x,y) {
+            var that=this;
+            y/that.maxY
+            console.log(y/that.maxY*360);
+            var rotateX=y/that.maxY*180;
+
+            this.$con.css({ '-webkit-transform': 'rotateX('+rotateX+'deg)' });
+        },
+
+        initialize: function() {
+            this.$con=this.$('ul');
+        }
+    });
 
     return Activity.extend({
         template: 'views/index.html',
@@ -35,6 +61,17 @@
             var that=this,
                 $list=that.$('.js_list');
 
+            new Selector(that.$('.selector'));
+
+            var userinfo=util.store('USERINFO');
+            if(userinfo)
+                $.post(bridge.url('/json/user/isLogin'),{
+                    Account: userinfo.Account,
+                    Auth: userinfo.Auth
+                },function(res) {
+                    if(!res||!res.returnCode=='0000') util.store('USERINFO',null);
+                },'json');
+
             that.loading=new Loading($list);
 
             that.loading.load({
@@ -49,6 +86,15 @@
                     });
                 }
             });
+
+            $('.selector').on('touchstart',function(e) {
+                var that=this;
+                var point=e.touches[0];
+
+                that.pointX=point.pageX;
+                that.pointY=point.pageY;
+                that.isMoved=0;
+            })
         },
         onStart: function() {
         },

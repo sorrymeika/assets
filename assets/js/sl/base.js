@@ -32,7 +32,8 @@
 
         if(!prop.options) prop.options={};
         for(var i in options) {
-            prop.options[i]=options[i];
+            if(typeof prop.options[i]==='undefined')
+                prop.options[i]=options[i];
         }
 
         for(var i in prop) {
