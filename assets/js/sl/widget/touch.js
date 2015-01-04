@@ -22,6 +22,7 @@
         y: 0,
         maxX: 0,
         minY: 0,
+        minDelta: 6,
         start: function() {
             var that=this;
             this.maxX=0;
@@ -81,7 +82,7 @@
             var deltaY=that.pointY-point.pageY;
 
             if(!that._isStart) {
-                if(m.abs(deltaX)>=6||m.abs(deltaY)>=6) {
+                if(m.abs(deltaX)>=that.minDelta||m.abs(deltaY)>=that.minDelta) {
                     that._isStart=(that.start()!==false);
                     that._isStop=!that._isStart;
 
@@ -181,33 +182,38 @@
             return { dist: newDist,time: m.round(newTime) };
         },
 
+        _startAni: function(x,y,duration) {
+            var that=this;
+            var start=0,
+                during=duration,
+                fromX=that.x,
+                fromY=that.y,
+                startTime=Date.now(),
+                _run=function() {
+                    if(that._isStopMomentum) return;
+                    start=Date.now()-startTime;
+
+                    var cx=easeOut(start,fromX,x-fromX,during),
+                        cy=easeOut(start,fromY,y-fromY,during);
+
+                    if(start<=during) {
+                        that._moving(cx,cy);
+                        requestAnimationFrame(_run);
+                    } else {
+                        that._moving(x,y);
+                        that._isStopMomentum=true;
+                        that.stop();
+                    }
+                };
+            that._isStopMomentum=false;
+            _run();
+        },
+
         _moving: function(x,y,duration) {
             var that=this;
 
             if(typeof duration!='undefined') {
-                var start=0,
-                    during=duration,
-                    fromX=that.x,
-                    fromY=that.y,
-                    startTime=Date.now(),
-                    _run=function() {
-                        if(that._isStopMomentum) return;
-                        start=Date.now()-startTime;
-
-                        var cx=easeOut(start,fromX,x-fromX,during),
-                            cy=easeOut(start,fromY,y-fromY,during);
-
-                        if(start<=during) {
-                            that._moving(cx,cy);
-                            requestAnimationFrame(_run);
-                        } else {
-                            that._moving(x,y);
-                            that._isStopMomentum=true;
-                            that.stop();
-                        }
-                    };
-                that._isStopMomentum=false;
-                _run();
+                that._startAni(x,y,duration);
 
             } else {
                 var bounceX=0;
