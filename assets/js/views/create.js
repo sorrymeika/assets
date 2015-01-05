@@ -73,10 +73,17 @@
                 sl.tip('请先添加一张图片');
                 return;
             }
+            var userInfo=util.store("USERINFO");
 
             bridge.post('/json/shop/addShoppingCart',{
                 WorkID: data.WorkID,
                 ProductID: data.ProductID,
+                Qty: 1,
+                Account: userInfo.Account,
+                Auth: userInfo.Auth,
+                ColorID: 0,
+                SizeID: 0,
+                StyleID: 0,
                 Qty: 1
 
             },{

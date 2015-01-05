@@ -51,8 +51,9 @@ header.big_hd em { padding-top: 3px; }
 
 .tip { max-width: 60%; position: fixed; left: 50%; padding: 15px; font-size: 18px; top: 50%; background: #000; color: #ffffff; text-align: left; z-index: 2003; -webkit-border-radius: 4px; border-radius: 4px; -webkit-box-shadow: 0 1px 1px rgba(49,60,75,.35); box-shadow: 0 1px 1px rgba(49,60,75,.35); }
 
-.dialog { background: #f5f5f5; -webkit-border-radius: 7px; overflow: hidden; margin: 0 4%; width: 92%; z-index: 2001; position: absolute; left: 0; top: -10000px; display: none; -webkit-transform: translateZ(0); -webkit-user-select: none; -webkit-user-drag: none; }
-.dialog-close { background: url(images/close.png) no-repeat; background-size: 100% auto; width: 14px; height: 14px; position: absolute; right: 12px; top: 12px; z-index: 10; }
+.dialog { background: #f5f5f5; -webkit-border-radius: 7px; overflow: hidden; margin-left: 4%; margin-right: 4%; width: 92%; z-index: 2001; position: absolute; left: 0; top: -10000px; display: none; -webkit-transform: translateZ(0); -webkit-user-select: none; -webkit-user-drag: none; }
+.dialog-close { position: absolute; right: 0px; top: 0px; z-index: 10; width: 40px; height: 40px; }
+.dialog-close:before { content: ''; display: block; background: url(images/close.png) no-repeat; background-size: 100% auto; width: 14px; height: 14px; margin: 10px 0 0 14px; }
 .dialog-title { height: 50px; line-height: 50px; font-size: 16px; text-align: center; font-weight: 700; -webkit-border-radius: 3px 3px 0 0; }
 .dialog-content { padding: 10px; position: relative; }
 .dialog-btns { table-layout: fixed; display: table; border-collapse: collapse; margin: 19px 0 0 0; width: 100%; }
@@ -60,7 +61,7 @@ header.big_hd em { padding-top: 3px; }
 .dialog-btns .dialog-btn { padding: 0; font-size: 18px; width: 100%; display: table-cell; border-collapse: collapse; float: none; text-align: center; height: 44px; line-height: 44px; color: #0079FF; border: 1px solid #B1B1B1; background-color: #f7f7f7; border-bottom: 0 none; cursor: pointer; text-decoration: none; }
 .dialog-btns .dialog-btn:active { background-color: #f1f1f1; }
 
-.prompt-text { border: 1px solid #b1b1b1; background-color: #fff; height: 30px; line-height: 30px; width: 90%; margin: 0px 5%; padding: 0 10px; }
+.prompt-text { border: 1px solid #b1b1b1; background-color: #fff; height: 30px; line-height: 30px; width: 90%; display: block;margin: 0px auto; padding: 0 10px; }
 input[type="password"].prompt-text { letter-spacing: 2px; }
 
 .dropdown { display: block; position: absolute; -webkit-transition: opacity 300ms ease 0ms; width: 100%; background: #b7152d; font-size: 14px; border: 1px solid #fff; opacity: 1; line-height: 18px; z-index: 2001; overflow: hidden; height: auto; top: -100%; text-align: center; color: #fff; font-weight: bold; }
@@ -228,7 +229,7 @@ ul.table li > p { display: table-cell; text-align: center; padding-top: 5px; }
 .productinfo .js_color { padding: 5px 0 0 0; }
 .productinfo .js_color i { border: 4px solid #555; width: 30px; height: 30px; display: inline-block; margin-right: 4px; }
 .productinfo .js_color i.current { border: 4px solid #c00; }
-.productinfo .action { width: 140px; margin-top: 20px; }
+.productinfo .action { width: 140px; margin-top: 20px; padding-bottom: 10px; }
 
 .productcon { background: #fff; padding: 10px 20px; margin-top: 10px; }
 .productcon .hd { text-align: center; font-weight: bold; font-size: 20px; line-height: 24px; padding: 10px; border-bottom: 1px solid #ddd; }
@@ -236,7 +237,7 @@ ul.table li > p { display: table-cell; text-align: center; padding-top: 5px; }
 .productcon .bd img { width: 100%; }
 
 .productbuy li { display: -webkit-box; padding: 10px 0 0 20px; font-size: 14px; line-height: 30px; margin-left: 20px; }
-.productbuy span { margin-right: 10px; }
+.productbuy span { margin-right: 10px; margin-bottom: 5px; }
 .productbuy input[type="number"] { text-align: center; border-radius: 4px; border: 1px solid #bdbdbd; width: 60px; height: 26px; }
 .productbuy p { -webkit-box-flex: 1; }
 .productbuy i { background: #d8d9d9; padding: 0 8px; height: 30px; display: inline-block; margin-right: 4px; color: #3d3b32; }
@@ -293,13 +294,15 @@ ul.table li > p { display: table-cell; text-align: center; padding-top: 5px; }
 .userinfo .addresstext { width: 100%; border: 1px solid #bdbdbd; height: 22px; border-radius: 4px; }
 
 
-.selectorwrap {display: -webkit-box;position: absolute; z-index: 1000; bottom: 0px; width: 100%; height: 180px; }
-.selector { -webkit-box-flex:1;background: #fff;  text-align: center; height: 180px; }
-.selector:before { content: ''; display: block; background: -webkit-linear-gradient(top , rgb(255, 255, 255) 10%, rgba(255, 255, 255, 0) 50% , rgb(255, 255, 255) 90%); position: absolute; width: 100%; top: 0; left: 0; height: 180px; z-index: 2; }
+.selectorwrap { display: -webkit-box; position: absolute; z-index: 1000; bottom: 0px; width: 100%; height: 180px; }
+.selectorbar { border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; height: 36px; z-index: 3; background: #fff; position: absolute; top: 0; left: 0; right: 0; line-height: 36px; }
+.selectorbar b { width: 80px; float: right; height: 100%; font-weight: normal; text-align: center; color: #0079FF; }
+.selector { -webkit-box-flex: 1; background: #fff; text-align: center; height: 180px; }
+.selector:before { content: ''; display: block; background: -webkit-linear-gradient(top , rgb(255, 255, 255) 5%, rgba(255, 255, 255, 0) 50% , rgb(255, 255, 255) 95%); position: absolute; width: 100%; top: 36px; left: 0; bottom: 0px; z-index: 2; }
 .selectorcon { -webkit-box-flex: 1; height: 180px; overflow-y: auto; position: relative; }
-.selector:after { content: ''; display: block; margin-top: -15px; position: absolute; left: 0; top: 50%; height: 24px; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; width: 100%; z-index: 100; }
-.selectorcon > ul > li { height: 22px; font-size: 14px; }
-.selectorcon > ul { padding: 80px 0; }
+.selector:after { content: ''; display: block; margin-top: 0px; position: absolute; left: 0; top: 50%; height: 28px; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; width: 100%; z-index: 100; }
+.selectorcon > ul > li { height: 26px; font-size: 14px; }
+.selectorcon > ul { padding: 97px 0 57px 0; }
 /*
 .selector ul { -webkit-transform-style: preserve-3d; -moz-transform-style: preserve-3d; transform-style: preserve-3d;width: 100%;height: 100%; position: relative;}
 .selector ul li { width: 80%; margin: -11px 10%; top: 50%;left: 0px;position: absolute;height: 22px; font-size: 14px; display: none;}

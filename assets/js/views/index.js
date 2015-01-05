@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','sl/activity','sl/widget/loading','sl/widget/slider','sl/widget/selector'],function(require,exports,module) {
+﻿define(['$','util','bridge','sl/activity','sl/widget/loading','sl/widget/slider'],function(require,exports,module) {
     var util=require('util')
     var $=require('$'),
         Activity=require('sl/activity'),
@@ -8,7 +8,6 @@
         Loading=require('sl/widget/loading'),
         Slider=require('sl/widget/slider');
 
-    var Selector=require('sl/widget/selector');
 
     return Activity.extend({
         template: 'views/index.html',
@@ -37,16 +36,6 @@
         onCreate: function() {
             var that=this,
                 $list=that.$('.js_list');
-
-            new Selector({
-                data: [{
-                    text: 'asdfasdf',
-                    value: 'asdf'
-                },{
-                    text: 'asdfasdf1',
-                    value: 'asdf'
-                }]
-            });
 
             var userinfo=util.store('USERINFO');
             if(userinfo)

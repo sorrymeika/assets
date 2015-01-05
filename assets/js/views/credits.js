@@ -1,7 +1,7 @@
 ﻿define(['$','sl/activity','bridge'],function(require,exports,module) {
     var $=require('$'),
         Activity=require('sl/activity'),
-        app=require('app'),
+        app=require('bridge'),
         util=require('util');
 
     module.exports=Activity.extend({

@@ -1,15 +1,18 @@
-﻿define(['$','util','views/auth','bridge','sl/widget/loading','sl/widget/button'],function(require,exports,module) {
+﻿define(['$','util','views/auth','bridge','sl/widget/loading','sl/widget/button','sl/widget/selector'],function(require,exports,module) {
     var $=require('$'),
         bridge=require('bridge'),
         AuthActivity=require('views/auth'),
         Loading=require('sl/widget/loading');
     var util=require('util');
     var button=require('sl/widget/button');
+    var Selector=require('sl/widget/selector');
 
     module.exports=AuthActivity.extend({
         template: 'views/user.html',
         events: {
-            'tap .js_back': 'back',
+            'tap .js_back': function() {
+                this.back('/');
+            },
             'tap .js_show_add': 'showAddressAdding',
             'tap .js_add_address': 'addAddress',
             'tap .btn_delete': 'deleteAddress',
@@ -29,6 +32,15 @@
             },
             'tap .js_address_add .checkbox': function(e) {
                 $(e.currentTarget).toggleClass('checked');
+            },
+            'tap [data-edit="js_gender"]': function() {
+                this.genderSelector&&this.genderSelector.show();
+            },
+            'tap [data-edit="js_realname"]': function(e) {
+                this.prompt("请输入",function(text) {
+                    alert(text);
+
+                },$(e.currentTarget));
             }
         },
         onCreate: function() {
@@ -155,7 +167,34 @@
                         that.$('.js_birthday').html(item.Birthday?item.Birthday.replace(/\s00\:00\:00$/,''):'');
 
                         that.$('.js_gender').html(item.Gender==1?"男":item.Gender==0?"女":"保密");
-
+                        !that.genderSelector&&(that.genderSelector=new Selector({
+                            data: [{
+                                text: '男',
+                                value: '1'
+                            },{
+                                text: '女',
+                                value: '0'
+                            },{
+                                text: '保密',
+                                value: ''
+                            }],
+                            complete: function(data) {
+                                that.$('.js_gender').html(data[0].text);
+                                that.loading.load({
+                                    url: '/json/user/ModifyUserInfo',
+                                    data: {
+                                        Account: userInfo.Account,
+                                        Auth: userInfo.Auth,
+                                        Gender: data[0].value
+                                    },
+                                    checkData: false
+                                });
+                            }
+                        }),that.bindQueryAction('genderselector',that.genderSelector,{
+                            show: 'show',
+                            "": 'hide'
+                        }));
+                        that.genderSelector.eq(0).val(item.Gender===false?'0':item.Gender===true?'1':'');
                     }
                 },
                 complete: function() {

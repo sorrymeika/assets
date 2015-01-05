@@ -16,5 +16,5 @@
         },
         onDestory: function() {
         }
-    });;
+    });
 });

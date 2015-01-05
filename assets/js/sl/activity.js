@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','./tmpl','./view','./widget/scroll','./plugins/template','sl/widget/tip','sl/widget/dialog'],function (require,exports,module) {
+﻿define(['$','util','bridge','./tmpl','./view','./widget/scroll','./plugins/template','sl/widget/tip','sl/widget/dialog'],function(require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
@@ -16,7 +16,7 @@
     var noop=util.noop,
         indexOf=util.indexOf,
         slice=Array.prototype.slice,
-        getUrlPath=function (url) {
+        getUrlPath=function(url) {
             var index=url.indexOf('?');
             if(index!= -1) {
                 url=url.substr(0,index);
@@ -33,7 +33,7 @@
         application: null,
         el: '<div class="view"></div>',
 
-        _setRoute: function (route) {
+        _setRoute: function(route) {
             this.route=route;
             this.hash=route.hash;
             this.url=route.url;
@@ -41,9 +41,9 @@
             this.queries=$.extend({},route.queries);
         },
 
-        queryString: function (key,val) {
+        queryString: function(key,val) {
             if(typeof val==='undefined')
-                return this.route.queries;
+                return this.route.queries[key];
 
             else if(val===null||val===false||val==='')
                 delete this.route.queries[key];
@@ -54,7 +54,7 @@
             this.application.to(this.route.url+(queries?'?'+queries:''));
         },
 
-        initialize: function () {
+        initialize: function() {
             var that=this;
 
             that.className&&that.$el.addClass(that.className);
@@ -70,15 +70,16 @@
             that.on('Pause',that.onPause);
             that.on('QueryChange',that.onQueryChange);
             that.on('QueryChange',that._handleQueryActions);
+            that._scrolls=[];
 
             that._dfd=$.when(that.options.templateEnabled&&that.initWithTemplate())
-                .then(function () {
-                    that.$('.main,.scroll').each(function () {
-                        new Scroll(this);
+                .then(function() {
+                    that.$('.main,.scroll').each(function() {
+                        that._scrolls.push(new Scroll(this));
                     });
                 })
                 .then($.proxy(that.onCreate,that))
-                .then(function () {
+                .then(function() {
                     that.trigger('Start');
                     that._handleQueryActions();
                 });
@@ -98,15 +99,15 @@
 
         onQueryChange: noop,
 
-        then: function (fn) {
+        then: function(fn) {
             this._dfd=this._dfd.then($.proxy(fn,this));
             return this;
         },
 
-        wait: function () {
+        wait: function() {
             var dfd=$.Deferred();
 
-            this._dfd=this._dfd.then(function () {
+            this._dfd=this._dfd.then(function() {
                 return dfd;
             });
 
@@ -114,29 +115,34 @@
         },
 
         _queryActions: {},
-        _handleQueryActions: function () {
+        _handleQueryActions: function() {
             var that=this;
             var queries=that.queries;
             var prevQueries=that._queries;
             var queryActions=that._queryActions;
             var action;
 
-            queryActions&&$.each(queryActions,function (i,qa) {
+            queryActions&&$.each(queryActions,function(i,qa) {
                 action=queries[i]||'';
 
-                if((action&&!prevQueries)||(prevQueries&&action!=prevQueries[i]))
-                    qa.cls[qa.map[action]].__query_action.call(qa.cls)
+                if((action&&!prevQueries)||(prevQueries&&action!=prevQueries[i])) {
+                    var queryFn=qa.cls[qa.map[action]].__query_action;
+                    queryFn.apply(qa.cls,queryFn.__arguments);
+                    queryFn.__arguments=undefined;
+                }
             });
         },
 
-        bindQueryAction: function (name,cls,fnMap) {
+        bindQueryAction: function(name,cls,fnMap) {
             var map={};
             var that=this;
             var newFn;
 
-            $.each(fnMap,function (i,fn) {
-                newFn=function () {
-                    that.queryString(name,i);
+            $.each(fnMap,function(i,fn) {
+                newFn=function() {
+                    var args=slice.apply(arguments);
+                    var queryFn=arguments.callee.__query_action;
+                    (that.queryString(name)==i)?queryFn.apply(cls,args):(queryFn.__arguments=args,that.queryString(name,i));
                 };
                 newFn.__query_action=cls[fn];
                 cls[fn]=newFn;
@@ -149,7 +155,28 @@
             return this;
         },
 
-        createDialog: function (options) {
+        prompt: function(title,fn,target) {
+            !this._prompt&&(this._prompt=this.createDialog({
+                content: '<input type="text" class="prompt-text" />',
+                buttons: [{
+                    text: '取消',
+                    click: function() {
+                        this.hide();
+                    }
+                },{
+                    text: '确认',
+                    click: function() {
+                        this.hide();
+                        this.ok&&this.ok(this.$('.prompt-text').val());
+                    }
+                }]
+            }));
+
+            this._prompt.title(title||'请输入').show(target);
+            this._prompt.ok=$.proxy(fn,this);
+        },
+
+        createDialog: function(options) {
             var that=this;
             var dialog=new Dialog(options);
 
@@ -161,17 +188,17 @@
             return dialog;
         },
 
-        onActivityResult: function (event,fn) {
+        onActivityResult: function(event,fn) {
             this.listenTo(this.application,event,fn);
         },
 
-        setResult: function () {
+        setResult: function() {
             var args=slice.call(arguments);
             this.application.trigger.apply(this.application,args);
         },
 
         isPrepareExitAnimation: false,
-        prepareExitAnimation: function () {
+        prepareExitAnimation: function() {
             var that=this;
             if(that.isPrepareExitAnimation) return;
             that.isPrepareExitAnimation=true;
@@ -179,7 +206,7 @@
             that.application.mask.show();
         },
 
-        finishEnterAnimation: function () {
+        finishEnterAnimation: function() {
             var that=this;
 
             that.$el.addClass('active');
@@ -187,49 +214,49 @@
             that.application.mask.hide();
 
             that.isPrepareExitAnimation=false;
-            that.then(function () {
+            that.then(function() {
                 that.trigger('Show');
             });
         },
 
-        compareUrl: function (url) {
+        compareUrl: function(url) {
             return getUrlPath(url)===this.route.url.toLowerCase();
         },
 
         //onShow后才可调用
-        redirect: function (url) {
+        redirect: function(url) {
             var that=this,
                 application=that.application;
 
-            application._getOrCreateActivity(url,function (activity,route) {
+            application._getOrCreateActivity(url,function(activity,route) {
                 activity.el.className=activity.className+' active';
                 application.$el.append(activity.$el);
                 application._currentActivity=activity;
                 that.$el.remove();
                 that.trigger('Pause');
 
-                activity.then(function () {
+                activity.then(function() {
                     activity.trigger('Resume');
                     activity.trigger('Show');
                 });
             });
         },
 
-        _transitionTime: app.ios&&parseFloat(app.osVersion)<7?function (time) {
-            this.el.style.webkitTransition="all "+(time||0)+'ms ease-out 0ms';
-        } :function (time) {
+        _transitionTime: app.ios&&parseFloat(app.osVersion)<7?function(time) {
+            this.el.style.webkitTransition="all "+(time||0)+'ms ease 0ms';
+        } :function(time) {
             this.el.style.webkitTransitionDuration=(time||0)+'ms';
         },
 
-        _animationFrom: function (name,type) {
+        _animationFrom: function(name,type) {
             this.el.className=this.className+' '+(name?name+'-':'')+type;
         },
 
-        _animationTo: function (name,type) {
+        _animationTo: function(name,type) {
             this.$el.addClass((name?name+'-':'')+type);
         },
 
-        _to: function (url,duration,animationName,type,callback) {
+        _to: function(url,duration,animationName,type,callback) {
             if(!duration) duration=400;
 
             var that=this,
@@ -239,7 +266,7 @@
                 application.navigate(url);
             }
 
-            application._getOrCreateActivity(url,function (activity,route) {
+            application._getOrCreateActivity(url,function(activity,route) {
                 animationName=animationName||(type=='open'?activity:that).animationName;
 
                 if(activity.route.hash!=route.hash) {
@@ -258,7 +285,7 @@
 
                 activity.el.parentNode===null&&activity.$el.appendTo(application.$el);
 
-                activity.then(function () {
+                activity.then(function() {
                     activity.trigger('Resume');
                 });
 
@@ -272,7 +299,7 @@
                 var timer;
                 var isExecuted=false;
                 var $els=$(activity.$el);
-                var end=function () {
+                var end=function() {
                     if(isExecuted) return;
                     isExecuted=true;
                     timer&&clearTimeout(timer);
@@ -291,18 +318,18 @@
             });
         },
 
-        _forward: function (url,duration,animationName) {
+        _forward: function(url,duration,animationName) {
             var that=this;
-            that._to(url,duration,animationName,'open',function () {
+            that._to(url,duration,animationName,'open',function() {
                 that.trigger('Pause');
             });
         },
 
-        forward: function (url,duration,animationName) {
+        forward: function(url,duration,animationName) {
             this.application.queue(this,this._forward,url,duration,animationName);
         },
 
-        _back: function (url,duration,animationName) {
+        _back: function(url,duration,animationName) {
             var that=this;
 
             if(typeof url!=='string') {
@@ -316,21 +343,24 @@
                     duration=null;
                 }
 
-                that._to(url,duration,animationName,'close',function () {
+                that._to(url,duration,animationName,'close',function() {
                     that.destory();
                 });
             }
         },
 
-        back: function (url,duration,animationName) {
+        back: function(url,duration,animationName) {
             this.application.queue(this,this._back,url,duration,animationName);
         },
 
-        finish: function () {
+        finish: function() {
             this.destory();
         },
 
-        destory: function () {
+        destory: function() {
+            $.each(this._scrolls,function(i,scroll) {
+                scroll.destory();
+            });
             this.application.remove(this.url);
             view.fn.destory.apply(this,arguments);
         }
