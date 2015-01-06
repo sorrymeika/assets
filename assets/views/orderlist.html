@@ -1,0 +1,24 @@
+﻿<header class="hd_white"><em class="ico-back js_back" hl></em><h1>我的订单</h1>
+</header>
+<section class="main js_main">
+    <div class="cartwrap">
+        <div class="js_list cartlist orderlist"></div>
+    </div>
+</section>
+<script id="list" type="text/template">
+    {%each(i,item) data%}
+    <li data-forward="/order/${item.OrderID}.html">
+    <div class="info">
+        <img class="img" src="${item.Details[0].Picture}" />
+        <p class="detail">
+        <span class="name">订单编号：${item.OrderCode}</span>
+        <span class="price">￥${item.Amount}</span>
+        </p>
+    </div>
+    <div class="fee">
+        <p>合计费用：￥${item.Total}</p>
+        <p>数量：${item.Qty}</p>
+        <p>订单状态：${item.Status}</p>
+    </div></li>
+    {%/each%}
+</script>
