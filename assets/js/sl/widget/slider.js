@@ -1,8 +1,10 @@
-﻿define(['$','util','./../view','./../tmpl'],function(require,exports,module) {
+﻿define(['$','util','./../view','./../tmpl','extend/ortchange'],function(require,exports,module) {
     var $=require('$'),
         _=require('util'),
         view=require('./../view'),
         tmpl=require('./../tmpl');
+
+    require('extend/ortchange');
 
     var Slider=view.extend({
         events: {
@@ -114,10 +116,7 @@
                 });
             }
 
-            $(window).on('ortchange',function() {
-                that.itemWidth=that.$items.width();
-                that._pos(that.itemWidth*(that.index-1)* -1,that.y);
-            });
+            $(window).on('ortchange',$.proxy(that._adjustWidth,that));
         },
 
         _loadImage: function() {
@@ -323,6 +322,9 @@
                 that.index=to;
                 that._delayChange();
             }
+        },
+        onDestory: function() {
+            $(window).off('ortchange',this._adjustWidth);
         }
     });
 
