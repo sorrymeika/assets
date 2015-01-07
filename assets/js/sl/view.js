@@ -1,4 +1,4 @@
-﻿define(function(require,exports,module) {
+﻿define(function (require,exports,module) {
 
     var $=require('$'),
         sl=require('./base'),
@@ -6,7 +6,7 @@
         tmpl=require('./tmpl'),
         slice=Array.prototype.slice,
 
-        plugin=function(host,options) {
+        plugin=function (host,options) {
             var obj,
             original,
             type,
@@ -25,9 +25,9 @@
                     prototype[i]=obj;
 
                 } else if(type==='function') {
-                    prototype[i]=(function(key,fn) {
+                    prototype[i]=(function (key,fn) {
 
-                        return function() {
+                        return function () {
                             this._pluginFnCursorRecords[key]=fn;
                             fn.apply(this,arguments);
                         };
@@ -49,7 +49,7 @@
                 }
         };
 
-    var View=sl.Class.extend(function() {
+    var View=sl.Class.extend(function () {
         var that=this,
             options,
             args=slice.call(arguments),
@@ -67,7 +67,7 @@
 
         if(options&&options.override) {
             var overrideFn;
-            $.each(options.override,function(key,fn) {
+            $.each(options.override,function (key,fn) {
                 overrideFn=that[key];
                 (typeof overrideFn!='undefined')&&(that.sealed[key]=overrideFn,fn.sealed=overrideFn);
                 that[key]=fn;
@@ -97,20 +97,20 @@
         sealed: {},
         options: {},
         events: null,
-        _bind: function(el,name,f) {
+        _bind: function (el,name,f) {
             this._bindDelegateAttrs.push([el,name,f]);
             this.$el.delegate(el,name,$.proxy(f,this));
 
             return this;
         },
-        _listenEvents: function(events) {
+        _listenEvents: function (events) {
             var that=this;
 
-            events&&$.each(events,function(evt,f) {
+            events&&$.each(events,function (evt,f) {
                 that.listen(evt,f);
             });
         },
-        listen: function(evt,f) {
+        listen: function (evt,f) {
             var that=this;
 
             if(!f) {
@@ -134,19 +134,19 @@
             return that;
         },
 
-        listenTo: function(target) {
+        listenTo: function (target) {
 
             var args=slice.apply(arguments),
                 fn=args[args.length-1];
 
             args[args.length-1]=$.proxy(fn,this);
 
-            !(target instanceof $)&&(target=$(target));
+            typeof target.on!=='function'&&(target=$(target));
 
             this._bindListenTo.push(slice.apply(args));
             args.shift();
 
-            $.fn.on.apply(target,args);
+            target.on.apply(target,args);
 
             return this;
         },
@@ -157,26 +157,26 @@
         trigger: Event.trigger,
 
         _pluginFnCursorRecords: {},
-        host: function() {
+        host: function () {
             var args=slice.call(arguments),
                 fn=args.shift();
 
             this._pluginFnCursorRecords[fn].__host.apply(this,args);
         },
 
-        $: function(selector) {
+        $: function (selector) {
             if(typeof selector==="string"&&selector[0]=='#') {
                 selector='[id="'+selector.substr(1)+'"]';
             }
             return $(selector,this.$el);
         },
 
-        bind: function(name,f) {
+        bind: function (name,f) {
             this._bindAttrs.push([name,f]);
             this.$el.bind(name,$.proxy(f,this));
             return this;
         },
-        unbind: function(name,f) {
+        unbind: function (name,f) {
             var that=this,
                 $el=that.$el;
 
@@ -192,26 +192,26 @@
             return this;
         },
 
-        initialize: function() {
+        initialize: function () {
         },
 
-        onDestory: function() { },
+        onDestory: function () { },
 
-        destory: function() {
+        destory: function () {
             var $el=this.$el,
                 that=this,
                 target;
 
-            $.each(this._bindDelegateAttrs,function(i,attrs) {
+            $.each(this._bindDelegateAttrs,function (i,attrs) {
                 $.fn.undelegate.apply($el,attrs);
             });
 
-            $.each(this._bindListenTo,function(i,attrs) {
+            $.each(this._bindListenTo,function (i,attrs) {
                 target=attrs.shift();
                 target.off.apply(target,attrs);
             });
 
-            $.each(that._bindAttrs,function(i,attrs) {
+            $.each(that._bindAttrs,function (i,attrs) {
                 $.fn.unbind.apply($el,attrs);
             });
             that.$el.remove();
@@ -220,7 +220,7 @@
         }
     });
 
-    View.extend=function(childClass,prop) {
+    View.extend=function (childClass,prop) {
         var that=this;
 
         var plugins=(typeof prop!=='undefined'?prop:childClass).plugins;
@@ -238,7 +238,7 @@
     };
 
 
-    View.loadPlugins=function(plugins) {
+    View.loadPlugins=function (plugins) {
         var that=this,
             item;
 
@@ -253,9 +253,9 @@
         }
     };
 
-    View.Plugin=function(options) {
+    View.Plugin=function (options) {
 
-        return function(host) {
+        return function (host) {
             plugin(host,options);
         }
     };
