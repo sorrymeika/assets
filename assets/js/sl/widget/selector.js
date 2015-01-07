@@ -118,8 +118,9 @@
         this.$el=$('<div class="selectorwrap" style="display:none"><div class="selectorbar"><b class="js_click">完成</b></div></div>').appendTo($container);
         this.selectors=[];
 
-        that.$mask.on('tap',function() {
-            that.hide();
+        $container.on('tap',function(e) {
+            if(e.target===$container[0])
+                that.hide();
         });
 
         $.each(data,function(i,item) {
