@@ -14,13 +14,14 @@
             hScroll: false
         },
         initialize: function() {
+            this.start();
         },
 
         start: function() {
             var that=this;
 
-            that.x=that.el.scrollLeft;
-            that.y=that.el.scrollTop;
+            that._x=that.x=that.el.scrollLeft;
+            that._y=that.y=that.el.scrollTop;
 
             that.startX=that.x;
             that.startY=that.y;

@@ -127,6 +127,14 @@
             return (""+text).split("<").join("&lt;").split(">").join("&gt;").split('"').join("&#34;").split("'").join("&#39;");
         },
 
+        getUrlPath: function(url) {
+            var index=url.indexOf('?');
+            if(index!= -1) {
+                url=url.substr(0,index);
+            }
+            return url.toLowerCase();
+        },
+
         cookie: function(a,b,c,p) {
             if(typeof b==='undefined') {
                 var res=document.cookie.match(new RegExp("(^| )"+a+"=([^;]*)(;|$)"));

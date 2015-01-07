@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','./activity','./tmpl','./view','./plugins/template'],function(require,exports,module) {
+﻿define(['$','util','bridge','./activity','./tmpl','./view','./plugins/template','extend/ortchange'],function(require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
@@ -9,15 +9,14 @@
         Activity=require('./activity'),
         plugin=require('./plugins/template');
 
+    require('extend/ortchange');
+
     var noop=util.noop,
         lastIndexOf=util.lastIndexOf,
         slice=Array.prototype.slice,
-        getUrlPath=function(url) {
-            var index=url.indexOf('?');
-            if(index!= -1) {
-                url=url.substr(0,index);
-            }
-            return url.toLowerCase();
+        getUrlPath=util.getUrlPath,
+        hashToUrl=function(hash) {
+            return (hash.replace(/^#/,'')||'/').toLowerCase();
         };
 
     var Application=view.extend({
@@ -56,6 +55,9 @@
             },
             'touchmove header,footer': function(e) {
                 e.preventDefault();
+            },
+            'focus input': function(e) {
+                this.currentInput=e.target;
             }
         },
 
@@ -94,7 +96,7 @@
         matchRoute: function(url) {
             var result=null,
                 queries={},
-                hash=url.replace(/^#/,'')||'/';
+                hash=hashToUrl(url);
 
             url=hash;
 
@@ -174,13 +176,24 @@
         start: function() {
             sl.app=this;
 
-            bridge.android2&&util.style('header,footer{position:absolute}');
+            //bridge.android2&&util.style('header,footer{position:absolute}');
 
             var that=this;
             var hash;
+            var $win=$(window);
+
+            that.windowWidth=window.innerWidth;
+            that.windowHeight=window.innerHeight;
+            $win.on('heightchange',function() {
+                if(that.windowWidth==window.innerWidth) {
+                    $win.trigger($.Event("showSoftInput",{ $target: $(that.currentInput) }));
+                } else {
+                    that.windowWidth=window.innerWidth;
+                }
+            });
 
             if(!location.hash) location.hash='/';
-            that.hash=hash=location.hash.replace(/^#/,'')||'/';
+            that.hash=hash=hashToUrl(location.hash);
 
             that.queue(that,that._getOrCreateActivity,hash,function(activity) {
                 that._currentActivity=activity;
@@ -194,8 +207,9 @@
                     that.turning();
                 });
 
-                $(window).on('hashchange',function() {
-                    hash=that.hash=location.hash.replace(/^#/,'')||'/';
+                $win.on('hashchange',function() {
+                    hash=that.hash=hashToUrl(location.hash);
+
                     var index=lastIndexOf(that._history,hash),
                     isForward=(that._skipRecordHistory||index== -1)&&!that.isHistoryBack;
 
@@ -209,8 +223,10 @@
                     } else
                         that._skipRecordHistory=false;
 
+                    //bridge.tip(that._skipRecordHistory+"|"+that.isHistoryBack+"|"+that.skip+"|"+isForward+"|"+that.hash);
+
                     if(that.skip==0) {
-                        that._currentActivity[isForward?'forward':'back'](that.hash);
+                        that._currentActivity[isForward?'forward':'back'](hash);
 
                     } else if(that.skip>0)
                         that.skip--;
@@ -230,10 +246,12 @@
         },
 
         to: function(url) {
-            this.queue(this,this._to,url.replace(/^#/,'')||'/');
+            this.queue(this,this._to,url);
         },
 
         _navigate: function(url) {
+            url=hashToUrl(url);
+
             var that=this,
                 activity=that._currentActivity,
                 index=lastIndexOf(that._history,url);

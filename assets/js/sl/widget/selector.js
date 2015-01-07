@@ -1,4 +1,4 @@
-﻿define(['$','util','./../base','./../view','./../tmpl','./touch'],function (require,exports,module) {
+﻿define(['$','util','./../base','./../view','./../tmpl','./touch'],function(require,exports,module) {
     var $=require('$'),
         Touch=require('./touch');
 
@@ -6,7 +6,7 @@
     var tmpl=require('./../tmpl');
 
     var selector=Touch.extend({
-        start: function () {
+        start: function() {
             var that=this;
             that.y=that.con.scrollTop;
             that.startY=that.y;
@@ -18,21 +18,21 @@
         },
         itemHeight: 26,
         minDelta: 0,
-        move: function (x,y) {
+        move: function(x,y) {
             var that=this;
             that.con.scrollTop=y;
         },
 
-        _startAni: function (x,y,duration) {
+        _startAni: function(x,y,duration) {
             y=this._getY(y);
             Touch.prototype._startAni.call(this,x,y,duration);
         },
-        _getY: function (y) {
+        _getY: function(y) {
             var a=y%26;
             return y-(a>20?a-this.itemHeight:a);
         },
 
-        end: function () {
+        end: function() {
             var that=this;
             var y=that.y;
 
@@ -46,7 +46,7 @@
         },
 
         _index: 0,
-        index: function (i) {
+        index: function(i) {
             if(typeof i==='undefined') return this._index;
             if(this._index!=i) {
                 this.currentData=this.data[i];
@@ -56,11 +56,11 @@
             }
         },
 
-        val: function (val) {
+        val: function(val) {
             if(typeof val==='undefined')
                 return this.currentData.value;
 
-            var index=util.indexOf(this.data,typeof val!=="function"?function (item) {
+            var index=util.indexOf(this.data,typeof val!=="function"?function(item) {
                 return item.value==val;
             } :val);
 
@@ -71,7 +71,7 @@
 
         template: tmpl('<li>${text}</li>'),
 
-        initialize: function () {
+        initialize: function() {
             var that=this;
             var options=this.options;
             var data=options.data||[];
@@ -87,10 +87,10 @@
             this.render(data);
         },
 
-        render: function (data) {
+        render: function(data) {
             var that=this;
             var html=[];
-            $.each(data,function (i,item) {
+            $.each(data,function(i,item) {
                 html.push(that.template(item));
             });
 
@@ -100,34 +100,36 @@
         }
     });
 
-    var Selector=function (options) {
+    var Selector=function(options) {
         options=$.extend({
-            container: document.body,
-            complete: function () { },
+            container: $('body'),
+            complete: function() { },
             data: []
         },options);
 
         var that=this;
         var data=options.data;
+        var $container=$('<div style="position:fixed;top:0px;bottom:0px;left:0px;right:0px;width:100%;background: rgba(0,0,0,0);z-index:1000;display:none;overflow:hidden;"></div>').appendTo('body');
+        this.$container=$container;
 
         !$.isArray(data[0])&&(data=[data]);
 
-        this.$el=$('<div class="selectorwrap" style="display:none"><div class="selectorbar"><b class="js_click">完成</b></div></div>').appendTo(options.container);
-        this.$mask=$('<div style="position:fixed;top:0px;bottom:0px;right:0px;width:100%;background: rgba(0,0,0,.3);z-index:999;display:none"></div>').appendTo(document.body);
+        this.$mask=$('<div style="position:fixed;top:0px;bottom:0px;right:0px;width:100%;background: rgba(0,0,0,.3);z-index:999;display:none"></div>').appendTo('body');
+        this.$el=$('<div class="selectorwrap" style="display:none"><div class="selectorbar"><b class="js_click">完成</b></div></div>').appendTo($container);
         this.selectors=[];
 
-        that.$mask.on('tap',function () {
+        that.$mask.on('tap',function() {
             that.hide();
         });
 
-        $.each(data,function (i,item) {
+        $.each(data,function(i,item) {
             that.render(item);
         });
 
-        this.$el.on("click",'.js_click',function () {
+        this.$el.on("click",'.js_click',function() {
             that.hide();
             var result=[];
-            $.each(that.selectors,function (i,sel) {
+            $.each(that.selectors,function(i,sel) {
                 result.push(sel.currentData);
             });
 
@@ -137,51 +139,52 @@
 
     Selector.prototype={
         _visible: false,
-        eq: function (i) {
+        eq: function(i) {
             return this.selectors[i];
         },
-        each: function (fn) {
+        each: function(fn) {
             $.each(this.selectors,fn);
         },
-        render: function (data) {
+        render: function(data) {
             var sel=new selector({
                 data: data
             });
             this.selectors.push(sel);
             this.$el.append(sel.$el);
         },
-        hide: function () {
+        hide: function() {
             var that=this;
             this._visible&&(that.$mask.hide(),this.$el.css({
                 '-webkit-transform': 'translate(0px,0%)'
             })
             .animate({
                 'translate': '0px,100%'
-            },300,'ease-out',function () {
+            },300,'ease-out',function() {
                 that._visible=false;
                 $(this).hide();
+                that.$container.hide();
             }));
             return that;
         },
-        show: function () {
+        show: function() {
             var that=this;
 
-            !that._visible&&(that.$mask.show(),that.$el.css({
+            !that._visible&&(that.$container.show(),that.$mask.show(),that.$el.css({
                 'display': 'block',
                 '-webkit-transform': 'translate(0px,100%)'
             })
             .animate({
                 'translate': '0px,0%'
-            },300,'ease-out',function () {
+            },300,'ease-out',function() {
                 that._visible=true;
-                that.each(function () {
+                that.each(function() {
                     this.move(0,this._index*this.itemHeight);
                 });
             }));
 
             return that;
         },
-        destory: function () {
+        destory: function() {
         }
     };
 

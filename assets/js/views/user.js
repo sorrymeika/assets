@@ -1,4 +1,4 @@
-﻿define(['$','util','views/auth','bridge','sl/widget/loading','sl/widget/button','sl/widget/selector'],function (require,exports,module) {
+﻿define(['$','util','views/auth','bridge','sl/widget/loading','sl/widget/button','sl/widget/selector'],function(require,exports,module) {
     var $=require('$'),
         bridge=require('bridge'),
         AuthActivity=require('views/auth'),
@@ -10,7 +10,7 @@
     module.exports=AuthActivity.extend({
         template: 'views/user.html',
         events: {
-            'tap .js_back': function () {
+            'tap .js_back': function() {
                 this.back('/');
             },
             'tap .js_show_add': 'showAddressAdding',
@@ -18,7 +18,7 @@
             'tap .btn_delete': 'deleteAddress',
             'tap .js_avatars': 'pickImage',
             'tap .js_update': 'update',
-            'tap .js_address .commonuse': function (e) {
+            'tap .js_address .commonuse': function(e) {
                 var $target=$(e.currentTarget);
                 var $con=$target.closest('div');
                 var id=$con.data('id');
@@ -30,26 +30,26 @@
                     AddressID: id
                 });
             },
-            'tap .js_address_add .checkbox': function (e) {
+            'tap .js_address_add .checkbox': function(e) {
                 $(e.currentTarget).toggleClass('checked');
             },
-            'tap [data-edit="js_gender"]': function () {
+            'tap [data-edit="js_gender"]': function() {
                 this.genderSelector&&this.genderSelector.show();
             },
-            'tap [data-edit="js_realname"]': function (e) {
+            'tap [data-edit="js_realname"]': function(e) {
                 var that=this;
                 var $label=that.$('.js_realname');
 
-                this.prompt("请输入",$label.html(),function (text) {
+                this.prompt("请输入",$label.html(),function(text) {
                     $label.html(text);
 
                 },$(e.currentTarget));
             },
-            'tap [data-edit="js_mobile"]': function (e) {
+            'tap [data-edit="js_mobile"]': function(e) {
                 var that=this;
                 var $label=that.$('.js_mobile');
 
-                this.prompt("请输入",$label.html(),function (text) {
+                this.prompt("请输入",$label.html(),function(text) {
                     if(util.validateMobile(text))
                         $label.html(text);
                     else
@@ -57,17 +57,17 @@
 
                 },$(e.currentTarget));
             },
-            'tap [data-edit="js_birthday"]': function (e) {
+            'tap [data-edit="js_birthday"]': function(e) {
                 var that=this;
                 var $label=that.$('.js_birthday');
 
-                this.prompt("请输入",$label.html(),function (text) {
+                this.prompt("请输入",$label.html(),function(text) {
                     $label.html(text);
 
                 },$(e.currentTarget));
             }
         },
-        onCreate: function () {
+        onCreate: function() {
             var that=this;
 
             that.$list=that.$('.js_list');
@@ -76,7 +76,7 @@
 
             var userInfo=util.store("USERINFO");
 
-            that.onActivityResult('login',function () {
+            that.onActivityResult('login',function() {
                 that.loadData();
             });
 
@@ -85,7 +85,7 @@
             }
         },
 
-        addAddress: button.sync(function () {
+        addAddress: button.sync(function() {
             var that=this;
             var data={
                 Account: this.userInfo.Account,
@@ -100,7 +100,7 @@
             return {
                 url: '/json/user/addaddress',
                 data: data,
-                success: function (res) {
+                success: function(res) {
                     if(res.success) {
                         sl.tip("添加成功");
                         that.$('.js_address_add').hide();
@@ -111,16 +111,16 @@
             }
         }),
 
-        pickImage: function () {
+        pickImage: function() {
             var that=this;
 
-            bridge.pickImage(function (res) {
+            bridge.pickImage(function(res) {
                 that.avatars=res.path;
                 that.$('.js_avatars').attr({ src: res.src });
             });
         },
 
-        update: button.sync(function () {
+        update: button.sync(function() {
             var that=this;
 
             if(that.avatars) {
@@ -129,7 +129,7 @@
                     Auth: this.userInfo.Auth
                 },{
                     Avatars: that.avatars
-                },function () {
+                },function() {
                 });
             }
 
@@ -143,7 +143,7 @@
                     Birthday: that.$('.js_birthday').html(),
                     Mobile: that.$('.js_mobile').html()
                 },
-                success: function (res) {
+                success: function(res) {
                     if(res.success) {
                         sl.tip('更新成功！')
                     } else {
@@ -154,11 +154,12 @@
 
         }),
 
-        showAddressAdding: function () {
+        showAddressAdding: function() {
             this.$('.js_address_add').show();
         },
 
-        deleteAddress: function () {
+        deleteAddress: function() {
+            var that=this;
             var $checked=that.$('.js_address').find('.checked');
             var $con=$checked.closest('[data-id]');
 
@@ -169,7 +170,7 @@
             }
         },
 
-        loadData: function () {
+        loadData: function() {
             var that=this;
             var userInfo=util.store("USERINFO");
 
@@ -180,7 +181,7 @@
                     Auth: userInfo.Auth
                 },
                 checkData: false,
-                success: function (res) {
+                success: function(res) {
 
                     if(res.success&&res.userinfo) {
                         var item=res.userinfo;
@@ -203,7 +204,7 @@
                                 text: '保密',
                                 value: ''
                             }],
-                            complete: function (data) {
+                            complete: function(data) {
                                 that.$('.js_gender').html(data[0].text);
                                 that.loading.load({
                                     url: '/json/user/ModifyUserInfo',
@@ -222,7 +223,7 @@
                         that.genderSelector.eq(0).val(item.Gender===false?'0':item.Gender===true?'1':'');
                     }
                 },
-                complete: function () {
+                complete: function() {
                     that.addressLoading.load({
                         url: '/json/user/getaddress',
                         data: {
@@ -230,11 +231,11 @@
                             Auth: userInfo.Auth
                         },
                         checkData: false,
-                        success: function (res) {
+                        success: function(res) {
 
                             if(res.success&&res.data&&res.data.length) {
                                 var html=[];
-                                $.each(res.data,function (i,item) {
+                                $.each(res.data,function(i,item) {
                                     html.push('<div data-id="'+item.AddressID+'"><span>地址'+(i+1)+'</span><p>'+item.Address+'</p><p class="commonuse"><i class="checkbox'+(item.IsCommonUse?' checked':'')+'"></i>设为收货地址</p></div>');
                                 });
                                 that.$('.js_address').html(html.join(''));
@@ -251,7 +252,7 @@
 
         },
 
-        onDestory: function () {
+        onDestory: function() {
         }
     });
 });

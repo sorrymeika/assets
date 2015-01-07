@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','./tmpl','./view','./widget/scroll','./plugins/template','sl/widget/tip','sl/widget/dialog'],function(require,exports,module) {
+﻿define(['$','util','bridge','./tmpl','./view','./widget/scroll','./plugins/template','sl/widget/tip','sl/widget/dialog','extend/ortchange'],function(require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
@@ -12,16 +12,14 @@
     var Dialog=require('sl/widget/dialog');
 
     require('sl/widget/tip');
+    require('extend/ortchange');
 
     var noop=util.noop,
         indexOf=util.indexOf,
         slice=Array.prototype.slice,
-        getUrlPath=function(url) {
-            var index=url.indexOf('?');
-            if(index!= -1) {
-                url=url.substr(0,index);
-            }
-            return url.toLowerCase();
+        getUrlPath=util.getUrlPath,
+        hashToUrl=function(hash) {
+            return (hash.replace(/^#/,'')||'/').toLowerCase();
         };
 
     var Activity=view.extend({
@@ -72,6 +70,8 @@
             that.on('QueryChange',that._handleQueryActions);
             that._scrolls=[];
 
+            that.listenTo($(window),'showSoftInput',that._onShowSoftInput);
+
             that._dfd=$.when(that.options.templateEnabled&&that.initWithTemplate())
                 .then(function() {
                     that.$('.main,.scroll').each(function() {
@@ -84,6 +84,32 @@
                     that._handleQueryActions();
                 });
         },
+
+        _onShowSoftInput: function(e) {
+            var that=this;
+            var scrollBottom;
+            var $target=e.$target;
+            var $el;
+
+            $.each(that._scrolls,function(i,scroll) {
+
+                $el=$target.closest(scroll.el);
+                if($el.length) {
+                    var offset=$target.offset();
+                    var position=$target.position();
+                    var height=window.innerHeight;
+
+                    //if(offset.top+offset.height>height) {
+                    console.log(position.top,scroll._y+position.top-(height-offset.height)/2);
+
+                    scroll.el.scrollTop=scroll._y+position.top;
+                    scroll.start();
+                    //}
+                    return false;
+                }
+            });
+        },
+
         onCreate: noop,
         onStart: noop,
         onResume: noop,
@@ -215,7 +241,6 @@
 
         finishEnterAnimation: function() {
             var that=this;
-
             that.application.mask.hide();
 
             that.isPrepareExitAnimation=false;
@@ -264,11 +289,12 @@
 
         _to: function(url,duration,animationName,type,callback) {
             if(!duration) duration=400;
+            url=hashToUrl(url);
 
             var that=this,
                 application=that.application;
 
-            if(url.toLowerCase()!=location.hash.replace(/^#/,'').toLowerCase()) {
+            if(url!=hashToUrl(location.hash)) {
                 application.navigate(url);
             }
 
