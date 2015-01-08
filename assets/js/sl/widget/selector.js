@@ -28,7 +28,7 @@
             Touch.prototype._startAni.call(this,x,y,duration);
         },
         _getY: function(y) {
-            var a=y%26;
+            var a=y%this.itemHeight;
             return y-(a>20?a-this.itemHeight:a);
         },
 

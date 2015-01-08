@@ -1,17 +1,15 @@
-﻿define(['$','util','./../view','./../tmpl','extend/ortchange'],function(require,exports,module) {
+﻿define(['$','util','./../view','./../tmpl','extend/ortchange','./touch'],function(require,exports,module) {
     var $=require('$'),
         _=require('util'),
         view=require('./../view'),
         tmpl=require('./../tmpl');
 
+    var Touch=require('./touch');
+
     require('extend/ortchange');
 
-    var Slider=view.extend({
-        events: {
-            'touchstart': '_start',
-            'touchmove': '_move',
-            'touchend': '_end'
-        },
+    var Slider=Touch.extend({
+
         options: {
             index: -1,
             width: '100%',
@@ -19,12 +17,107 @@
             data: [],
             dots: false,
             imagelazyload: false,
-            arrow: false
+            bounce: true,
+            arrow: false,
+            vScroll: false
         },
+
+        start: function() {
+            var that=this;
+            that.x=that.root.scrollLeft;
+            that.startX=that.x;
+            that.wrapperW=that.root.clientWidth;
+            that.scrollerW=that.root.scrollWidth;
+            that.maxX=Math.min(that.scrollerW-that.wrapperW,(that._index+1)*that.wrapperW);
+            that.minX=Math.max(0,(that._index-1)*that.wrapperW);
+            return true;
+        },
+
+        pos: function(x,y) {
+            var that=this;
+            var maxX=that.scrollerW-that.wrapperW;
+            if(x>0&&x<maxX) {
+                that.root.scrollLeft=x;
+            } else if(x==0||x==maxX) {
+                that.root.scrollLeft=x;
+                that.$root.css({ '-webkit-transform': '' });
+            } else {
+                that.$root.css({ '-webkit-transform': 'translate('+(that._x-x)+'px,0px) translateZ(0)' });
+            }
+        },
+
+        bounce: function(bounceX,bounceY) {
+            var that=this;
+            if(that.x>0&&that.x<that.scrollerW-that.wrapperW) {
+                console.log('bounce',bounceX,that._x-bounceX)
+                that.root.scrollLeft=that._x-bounceX;
+                bounceX=0;
+            }
+            if(that.y>0||that.y<that.scrollerH-that.wrapperH) {
+                that.root.scrollTop=that._y+bounceY;
+                bounceY=0;
+            }
+
+            if(bounceX!=0||bounceY!=0)
+                that.$root.css({ '-webkit-transform': 'translate('+bounceX+'px,'+(bounceY)+'px) translateZ(0)' });
+        },
+
+        bounceBack: function() {
+            var that=this;
+            if(that.y!=that._y||that.x!=that._x) {
+                that.animate(that._x,that._y,2000,that.pos);
+                that.y=that._y;
+                that.x=that._x;
+            }
+        },
+
+        move: function(x,y) {
+            this.root.scrollLeft=x;
+            this._stopChange();
+        },
+
+        end: function() {
+            var that=this;
+            var x=that.x;
+
+            x=this._getX(x);
+            if(that.x!=x) {
+                that._moving(x,0,200);
+            }
+
+            var index=Math.round(x/that.wrapperW);
+            that.index(index);
+        },
+
+        _index: 0,
+        index: function(i) {
+            if(typeof i==='undefined') return this._index;
+            i=i>=this._data.length?0:i<0?this._data.length-1:i;
+
+            if(this._index!=i) {
+                this.currentData=this._data[i];
+                this._delayChange();
+                this._index=i;
+                this.move(i*this.wrapperW,0);
+            }
+        },
+
+        _startAni: function(x,y,duration) {
+            x=this._getX(x);
+            Touch.prototype._startAni.call(this,x,y,duration);
+        },
+        _getX: function(x) {
+            if(this.options.bounce&&this.options.hScroll&&(x<this.minX||x>this.maxX))
+                return x;
+
+            var w=this.wrapperW;
+            var a=x%w;
+            return x-(a>w/2?a-w:a);
+        },
+
         loop: false,
-        index: 0,
         data: function(index) {
-            return this._data[index||this.index];
+            return this._data[index||this._index];
         },
         appendItem: function() {
             var item=$(this.renderItem(''));
@@ -75,11 +168,11 @@
             that.$root=$(that.template({
                 items: items.join('')
             })).appendTo(that.$el);
+            that.root=that.$root[0];
 
             $slider=that.$slider=that.$('.js_slider');
             that.$items=$slider.children();
             that.slider=$slider[0];
-            that.slider.style['-webkit-transition']="-webkit-transform 0ms ease 0ms";
 
             //that.index=index== -1?that.length%2==0?that.length/2-1:Math.floor(that.length/2):index;
             if(that.length<2) that.loop=false;
@@ -95,8 +188,6 @@
 
             that._adjustWidth();
 
-            that._refreshXY();
-
             if(that.options.imagelazyload) {
                 that.bind("Change",function() {
                     that._loadImage();
@@ -109,10 +200,10 @@
                 that._next=$('<span class="slider-next js_next"></span>').appendTo(that.$el);
 
                 that.listen('tap .js_pre',function(e) {
-                    that.slideTo(that.index-1);
+                    that.index(that._index-1);
                 })
                 .listen('tap .js_next',function(e) {
-                    that.slideTo(that.index+1);
+                    that.index(that._index+1);
                 });
             }
 
@@ -122,13 +213,13 @@
         _loadImage: function() {
             var that=this;
 
-            var item=that.$items.eq(that.index);
+            var item=that.$items.eq(that._index);
             if(!item.prop('_detected')) {
 
                 if(that.loop) {
-                    if(that.index==0) {
+                    if(that._index==0) {
                         item=item.add(that.$slider.children(':last-child'));
-                    } else if(that.index==that.length-1) {
+                    } else if(that._index==that.length-1) {
                         item=item.add(that.$slider.children(':first-child'));
                     }
                 }
@@ -143,115 +234,35 @@
         },
 
         _adjustWidth: function() {
-
             var that=this,
                 slider=that.$slider,
                 children=slider.children(),
                 length=children.length;
 
-            slider.css({ 'margin-left': (100-that.width)/2-(that.loop?that.width:0)+'%' });
-            children.css({ width: 100/length+'%' });
+            that.wrapperW=that.root.clientWidth;
             slider.css({ width: length*that.width+'%' });
 
-            that.itemWidth=that.$items.width();
-            that.minX= -1*that.itemWidth*(that.length-1);
-            that.slider.style['-webkit-transform']='translate('+that.itemWidth*that.index* -1+'px,0px)';
-
+            that.root.scrollLeft=that.wrapperW*that._index;
+            children.css({ width: 100/length+'%' });
         },
 
-        _refreshXY: function() {
-            var that=this,
-                matix=getComputedStyle(that.slider,null)["-webkit-transform"].replace(/[^0-9\-.,]/g,'').split(',');
-
-            that.x=parseInt(matix[4]);
-            that.y=parseInt(matix[5]);
-        },
-
-        _transitionTime: function(time) {
-            time+='ms';
-            this.slider.style['-webkit-transition-duration']=time;
-        },
         _start: function(e) {
-            var that=this,
-                point=e.touches[0];
+            var that=this;
 
             if(/js_pre|js_next/.test(e.target.className)) {
                 return;
             }
-            if(that.isTransition) return;
 
-            that._stopChange();
-
-            that._isStart=true;
-            that._transitionTime(0);
-
-            that._refreshXY();
-
-            that.startX=that.x;
-            that.startY=that.y;
-            that.pointX=point.pageX;
-            that.pointY=point.pageY;
-            that.isMoved=0;
+            Touch.prototype._start.call(this,e);
         },
-        _move: function(e) {
-            if(!this._isStart) return;
 
-            var that=this,
-                point=e.touches[0],
-                changeX=that.pointX-point.pageX,
-                changeY=that.pointY-point.pageY,
-                x=that.startX-changeX;
-
-            if(that.isMoved===1) {
-                e.preventDefault();
-            } else if(that.isMoved===0) {
-
-                changeX=Math.abs(changeX);
-                changeY=Math.abs(changeY);
-
-                if(changeX>6&&changeX>changeY) {
-                    that.isMoved=1;
-                    e.preventDefault();
-                } else if(changeY>6&&changeY>changeX) {
-                    that.isMoved=2;
-                }
-                return;
-
-            } else {
-                this._isStart=false;
-                return;
-            }
-
-            that.moveX=point.pageX;
-
-            if(!that.loop) {
-                x=x>0?0:x<that.minX?that.minX:x;
-            }
-
-            that._stopChange();
-
-            that._pos(x,that.startY);
-        },
-        _pos: function(x,y) {
-            var that=this,
-                slider=that.slider;
-
-            that.x=x||0;
-            that.y=y||0;
-
-            slider.style["-webkit-transform"]='translate('+that.x+'px,'+that.y+'px) translateZ(0)';
-        },
-        _transitionEnd: function() {
-            var that=this;
-            that._transitionTime(0);
-        },
         _delayChange: function() {
             var that=this;
 
             that.timer=setTimeout(function() {
                 that.timer=false;
-                that.options.onChange&&that.options.onChange.call(that,that.index);
-                that.trigger('Change',that.index);
+                that.options.onChange&&that.options.onChange.call(that,that._index);
+                that.trigger('Change',[that._index,that.currentData]);
             },400);
         },
         _stopChange: function() {
@@ -261,68 +272,7 @@
                 that.timer=false;
             }
         },
-        _end: function(e) {
-            var that=this,
-                point=e.changedTouches[0],
-                changeX=that.pointX-point.pageX,
-                x;
 
-
-            if(!that._isStart) return;
-            that._isStart=false;
-
-            if(that.isMoved!==1) {
-                return;
-            }
-
-            if(!that.loop&&(that.startX-changeX>0||that.startX-changeX<that.minX)) {
-            } else {
-                var index=that.index;
-                if(changeX>20) {
-                    index++;
-                } else if(changeX< -20) {
-                    index--;
-                } else if(that.loop) {
-                }
-
-                that.slideTo(index);
-            }
-        },
-        slideTo: function(to) {
-            var that=this;
-
-            if(that.isTransition) return;
-            that.isTransition=true;
-
-            that._transitionTime(200);
-
-            x=that.itemWidth*to* -1;
-
-            if(to>=that.length) to=0;
-            else if(to<0) to=that.length-1;
-
-            var timer=setTimeout(function() {
-                timer=false;
-                that.isTransition=false;
-            },300);
-
-            that.$slider.one($.fx.transitionEnd,function() {
-                timer&&clearTimeout(timer);
-                that.isTransition=false;
-                that._transitionEnd();
-
-                if(to==that.length-1||to==0) {
-                    that._pos(that.itemWidth*to* -1,that.startY);
-                }
-            });
-
-            that._pos(x,that.startY);
-
-            if(that.index!=to) {
-                that.index=to;
-                that._delayChange();
-            }
-        },
         onDestory: function() {
             $(window).off('ortchange',this._adjustWidth);
         }

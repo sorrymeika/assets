@@ -14,17 +14,21 @@
         },
 
         options: {
-            bounce: false
+            bounce: false,
+            hScroll: true,
+            vScroll: true
         },
         initialize: function() {
         },
         x: 0,
         y: 0,
+        minX: 0,
         maxX: 0,
         minY: 0,
         minDelta: 6,
         start: function() {
             var that=this;
+            this.minX=0;
             this.maxX=0;
             this.minY=0;
             this.maxY=this.el.offsetHeight;
@@ -42,10 +46,19 @@
             this.end();
         },
 
-        bounce: function() {
+        bounce: function(bounceX,bounceY) {
+            this.$el.css({ '-webkit-transform': 'translate('+bounceX+'px,'+(bounceY)+'px) translateZ(0)' });
         },
 
         bounceBack: function() {
+            var that=this;
+            if(that.y!=that._y||that.x!=that._x) {
+                that.$el.animate({ '-webkit-transform': 'translate(0px,0px) translateZ(0)' },200,'ease-out',function() {
+                    that.$el.css({ '-webkit-transform': '' });
+                });
+                that.y=that._y;
+                that.x=that._x;
+            }
         },
 
         _transitionTime: function(time) {
@@ -62,9 +75,15 @@
             that.startTime=e.timeStamp||Date.now();
 
             that._isStop=false;
-            that._isStopMomentum=true;
             that._isStart=false;
             that._moved=false;
+            if(that._isMomentum) {
+                that._isMomentumStop=true;
+                that._isMomentum=false;
+            } else {
+                that._isMomentumStop=false;
+            }
+            that._isStopMomentum=true;
         },
 
         _move: function(e) {
@@ -74,7 +93,6 @@
                 this._isStop=true;
                 return;
             }
-            e.preventDefault();
 
             var that=this;
             var point=hasTouch?e.touches[0]:e;
@@ -82,9 +100,11 @@
             var deltaY=that.pointY-point.pageY;
 
             if(!that._isStart) {
-                if(m.abs(deltaX)>=that.minDelta||m.abs(deltaY)>=that.minDelta) {
-                    that._isStart=(that.start()!==false);
-                    that._isStop=!that._isStart;
+                var isV=m.abs(deltaY)>=that.minDelta;
+                var isH=m.abs(deltaX)>=that.minDelta;
+                if(isH||isV) {
+                    that._isStart=(isV&&that.options.vScroll||isH&&that.options.hScroll)&&(that.start()!==false);
+                    if(that._isStop=!that._isStart) return;
 
                     that.startX=that.x;
                     that.startY=that.y;
@@ -93,6 +113,7 @@
                 } else
                     return;
             }
+            e.preventDefault();
 
             var newX=that.x+deltaX,
                 newY=that.y+deltaY,
@@ -128,19 +149,23 @@
                 newDuration;
 
             if(!that._moved) {
+                if(that._isMomentumStop) {
+                    that.stop();
+                }
                 return;
             }
 
             e.preventDefault();
 
             if(duration<300) {
-                momentumX=newPosX?that._momentum(newPosX-that.startX,duration,that.maxX-that.x,that.x,that.options.bounce?(that.wrapperW||window.innerWidth):0):momentumX;
+                momentumX=newPosX?that._momentum(newPosX-that.startX,duration,that.maxX-that.x,that.x-that.minX,that.options.bounce?(that.wrapperW||window.innerWidth):0):momentumX;
                 momentumY=newPosY?that._momentum(newPosY-that.startY,duration,that.maxY-that.y,that.y-that.minY,that.options.bounce?(that.wrapperH||window.innerHeight):0):momentumY;
+
 
                 newPosX=that.x+momentumX.dist;
                 newPosY=that.y+momentumY.dist;
 
-                if((that.x<0&&newPosX<0)||(that.x>that.maxX&&newPosX>that.maxX)) momentumX={ dist: 0,time: 0 };
+                if((that.x<that.minX&&newPosX<that.minX)||(that.x>that.maxX&&newPosX>that.maxX)) momentumX={ dist: 0,time: 0 };
                 if((that.y<that.minY&&newPosY<that.minY)||(that.y>that.maxY&&newPosY>that.maxY)) momentumY={ dist: 0,time: 0 };
             }
 
@@ -182,7 +207,7 @@
             return { dist: newDist,time: m.round(newTime) };
         },
 
-        _startAni: function(x,y,duration) {
+        animate: function(x,y,duration,fn) {
             var that=this;
             var start=0,
                 during=duration,
@@ -190,23 +215,32 @@
                 fromY=that.y,
                 startTime=Date.now(),
                 _run=function() {
-                    if(that._isStopMomentum) return;
+                    if(that._isStopMomentum) {
+                        return;
+                    }
                     start=Date.now()-startTime;
 
                     var cx=easeOut(start,fromX,x-fromX,during),
                         cy=easeOut(start,fromY,y-fromY,during);
 
                     if(start<=during) {
-                        that._moving(cx,cy);
+                        fn.call(that,cx,cy);
                         requestAnimationFrame(_run);
                     } else {
-                        that._moving(x,y);
+                        fn.call(that,x,y);
                         that._isStopMomentum=true;
                         that.stop();
                     }
                 };
+
+            !fn&&(fn=that._moving);
             that._isStopMomentum=false;
+            that._isMomentum=true;
             _run();
+        },
+
+        _startAni: function(x,y,duration) {
+            this.animate(x,y,duration);
         },
 
         _moving: function(x,y,duration) {
@@ -219,13 +253,18 @@
                 var bounceX=0;
                 var bounceY=0;
 
-                x=x<0?0:x>=that.maxX?that.maxX:x;
                 if(x!=that.x) {
+                    if(that.options.bounce&&that.options.hScroll&&(x<that.minX||x>that.maxX)) {
+                        bounceX=x<that.minX?x-that.minX:x-that.maxX;
+                        bounceX= -1*bounceX/2;
+                    }
+
                     that.x=x;
+                    x=x<that.minX?that.minX:x>=that.maxX?that.maxX:x;
                 }
 
                 if(y!=that.y) {
-                    if(y<that.minY||y>that.maxY) {
+                    if(that.options.bounce&&that.options.vScroll&&(y<that.minY||y>that.maxY)) {
                         bounceY=y<that.minY?y-that.minY:y-that.maxY;
                         bounceY= -1*bounceY/2;
                     }

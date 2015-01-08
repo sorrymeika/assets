@@ -35,20 +35,9 @@
             that.maxX=that.scrollerW-that.wrapperW;
             that.maxY=that.scrollerH-that.wrapperH;
             that.minY=0;
+            that.minX=0;
 
             return that.options.bounce?true:((that.wrapperW<that.scrollerW||that.wrapperH<that.scrollerH)==true);
-        },
-
-        bounce: function(bounceX,bounceY) {
-            this.$el.css({ '-webkit-transform': 'translate('+bounceX+'px,'+(bounceY)+'px) translateZ(0)' });
-        },
-
-        bounceBack: function() {
-            var that=this;
-            that.$el.animate({ '-webkit-transform': 'translate(0px,0px) translateZ(0)' },200,'ease-out',function() {
-                that.$el.css({ '-webkit-transform': '' });
-            });
-            that.y=that.el.scrollTop;
         },
 
         move: function(x,y) {
