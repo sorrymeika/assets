@@ -6,39 +6,35 @@
     var tmpl=require('./../tmpl');
 
     var selector=Touch.extend({
+        options: {
+            bounce: false,
+            vScroll: false
+        },
         start: function() {
             var that=this;
-            that.y=that.con.scrollTop;
-            that.startY=that.y;
-            that.wrapperH=that.con.clientHeight;
-            that.scrollerH=that.con.scrollHeight;
             that.maxY=that.scrollerH-that.wrapperH;
             that.minY=0;
             return true;
         },
         itemHeight: 26,
         minDelta: 0,
-        move: function(x,y) {
-            var that=this;
-            that.con.scrollTop=y;
-        },
 
-        _startAni: function(x,y,duration) {
+        _startMomentumAni: function(x,y,duration) {
             y=this._getY(y);
-            Touch.prototype._startAni.call(this,x,y,duration);
+            Touch.prototype._startMomentumAni.call(this,x,y,duration);
         },
         _getY: function(y) {
             var a=y%this.itemHeight;
             return y-(a>20?a-this.itemHeight:a);
         },
 
-        end: function() {
+        onScrollStop: function() {
             var that=this;
             var y=that.y;
 
             y=this._getY(y);
             if(that.y!=y) {
-                that._moving(0,y,200);
+                that.animate(0,y,200);
             }
 
             var index=Math.round(y/that.itemHeight);
@@ -52,7 +48,9 @@
                 this.currentData=this.data[i];
                 this.trigger('Change',[i,this.currentData]);
                 this._index=i;
-                this.move(0,i*this.itemHeight);
+
+                var y=i*this.itemHeight;
+                y!=this._y&&this.pos(0,y,200);
             }
         },
 
@@ -79,8 +77,8 @@
 
             options.onChange&&this.on("Change",options.onChange);
 
-            this.$con=this.$('.selectorcon');
-            this.con=this.$con[0];
+            this.$scroll=this.$('.selectorcon');
+            this.scroll=this.$scroll[0];
 
             this.$bd=this.$('.selectorcon ul');
 
@@ -179,7 +177,7 @@
             },300,'ease-out',function() {
                 that._visible=true;
                 that.each(function() {
-                    this.move(0,this._index*this.itemHeight);
+                    this._pos(0,this._index*this.itemHeight);
                 });
             }));
 

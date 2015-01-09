@@ -319,7 +319,7 @@
 
         _getOrCreateActivity: function(url,callback) {
             var that=this,
-                route=that.matchRoute(url);
+                route=typeof url==='string'?that.matchRoute(url):url;
 
             if(!route) return;
 

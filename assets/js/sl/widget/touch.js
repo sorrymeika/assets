@@ -19,51 +19,107 @@
             vScroll: true
         },
         initialize: function() {
+            this.$scroll=this.$el;
+            this.scroll=this.el;
         },
         x: 0,
         y: 0,
         minX: 0,
         maxX: 0,
         minY: 0,
+        bounceX: 0,
+        bounceY: 0,
         minDelta: 6,
         start: function() {
             var that=this;
             this.minX=0;
             this.maxX=0;
             this.minY=0;
-            this.maxY=this.el.offsetHeight;
+            this.maxY=this.scroll.offsetHeight;
             return true;
         },
+        _aniTimer: 0,
 
-        move: function(x,y) {
+        stopAnimate: function() {
+            this._aniTimer&&(cancelAnimationFrame(this._aniTimer),this._aniTimer=0,this._isAniStop=true);
         },
 
-        end: function() {
+        animate: function(x,y,duration,fn) {
+            var that=this;
+            var start=0,
+                during=duration,
+                fromX=that._posX,
+                fromY=that._posY,
+                startTime=Date.now(),
+                _run=function() {
+                    start=Date.now()-startTime;
+
+                    if(start<=during) {
+                        var cx=easeOut(start,fromX,x-fromX,during),
+                            cy=easeOut(start,fromY,y-fromY,during);
+
+                        fn.call(that,m.round(cx),m.round(cy));
+                        that._aniTimer=requestAnimationFrame(_run);
+                    } else {
+                        fn.call(that,x,y);
+
+                        that.end();
+                    }
+                };
+
+            !fn&&(fn=that.pos);
+            _run();
         },
 
-        stop: function() {
-            this.options.bounce&&this.bounceBack();
-            this.end();
-        },
+        _pos: function(x,y) {
+            var that=this;
+            var maxX=that.scrollerW-that.wrapperW;
+            var maxY=that.scrollerH-that.wrapperH;
+            var bounceX=0;
+            var bounceY=0;
+            if(that._posX==x&&that._posY==y) return;
 
-        bounce: function(bounceX,bounceY) {
-            this.$el.css({ '-webkit-transform': 'translate('+bounceX+'px,'+(bounceY)+'px) translateZ(0)' });
+            if(x>=0&&x<=maxX) {
+                that.scroll.scrollLeft=x;
+            } else {
+                that.scroll.scrollLeft=that._x;
+                bounceX=that._x-x;
+            }
+
+            that._posX=x;
+            that._posY=y;
+
+            if(y>=0&&y<=maxY) {
+                that.scroll.scrollTop=y;
+            } else {
+                that.scroll.scrollTop=that._y;
+                bounceY=that._y-y;
+            }
+
+            if(bounceX!=0||bounceY!=0)
+                that.$scroll.css({ '-webkit-transform': 'translate('+bounceX+'px,'+bounceY+'px) translateZ(0)' });
+            else
+                that.$scroll.css({ '-webkit-transform': '' });
+
+            that.onScroll&&that.onScroll(x,y);
         },
 
         bounceBack: function() {
             var that=this;
-            if(that.y!=that._y||that.x!=that._x) {
-                that.$el.animate({ '-webkit-transform': 'translate(0px,0px) translateZ(0)' },200,'ease-out',function() {
-                    that.$el.css({ '-webkit-transform': '' });
-                });
+            if(that._posY!=that._y||that._posX!=that._x) {
+                that.animate(that._x,that._y,200,that._pos);
                 that.y=that._y;
                 that.x=that._x;
-            }
+
+            } else
+                that.onScrollStop();
         },
 
-        _transitionTime: function(time) {
-            time+='ms';
-            this.el.style['-webkit-transition-duration']=time;
+        end: function() {
+            this.options.bounce?this.bounceBack():this.onScrollStop();
+        },
+
+        onScrollStop: function() {
         },
 
         _start: function(e) {
@@ -77,13 +133,25 @@
             that._isStop=false;
             that._isStart=false;
             that._moved=false;
-            if(that._isMomentum) {
-                that._isMomentumStop=true;
-                that._isMomentum=false;
-            } else {
-                that._isMomentumStop=false;
-            }
-            that._isStopMomentum=true;
+            that.stopAnimate();
+        },
+
+        _refersh: function() {
+            var that=this;
+            that._x=that.x=that.scroll.scrollLeft;
+            that._y=that.y=that.scroll.scrollTop;
+
+            that.bounceX=0;
+            that.bounceY=0;
+
+            that.startX=that.x;
+            that.startY=that.y;
+
+            that.wrapperW=that.scroll.clientWidth;
+            that.wrapperH=that.scroll.clientHeight;
+
+            that.scrollerW=that.scroll.scrollWidth;
+            that.scrollerH=that.scroll.scrollHeight;
         },
 
         _move: function(e) {
@@ -103,13 +171,10 @@
                 var isV=m.abs(deltaY)>=that.minDelta;
                 var isH=m.abs(deltaX)>=that.minDelta;
                 if(isH||isV) {
+                    that._refersh();
                     that._isStart=(isV&&that.options.vScroll||isH&&that.options.hScroll)&&(that.start()!==false);
                     if(that._isStop=!that._isStart) return;
 
-                    that.startX=that.x;
-                    that.startY=that.y;
-                    that._x=that.x;
-                    that._y=that.y;
                 } else
                     return;
             }
@@ -124,7 +189,7 @@
 
             that._moved=true;
 
-            that._moving(newX,newY);
+            that.pos(newX,newY);
 
             if(timestamp-that.startTime>300) {
                 that.startTime=timestamp;
@@ -134,12 +199,18 @@
         },
 
         _end: function(e) {
-            this._isStop=true;
+            var that=this;
+            if((!that._moved||that._isStop)&&that._isAniStop) {
+                that.end();
+                that._isAniStop=false;
+            }
 
-            if(hasTouch&&e.touches.length!==0) return;
+            if(that._isStop) return;
+            that._isStop=true;
 
-            var that=this,
-                point=hasTouch?e.changedTouches[0]:e,
+            if(!that._moved||hasTouch&&e.touches.length!==0) return;
+
+            var point=hasTouch?e.changedTouches[0]:e,
                 target,ev,
                 momentumX={ dist: 0,time: 0 },
                 momentumY={ dist: 0,time: 0 },
@@ -147,13 +218,6 @@
                 newPosX=that.x,
                 newPosY=that.y,
                 newDuration;
-
-            if(!that._moved) {
-                if(that._isMomentumStop) {
-                    that.stop();
-                }
-                return;
-            }
 
             e.preventDefault();
 
@@ -172,9 +236,9 @@
             if(momentumX.dist||momentumY.dist) {
                 newDuration=m.max(m.max(momentumX.time,momentumY.time),10);
 
-                that._moving(m.round(newPosX),m.round(newPosY),newDuration);
+                that.pos(m.round(newPosX),m.round(newPosY),newDuration);
             } else {
-                that.stop();
+                that.end();
             }
         },
 
@@ -207,78 +271,35 @@
             return { dist: newDist,time: m.round(newTime) };
         },
 
-        animate: function(x,y,duration,fn) {
-            var that=this;
-            var start=0,
-                during=duration,
-                fromX=that.x,
-                fromY=that.y,
-                startTime=Date.now(),
-                _run=function() {
-                    if(that._isStopMomentum) {
-                        return;
-                    }
-                    start=Date.now()-startTime;
-
-                    var cx=easeOut(start,fromX,x-fromX,during),
-                        cy=easeOut(start,fromY,y-fromY,during);
-
-                    if(start<=during) {
-                        fn.call(that,cx,cy);
-                        requestAnimationFrame(_run);
-                    } else {
-                        fn.call(that,x,y);
-                        that._isStopMomentum=true;
-                        that.stop();
-                    }
-                };
-
-            !fn&&(fn=that._moving);
-            that._isStopMomentum=false;
-            that._isMomentum=true;
-            _run();
-        },
-
-        _startAni: function(x,y,duration) {
+        _startMomentumAni: function(x,y,duration) {
             this.animate(x,y,duration);
         },
 
-        _moving: function(x,y,duration) {
+        pos: function(x,y,duration) {
             var that=this;
 
             if(typeof duration!='undefined') {
-                that._startAni(x,y,duration);
+                that._startMomentumAni(x,y,duration);
 
             } else {
-                var bounceX=0;
-                var bounceY=0;
 
-                if(x!=that.x) {
-                    if(that.options.bounce&&that.options.hScroll&&(x<that.minX||x>that.maxX)) {
-                        bounceX=x<that.minX?x-that.minX:x-that.maxX;
-                        bounceX= -1*bounceX/2;
-                    }
-
+                that._x=x<that.minX?that.minX:x>=that.maxX?that.maxX:x;
+                if(that.options.bounce&&that.options.hScroll&&(x<that.minX||x>that.maxX)) {
+                    that.bounceX=(x<that.minX?x-that.minX:x-that.maxX)/2;
                     that.x=x;
-                    x=x<that.minX?that.minX:x>=that.maxX?that.maxX:x;
-                }
+                } else
+                    that.x=that._x;
 
                 if(y!=that.y) {
+                    that._y=y<that.minY?that.minY:y>=that.maxY?that.maxY:y;
                     if(that.options.bounce&&that.options.vScroll&&(y<that.minY||y>that.maxY)) {
-                        bounceY=y<that.minY?y-that.minY:y-that.maxY;
-                        bounceY= -1*bounceY/2;
-                    }
-                    that.y=y;
-                    y=y<that.minY?that.minY:y>=that.maxY?that.maxY:y;
+                        that.bounceY=(y<that.minY?y-that.minY:y-that.maxY)/2;
+                        that.y=y;
+                    } else
+                        that.y=that._y;
                 }
 
-                if(bounceX!=0||bounceY!=0) that.bounce(bounceX,bounceY);
-
-                if(that._y!=y||that._x!=x) {
-                    that._y=y;
-                    that._x=x;
-                    that.move(x,y);
-                }
+                that._pos(that._x+that.bounceX,that._y+that.bounceY);
             }
         }
     });

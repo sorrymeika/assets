@@ -9,7 +9,7 @@
     require('extend/ortchange');
 
     var Slider=Touch.extend({
-
+        widgetName: 'Slider',
         options: {
             index: -1,
             width: '100%',
@@ -24,65 +24,24 @@
 
         start: function() {
             var that=this;
-            that.x=that.root.scrollLeft;
-            that.startX=that.x;
-            that.wrapperW=that.root.clientWidth;
-            that.scrollerW=that.root.scrollWidth;
-            that.maxX=Math.min(that.scrollerW-that.wrapperW,(that._index+1)*that.wrapperW);
-            that.minX=Math.max(0,(that._index-1)*that.wrapperW);
+            var x=that._getX(that.x);
+            var index=Math.round(x/that.wrapperW);
+
+            that.maxX=Math.min(that.scrollerW-that.wrapperW,(index+1)*that.wrapperW);
+            that.minX=Math.max(0,(index-1)*that.wrapperW);
             return true;
         },
 
-        pos: function(x,y) {
-            var that=this;
-            var maxX=that.scrollerW-that.wrapperW;
-            if(x>0&&x<maxX) {
-                that.root.scrollLeft=x;
-            } else if(x==0||x==maxX) {
-                that.root.scrollLeft=x;
-                that.$root.css({ '-webkit-transform': '' });
-            } else {
-                that.$root.css({ '-webkit-transform': 'translate('+(that._x-x)+'px,0px) translateZ(0)' });
-            }
+        onScroll: function(x,y) {
         },
 
-        bounce: function(bounceX,bounceY) {
-            var that=this;
-            if(that.x>0&&that.x<that.scrollerW-that.wrapperW) {
-                console.log('bounce',bounceX,that._x-bounceX)
-                that.root.scrollLeft=that._x-bounceX;
-                bounceX=0;
-            }
-            if(that.y>0||that.y<that.scrollerH-that.wrapperH) {
-                that.root.scrollTop=that._y+bounceY;
-                bounceY=0;
-            }
-
-            if(bounceX!=0||bounceY!=0)
-                that.$root.css({ '-webkit-transform': 'translate('+bounceX+'px,'+(bounceY)+'px) translateZ(0)' });
-        },
-
-        bounceBack: function() {
-            var that=this;
-            if(that.y!=that._y||that.x!=that._x) {
-                that.animate(that._x,that._y,2000,that.pos);
-                that.y=that._y;
-                that.x=that._x;
-            }
-        },
-
-        move: function(x,y) {
-            this.root.scrollLeft=x;
-            this._stopChange();
-        },
-
-        end: function() {
+        onScrollStop: function() {
             var that=this;
             var x=that.x;
 
             x=this._getX(x);
             if(that.x!=x) {
-                that._moving(x,0,200);
+                that.animate(x,0,200);
             }
 
             var index=Math.round(x/that.wrapperW);
@@ -96,20 +55,20 @@
 
             if(this._index!=i) {
                 this.currentData=this._data[i];
-                this._delayChange();
+                this._change();
                 this._index=i;
-                this.move(i*this.wrapperW,0);
+
+                var x=i*this.wrapperW;
+                x!=this._x&&this.pos(x,0,200);
             }
         },
 
-        _startAni: function(x,y,duration) {
-            x=this._getX(x);
-            Touch.prototype._startAni.call(this,x,y,duration);
+        _startMomentumAni: function(x,y,duration) {
+            //this.animate(x,y,duration);
+            this.animate(x>this.x?Math.max(x,this.maxX):Math.min(x,this.minX),y,duration);
         },
-        _getX: function(x) {
-            if(this.options.bounce&&this.options.hScroll&&(x<this.minX||x>this.maxX))
-                return x;
 
+        _getX: function(x) {
             var w=this.wrapperW;
             var a=x%w;
             return x-(a>w/2?a-w:a);
@@ -165,10 +124,10 @@
                 items.push(that.render(data[i]));
             }
 
-            that.$root=$(that.template({
+            that.$scroll=$(that.template({
                 items: items.join('')
             })).appendTo(that.$el);
-            that.root=that.$root[0];
+            that.scroll=that.$scroll[0];
 
             $slider=that.$slider=that.$('.js_slider');
             that.$items=$slider.children();
@@ -239,10 +198,10 @@
                 children=slider.children(),
                 length=children.length;
 
-            that.wrapperW=that.root.clientWidth;
+            that.wrapperW=that.scroll.clientWidth;
             slider.css({ width: length*that.width+'%' });
 
-            that.root.scrollLeft=that.wrapperW*that._index;
+            that.scroll.scrollLeft=that.wrapperW*that._index;
             children.css({ width: 100/length+'%' });
         },
 
@@ -256,21 +215,11 @@
             Touch.prototype._start.call(this,e);
         },
 
-        _delayChange: function() {
+        _change: function() {
             var that=this;
 
-            that.timer=setTimeout(function() {
-                that.timer=false;
-                that.options.onChange&&that.options.onChange.call(that,that._index);
-                that.trigger('Change',[that._index,that.currentData]);
-            },400);
-        },
-        _stopChange: function() {
-            var that=this;
-            if(that.timer) {
-                clearTimeout(that.timer);
-                that.timer=false;
-            }
+            that.options.onChange&&that.options.onChange.call(that,that._index);
+            that.trigger('Change',[that._index,that.currentData]);
         },
 
         onDestory: function() {

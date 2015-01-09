@@ -22,6 +22,13 @@
             return (hash.replace(/^#/,'')||'/').toLowerCase();
         };
 
+    var checkQueryString=function(activity,route) {
+        if(activity.route.hash!=route.hash) {
+            activity._setRoute(route);
+            activity.trigger('QueryChange');
+        }
+    };
+
     var Activity=view.extend({
         plugins: [templatePlugin],
         options: {
@@ -274,19 +281,20 @@
                 application.navigate(url);
             }
 
-            if(application._currentActivity.url==url) {
+            var currentActivity=application._currentActivity;
+            var route=application.matchRoute(url);
+
+            if(currentActivity.url==url) {
+                checkQueryString(currentActivity,route);
                 application.turning();
                 return;
             }
 
-            application._getOrCreateActivity(url,function(activity,route) {
+            application._getOrCreateActivity(route,function(activity) {
                 animationName=animationName||(type=='open'?activity:that).animationName;
 
-                if(activity.route.hash!=route.hash) {
-                    activity._setRoute(route);
-                    activity.trigger('QueryChange');
-                }
                 if(activity.url==that.url) {
+                    checkQueryString(activity,route);
                     application.turning();
                     return;
                 }
