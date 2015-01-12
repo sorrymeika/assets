@@ -120,8 +120,9 @@
 
                 if(m) {
                     result={
-                        url: m[0],
-                        hash: hash,
+                        path: m[0],
+                        url: hash,
+                        hash: '#'+hash,
                         view: route.view,
                         data: {},
                         queryString: query,
@@ -197,7 +198,7 @@
             if(!location.hash) location.hash='/';
             that.hash=hash=hashToUrl(location.hash);
 
-            that.queue(that,that._getOrCreateActivity,hash,function(activity) {
+            that.queue(that,that._getActivity,hash,function(activity) {
                 that._currentActivity=activity;
                 that._history.push(activity.hash);
                 that._historyCursor++;
@@ -245,8 +246,6 @@
             var scrollBottom;
             var $target=e.$target;
             var $el=$target.closest('.main,.scroll');
-
-            console.log('asdf')
 
             if($el.length) {
                 var offset=$target.offset();
@@ -317,7 +316,7 @@
 
         viewPath: 'views/',
 
-        _getOrCreateActivity: function(url,callback) {
+        _getActivity: function(url,callback) {
             var that=this,
                 route=typeof url==='string'?that.matchRoute(url):url;
 

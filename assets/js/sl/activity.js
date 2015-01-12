@@ -23,7 +23,7 @@
         };
 
     var checkQueryString=function(activity,route) {
-        if(activity.route.hash!=route.hash) {
+        if(activity.route.url!=route.url) {
             activity._setRoute(route);
             activity.trigger('QueryChange');
         }
@@ -42,6 +42,7 @@
             this.route=route;
             this.hash=route.hash;
             this.url=route.url;
+            this.path=route.path;
             this._queries=this.queries;
             this.queries=$.extend({},route.queries);
         },
@@ -56,7 +57,7 @@
                 this.route.queries[key]=val||'';
 
             var queries=$.param(this.route.queries);
-            this.application.to(this.route.url+(queries?'?'+queries:''));
+            this.application.to(this.route.path+(queries?'?'+queries:''));
         },
 
         initialize: function() {
@@ -66,6 +67,8 @@
             that.className=that.el.className;
 
             that._setRoute(that.options.route);
+
+            that.$el.data('url',that.url).data('path',that.path);
 
             that.application=that.options.application;
 
@@ -234,7 +237,7 @@
         },
 
         compareUrl: function(url) {
-            return getUrlPath(url)===this.route.url.toLowerCase();
+            return getUrlPath(url)===this.route.path.toLowerCase();
         },
 
         //onShow后才可调用
@@ -242,7 +245,7 @@
             var that=this,
                 application=that.application;
 
-            application._getOrCreateActivity(url,function(activity,route) {
+            application._getActivity(url,function(activity,route) {
                 activity.el.className=activity.className+' active';
                 application.$el.append(activity.$el);
                 application._currentActivity=activity;
@@ -284,22 +287,22 @@
             var currentActivity=application._currentActivity;
             var route=application.matchRoute(url);
 
-            if(currentActivity.url==url) {
+            if(currentActivity.path==route.path) {
                 checkQueryString(currentActivity,route);
                 application.turning();
                 return;
             }
 
-            application._getOrCreateActivity(route,function(activity) {
+            application._getActivity(route,function(activity) {
                 animationName=animationName||(type=='open'?activity:that).animationName;
 
-                if(activity.url==that.url) {
+                if(activity.path==that.path) {
                     checkQueryString(activity,route);
                     application.turning();
                     return;
                 }
 
-                application.siblings(route.url,that.url);
+                application.siblings(route.path,that.path);
                 application._currentActivity=activity;
 
                 that.prepareExitAnimation();
