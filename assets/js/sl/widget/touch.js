@@ -111,8 +111,9 @@
                 that.y=that._y;
                 that.x=that._x;
 
-            } else
+            } else {
                 that.onScrollStop();
+            }
         },
 
         end: function() {
@@ -225,12 +226,11 @@
                 momentumX=newPosX?that._momentum(newPosX-that.startX,duration,that.maxX-that.x,that.x-that.minX,that.options.bounce?(that.wrapperW||window.innerWidth):0):momentumX;
                 momentumY=newPosY?that._momentum(newPosY-that.startY,duration,that.maxY-that.y,that.y-that.minY,that.options.bounce?(that.wrapperH||window.innerHeight):0):momentumY;
 
-
                 newPosX=that.x+momentumX.dist;
                 newPosY=that.y+momentumY.dist;
 
-                if((that.x<that.minX&&newPosX<that.minX)||(that.x>that.maxX&&newPosX>that.maxX)) momentumX={ dist: 0,time: 0 };
-                if((that.y<that.minY&&newPosY<that.minY)||(that.y>that.maxY&&newPosY>that.maxY)) momentumY={ dist: 0,time: 0 };
+                if(!that.options.hScroll||(that.x<that.minX&&newPosX<that.minX)||(that.x>that.maxX&&newPosX>that.maxX)) momentumX={ dist: 0,time: 0 };
+                if(!that.options.vScroll||(that.y<that.minY&&newPosY<that.minY)||(that.y>that.maxY&&newPosY>that.maxY)) momentumY={ dist: 0,time: 0 };
             }
 
             if(momentumX.dist||momentumY.dist) {

@@ -37,12 +37,7 @@
 
         onScrollStop: function() {
             var that=this;
-            var x=that.x;
-
-            x=this._getX(x);
-            if(that.x!=x) {
-                that.animate(x,0,200);
-            }
+            var x=that._x;
 
             var index=Math.round(x/that.wrapperW);
             that.index(index);
@@ -57,15 +52,14 @@
                 this.currentData=this._data[i];
                 this._change();
                 this._index=i;
-
-                var x=i*this.wrapperW;
-                x!=this._x&&this.pos(x,0,200);
             }
+            var x=i*this.wrapperW;
+            x!=this._x&&this.animate(x,0,200);
         },
 
         _startMomentumAni: function(x,y,duration) {
             //this.animate(x,y,duration);
-            this.animate(x>this.x?Math.max(x,this.maxX):Math.min(x,this.minX),y,duration);
+            this.animate(x>this._x?Math.max(x,this.maxX):Math.min(x,this.minX),y,duration);
         },
 
         _getX: function(x) {
