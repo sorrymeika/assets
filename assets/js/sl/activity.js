@@ -77,7 +77,7 @@
             that.on('Show',that.onShow);
             that.on('Pause',that.onPause);
             that.on('QueryChange',that.onQueryChange);
-            that.on('QueryChange',that._handleQueryActions);
+            that.on('QueryChange',that.checkQuery);
             that._scrolls=[];
 
             that._dfd=$.when(that.options.templateEnabled&&that.initWithTemplate())
@@ -89,7 +89,7 @@
                 .then($.proxy(that.onCreate,that))
                 .then(function() {
                     that.trigger('Start');
-                    that._handleQueryActions();
+                    that.checkQuery();
                 });
         },
 
@@ -124,7 +124,7 @@
         },
 
         _queryActions: {},
-        _handleQueryActions: function() {
+        checkQuery: function() {
             var that=this;
             var queries=that.queries;
             var prevQueries=that._queries;
@@ -218,9 +218,9 @@
             if(that.isPrepareExitAnimation) return;
             var application=that.application;
             that.isPrepareExitAnimation=true;
-            if(application.currentInput) {
-                application.currentInput.blur();
-                application.currentInput=null;
+            if(application.activeInput) {
+                application.activeInput.blur();
+                application.activeInput=null;
             }
             application.mask.show();
         },
@@ -302,7 +302,7 @@
                     return;
                 }
 
-                application.siblings(route.path,that.path);
+                application.$el.children(':not([data-path="'+that.path+'"]),:not([data-path="'+route.path+'"])').addClass('stop');
                 application._currentActivity=activity;
 
                 that.prepareExitAnimation();

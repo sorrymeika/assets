@@ -53,11 +53,12 @@
             'tap [data-forward]': function(e) {
                 this._currentActivity.forward($(e.currentTarget).attr('data-forward'));
             },
-            'touchmove header,footer': function(e) {
+            'touchmove': function(e) {
                 e.preventDefault();
+                return false;
             },
             'focus input': function(e) {
-                this.currentInput=e.target;
+                this.activeInput=e.target;
             }
         },
 
@@ -186,11 +187,12 @@
             that.windowWidth=window.innerWidth;
             that.windowHeight=window.innerHeight;
             $win.on('heightchange',function() {
-                if(that.windowWidth==window.innerWidth) {
-                    $win.trigger($.Event("showSoftInput",{ $target: $(that.currentInput) }));
+                if(that.windowWidth==window.innerWidth&&that.windowHeight>window.innerHeight) {
+                    $win.trigger($.Event("showSoftInput",{ activeInput: that.activeInput }));
                 } else {
                     that.windowWidth=window.innerWidth;
                 }
+                that.windowHeight=window.innerHeight;
             });
 
             that.listenTo($win,'showSoftInput',that._onShowSoftInput);
@@ -244,7 +246,7 @@
         _onShowSoftInput: function(e) {
             var that=this;
             var scrollBottom;
-            var $target=e.$target;
+            var $target=$(e.activeInput);
             var $el=$target.closest('.main,.scroll');
 
             if($el.length) {
@@ -306,14 +308,6 @@
             this._activities[getUrlPath(url)]=undefined;
         },
 
-        siblings: function(url,url1) {
-            $.each(this._activities,function(k,activity) {
-                if(typeof activity!=='undefined'&&k!=url&&k!=url1) {
-                    activity.$el.addClass('stop');
-                }
-            });
-        },
-
         viewPath: 'views/',
 
         _getActivity: function(url,callback) {
@@ -322,7 +316,7 @@
 
             if(!route) return;
 
-            var activity=that.get(route.url);
+            var activity=that.get(route.path);
 
             if(activity==null) {
                 seajs.use(that.viewPath+route.view,function(ActivityClass) {
@@ -331,7 +325,7 @@
                             application: that,
                             route: route
                         });
-                        that.set(route.url,activity);
+                        that.set(route.path,activity);
 
                         activity.then(function() {
                             callback.call(that,activity,route);

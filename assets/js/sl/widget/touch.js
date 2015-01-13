@@ -211,6 +211,8 @@
 
             if(!that._moved||hasTouch&&e.touches.length!==0) return;
 
+            $(e.target).trigger('touchcancel');
+
             var point=hasTouch?e.changedTouches[0]:e,
                 target,ev,
                 momentumX={ dist: 0,time: 0 },
