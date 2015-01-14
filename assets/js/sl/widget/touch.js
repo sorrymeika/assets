@@ -4,7 +4,7 @@
         tween=require('./../tween'),
         hasTouch='ontouchstart' in window,
         m=Math,
-        easeOut=tween.Quad.easeOut;
+        easeOut=tween.easeOut;
 
     var Touch=view.extend({
         events: {
@@ -27,8 +27,6 @@
         minX: 0,
         maxX: 0,
         minY: 0,
-        bounceX: 0,
-        bounceY: 0,
         minDelta: 6,
         start: function() {
             var that=this;
@@ -44,72 +42,38 @@
             this._aniTimer&&(cancelAnimationFrame(this._aniTimer),this._aniTimer=0,this._isAniStop=true);
         },
 
-        animate: function(x,y,duration,fn) {
-            var that=this;
-            var start=0,
-                during=duration,
-                fromX=that._posX,
-                fromY=that._posY,
-                startTime=Date.now(),
-                _run=function() {
-                    start=Date.now()-startTime;
+        animate: function(x,y,duration,callback) {
+            var that=this,
+                fromX=that.x,
+                fromY=that.y;
 
-                    if(start<=during) {
-                        var cx=easeOut(start,fromX,x-fromX,during),
-                            cy=easeOut(start,fromY,y-fromY,during);
+            if($.isPlainObject(duration))
+                callback=duration;
 
-                        fn.call(that,m.round(cx),m.round(cy));
-                        that._aniTimer=requestAnimationFrame(_run);
-                    } else {
-                        fn.call(that,x,y);
+            if($.isPlainObject(callback))
+                duration=callback.duration,callback=callback.callback;
 
-                        that.end();
-                    }
-                };
+            !duration&&(duration=200);
 
-            !fn&&(fn=that.pos);
-            _run();
-        },
+            tween.animate(function(d) {
+                var cx=fromX+(x-fromX)*d,
+                    cy=fromY+(y-fromY)*d;
 
-        _pos: function(x,y) {
-            var that=this;
-            var maxX=that.scrollerW-that.wrapperW;
-            var maxY=that.scrollerH-that.wrapperH;
-            var bounceX=0;
-            var bounceY=0;
-            if(that._posX==x&&that._posY==y) return;
+                that.pos(m.round(cx),m.round(cy));
+                that._aniTimer=this.aniTimer;
 
-            if(x>=0&&x<=maxX) {
-                that.scroll.scrollLeft=x;
-            } else {
-                that.scroll.scrollLeft=that._x;
-                bounceX=that._x-x;
-            }
-
-            that._posX=x;
-            that._posY=y;
-
-            if(y>=0&&y<=maxY) {
-                that.scroll.scrollTop=y;
-            } else {
-                that.scroll.scrollTop=that._y;
-                bounceY=that._y-y;
-            }
-
-            if(bounceX!=0||bounceY!=0)
-                that.$scroll.css({ '-webkit-transform': 'translate('+bounceX+'px,'+bounceY+'px) translateZ(0)' });
-            else
-                that.$scroll.css({ '-webkit-transform': '' });
-
-            that.onScroll&&that.onScroll(x,y);
+            },duration,'ease-out',function() {
+                callback&&callback.call(that,x,y);
+            });
         },
 
         bounceBack: function() {
             var that=this;
-            if(that._posY!=that._y||that._posX!=that._x) {
-                that.animate(that._x,that._y,200,that._pos);
-                that.y=that._y;
-                that.x=that._x;
+            var newX=that.x<that.minX?that.minX:that.x>that.maxX?that.maxX:that.x;
+            var newY=that.y<that.minY?that.minY:that.y>that.maxY?that.maxY:that.y;
+
+            if(newX!=that.x||newY!=that.y) {
+                that.animate(newX,newY,200,that.onScrollStop);
 
             } else {
                 that.onScrollStop();
@@ -139,11 +103,8 @@
 
         _refersh: function() {
             var that=this;
-            that._x=that.x=that.scroll.scrollLeft;
-            that._y=that.y=that.scroll.scrollTop;
-
-            that.bounceX=0;
-            that.bounceY=0;
+            that.x=that.scroll.scrollLeft;
+            that.y=that.scroll.scrollTop;
 
             that.startX=that.x;
             that.startY=that.y;
@@ -188,6 +149,14 @@
             that.pointX=point.pageX;
             that.pointY=point.pageY;
 
+            if(newX<that.minX||newX>that.maxX) {
+                newX=that.options.bounce?that.x+(deltaX/4):newX<=that.minX?that.minX:that.maxX;
+            }
+
+            if(newY<that.minY||newY>that.maxY) {
+                newY=that.options.bounce?that.y+(deltaY/4):newY<=that.minY?that.minY:that.maxY;
+            }
+
             that._moved=true;
 
             that.pos(newX,newY);
@@ -231,14 +200,17 @@
                 newPosX=that.x+momentumX.dist;
                 newPosY=that.y+momentumY.dist;
 
-                if(!that.options.hScroll||(that.x<that.minX&&newPosX<that.minX)||(that.x>that.maxX&&newPosX>that.maxX)) momentumX={ dist: 0,time: 0 };
-                if(!that.options.vScroll||(that.y<that.minY&&newPosY<that.minY)||(that.y>that.maxY&&newPosY>that.maxY)) momentumY={ dist: 0,time: 0 };
+                if(!that.options.hScroll||(that.x<that.minX&&newPosX<that.minX)||(that.x>that.maxX&&newPosX>that.maxX))
+                    momentumX={ dist: 0,time: 0 },newPosX=that.x;
+
+                if(!that.options.vScroll||(that.y<that.minY&&newPosY<that.minY)||(that.y>that.maxY&&newPosY>that.maxY))
+                    momentumY={ dist: 0,time: 0 },newPosY=that.y;
             }
 
             if(momentumX.dist||momentumY.dist) {
                 newDuration=m.max(m.max(momentumX.time,momentumY.time),10);
 
-                that.pos(m.round(newPosX),m.round(newPosY),newDuration);
+                that._startMomentumAni(m.round(newPosX),m.round(newPosY),newDuration);
             } else {
                 that.end();
             }
@@ -256,12 +228,12 @@
                 newTime=0,outsideDist=0;
 
             if(dist>0&&newDist>maxDistUpper) {
-                outsideDist=size/(6/(newDist/speed*deceleration));
+                outsideDist=size/(6/(newDist/speed*deceleration))/2;
                 maxDistUpper=maxDistUpper+outsideDist;
                 speed=speed*maxDistUpper/newDist;
                 newDist=maxDistUpper;
             } else if(dist<0&&newDist>maxDistLower) {
-                outsideDist=size/(6/(newDist/speed*deceleration));
+                outsideDist=size/(6/(newDist/speed*deceleration))/2;
                 maxDistLower=maxDistLower+outsideDist;
                 speed=speed*maxDistLower/newDist;
                 newDist=maxDistLower;
@@ -274,35 +246,53 @@
         },
 
         _startMomentumAni: function(x,y,duration) {
-            this.animate(x,y,duration);
+            this.animate(x,y,duration,this.end);
         },
 
-        pos: function(x,y,duration) {
+        pos: function(x,y) {
+            this._pos(x,y);
+        },
+
+        _pos: function(x,y) {
             var that=this;
 
-            if(typeof duration!='undefined') {
-                that._startMomentumAni(x,y,duration);
+            if(that.x==x&&that.y==y) return;
 
-            } else {
+            var maxX=that.scrollerW-that.wrapperW;
+            var maxY=that.scrollerH-that.wrapperH;
+            var bounceX=0;
+            var bounceY=0;
 
-                that._x=x<that.minX?that.minX:x>=that.maxX?that.maxX:x;
-                if(that.options.bounce&&that.options.hScroll&&(x<that.minX||x>that.maxX)) {
-                    that.bounceX=(x<that.minX?x-that.minX:x-that.maxX)/2;
-                    that.x=x;
-                } else
-                    that.x=that._x;
+            if(that.options.hScroll) {
+                that.x=x;
 
-                if(y!=that.y) {
-                    that._y=y<that.minY?that.minY:y>=that.maxY?that.maxY:y;
-                    if(that.options.bounce&&that.options.vScroll&&(y<that.minY||y>that.maxY)) {
-                        that.bounceY=(y<that.minY?y-that.minY:y-that.maxY)/2;
-                        that.y=y;
-                    } else
-                        that.y=that._y;
+                if(x>=0&&x<=maxX) {
+                    that.scroll.scrollLeft=x;
+                } else {
+                    var scrollLeft=x<0?0:maxX;
+                    that.scroll.scrollLeft=scrollLeft;
+                    bounceX=scrollLeft-x;
                 }
-
-                that._pos(that._x+that.bounceX,that._y+that.bounceY);
             }
+
+            if(that.options.vScroll) {
+                that.y=y;
+
+                if(y>=0&&y<=maxY) {
+                    that.scroll.scrollTop=y;
+                } else {
+                    var scrollTop=y<0?0:maxY;
+                    that.scroll.scrollTop=scrollTop;
+                    bounceY=scrollTop-y;
+                }
+            }
+
+            if(bounceX!=0||bounceY!=0)
+                that.$scroll.css({ '-webkit-transform': 'translate('+bounceX+'px,'+bounceY+'px) translateZ(0)' }),that._bounceChanged=true;
+            else if(that._bounceChanged)
+                that.$scroll.css({ '-webkit-transform': 'translate(0px,0px) translateZ(0)' }),that._bounceChanged=false;
+
+            that.onScroll&&that.onScroll(x,y);
         }
     });
 

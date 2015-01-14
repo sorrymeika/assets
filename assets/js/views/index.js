@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','sl/activity','sl/widget/loading','sl/widget/slider'],function(require,exports,module) {
+﻿define(['$','util','bridge','sl/activity','sl/widget/loading','sl/widget/slider','sl/tween'],function(require,exports,module) {
     var util=require('util')
     var $=require('$'),
         Activity=require('sl/activity'),
@@ -7,6 +7,8 @@
         Touch=require('sl/widget/touch'),
         Loading=require('sl/widget/loading'),
         Slider=require('sl/widget/slider');
+
+    var tween=require('sl/tween');
 
 
     return Activity.extend({
@@ -61,7 +63,7 @@
                 }
             });
         },
-        onStart: function() {
+        onShow: function() {
         },
         onDestory: function() {
         }
