@@ -22,10 +22,14 @@
             vScroll: false
         },
 
+        getIndex: function() {
+
+            return Math.round(this.x/this.wrapperW);
+        },
+
         start: function() {
             var that=this;
-            var x=that._getX(that.x);
-            var index=Math.round(x/that.wrapperW);
+            var index=this.getIndex();
 
             that.maxX=Math.min(that.scrollerW-that.wrapperW,(index+1)*that.wrapperW);
             that.minX=Math.max(0,(index-1)*that.wrapperW);
@@ -39,12 +43,7 @@
             var that=this;
             var x=that.x;
 
-            x=this._getX(x);
-            if(that.x!=x) {
-                that.animate(x,0,200);
-            }
-
-            var index=Math.round(x/that.wrapperW);
+            var index=this.getIndex();
             that.index(index);
         },
 
@@ -57,21 +56,22 @@
                 this.currentData=this._data[i];
                 this._change();
                 this._index=i;
-
-                var x=i*this.wrapperW;
-                x!=this._x&&this.pos(x,0,200);
             }
+            var x=i*this.wrapperW;
+            x!=this.x&&this.animate(x,0,200);
         },
 
         _startMomentumAni: function(x,y,duration) {
             //this.animate(x,y,duration);
-            this.animate(x>this.x?Math.max(x,this.maxX):Math.min(x,this.minX),y,duration);
-        },
-
-        _getX: function(x) {
             var w=this.wrapperW;
-            var a=x%w;
-            return x-(a>w/2?a-w:a);
+            var index=this.getIndex();
+            var nextL=Math.min((index+1)*w,this.maxX);
+            var currL=index*w;
+            var prevL=Math.max((index-1)*w,this.minX);
+
+            x=x>currL&&x<nextL?nextL:x<nextL&&x>prevL?prevL:x;
+
+            this.animate(x,y,Math.min(400,duration),this.end);
         },
 
         loop: false,

@@ -53,11 +53,12 @@
             'tap [data-forward]': function(e) {
                 this._currentActivity.forward($(e.currentTarget).attr('data-forward'));
             },
-            'touchmove header,footer': function(e) {
+            'touchmove': function(e) {
                 e.preventDefault();
+                return false;
             },
             'focus input': function(e) {
-                this.currentInput=e.target;
+                this.activeInput=e.target;
             }
         },
 
@@ -120,8 +121,9 @@
 
                 if(m) {
                     result={
-                        url: m[0],
-                        hash: hash,
+                        path: m[0],
+                        url: hash,
+                        hash: '#'+hash,
                         view: route.view,
                         data: {},
                         queryString: query,
@@ -185,11 +187,12 @@
             that.windowWidth=window.innerWidth;
             that.windowHeight=window.innerHeight;
             $win.on('heightchange',function() {
-                if(that.windowWidth==window.innerWidth) {
-                    $win.trigger($.Event("showSoftInput",{ $target: $(that.currentInput) }));
+                if(that.windowWidth==window.innerWidth&&that.windowHeight>window.innerHeight) {
+                    $win.trigger($.Event("showSoftInput",{ activeInput: that.activeInput }));
                 } else {
                     that.windowWidth=window.innerWidth;
                 }
+                that.windowHeight=window.innerHeight;
             });
 
             that.listenTo($win,'showSoftInput',that._onShowSoftInput);
@@ -197,7 +200,7 @@
             if(!location.hash) location.hash='/';
             that.hash=hash=hashToUrl(location.hash);
 
-            that.queue(that,that._getOrCreateActivity,hash,function(activity) {
+            that.queue(that,that._getActivity,hash,function(activity) {
                 that._currentActivity=activity;
                 that._history.push(activity.hash);
                 that._historyCursor++;
@@ -243,10 +246,8 @@
         _onShowSoftInput: function(e) {
             var that=this;
             var scrollBottom;
-            var $target=e.$target;
+            var $target=$(e.activeInput);
             var $el=$target.closest('.main,.scroll');
-
-            console.log('asdf')
 
             if($el.length) {
                 var offset=$target.offset();
@@ -307,23 +308,15 @@
             this._activities[getUrlPath(url)]=undefined;
         },
 
-        siblings: function(url,url1) {
-            $.each(this._activities,function(k,activity) {
-                if(typeof activity!=='undefined'&&k!=url&&k!=url1) {
-                    activity.$el.addClass('stop');
-                }
-            });
-        },
-
         viewPath: 'views/',
 
-        _getOrCreateActivity: function(url,callback) {
+        _getActivity: function(url,callback) {
             var that=this,
                 route=typeof url==='string'?that.matchRoute(url):url;
 
             if(!route) return;
 
-            var activity=that.get(route.url);
+            var activity=that.get(route.path);
 
             if(activity==null) {
                 seajs.use(that.viewPath+route.view,function(ActivityClass) {
@@ -332,7 +325,7 @@
                             application: that,
                             route: route
                         });
-                        that.set(route.url,activity);
+                        that.set(route.path,activity);
 
                         activity.then(function() {
                             callback.call(that,activity,route);

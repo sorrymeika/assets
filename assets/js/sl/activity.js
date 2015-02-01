@@ -23,7 +23,7 @@
         };
 
     var checkQueryString=function(activity,route) {
-        if(activity.route.hash!=route.hash) {
+        if(activity.route.url!=route.url) {
             activity._setRoute(route);
             activity.trigger('QueryChange');
         }
@@ -42,6 +42,7 @@
             this.route=route;
             this.hash=route.hash;
             this.url=route.url;
+            this.path=route.path;
             this._queries=this.queries;
             this.queries=$.extend({},route.queries);
         },
@@ -56,7 +57,7 @@
                 this.route.queries[key]=val||'';
 
             var queries=$.param(this.route.queries);
-            this.application.to(this.route.url+(queries?'?'+queries:''));
+            this.application.to(this.route.path+(queries?'?'+queries:''));
         },
 
         initialize: function() {
@@ -67,6 +68,8 @@
 
             that._setRoute(that.options.route);
 
+            that.$el.data('url',that.url).data('path',that.path);
+
             that.application=that.options.application;
 
             that.on('Start',that.onStart);
@@ -74,7 +77,7 @@
             that.on('Show',that.onShow);
             that.on('Pause',that.onPause);
             that.on('QueryChange',that.onQueryChange);
-            that.on('QueryChange',that._handleQueryActions);
+            that.on('QueryChange',that.checkQuery);
             that._scrolls=[];
 
             that._dfd=$.when(that.options.templateEnabled&&that.initWithTemplate())
@@ -86,7 +89,7 @@
                 .then($.proxy(that.onCreate,that))
                 .then(function() {
                     that.trigger('Start');
-                    that._handleQueryActions();
+                    that.checkQuery();
                 });
         },
 
@@ -121,7 +124,7 @@
         },
 
         _queryActions: {},
-        _handleQueryActions: function() {
+        checkQuery: function() {
             var that=this;
             var queries=that.queries;
             var prevQueries=that._queries;
@@ -215,9 +218,9 @@
             if(that.isPrepareExitAnimation) return;
             var application=that.application;
             that.isPrepareExitAnimation=true;
-            if(application.currentInput) {
-                application.currentInput.blur();
-                application.currentInput=null;
+            if(application.activeInput) {
+                application.activeInput.blur();
+                application.activeInput=null;
             }
             application.mask.show();
         },
@@ -234,7 +237,7 @@
         },
 
         compareUrl: function(url) {
-            return getUrlPath(url)===this.route.url.toLowerCase();
+            return getUrlPath(url)===this.route.path.toLowerCase();
         },
 
         //onShow后才可调用
@@ -242,7 +245,7 @@
             var that=this,
                 application=that.application;
 
-            application._getOrCreateActivity(url,function(activity,route) {
+            application._getActivity(url,function(activity,route) {
                 activity.el.className=activity.className+' active';
                 application.$el.append(activity.$el);
                 application._currentActivity=activity;
@@ -284,22 +287,22 @@
             var currentActivity=application._currentActivity;
             var route=application.matchRoute(url);
 
-            if(currentActivity.url==url) {
+            if(currentActivity.path==route.path) {
                 checkQueryString(currentActivity,route);
                 application.turning();
                 return;
             }
 
-            application._getOrCreateActivity(route,function(activity) {
+            application._getActivity(route,function(activity) {
                 animationName=animationName||(type=='open'?activity:that).animationName;
 
-                if(activity.url==that.url) {
+                if(activity.path==that.path) {
                     checkQueryString(activity,route);
                     application.turning();
                     return;
                 }
 
-                application.siblings(route.url,that.url);
+                application.$el.children(':not([data-path="'+that.path+'"]),:not([data-path="'+route.path+'"])').addClass('stop');
                 application._currentActivity=activity;
 
                 that.prepareExitAnimation();

@@ -1,12 +1,12 @@
+<<<<<<< HEAD
 ﻿define(['$','./../base','./../view','./../tween','./touch'],function (require,exports,module) {
+=======
+﻿define(['$','./../base','./../view','./touch'],function(require,exports,module) {
+>>>>>>> 80f33ee69951235778c680a2260af1f9f0f2aa7a
     var $=require('$'),
         sl=require('./../base'),
         view=require('./../view'),
-        tween=require('./../tween'),
-        Touch=require('./touch'),
-        hasTouch='ontouchstart' in window,
-        m=Math,
-        easeOut=tween.Quad.easeOut;
+        Touch=require('./touch');
 
     var Scroll=Touch.extend({
         widgetName: 'Scroll',

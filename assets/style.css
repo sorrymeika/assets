@@ -42,7 +42,7 @@ header.big_hd em { padding-top: 3px; }
 .viewport .view:nth-child(9) { left: -800%; }
 .viewport .view:nth-child(10) { left: -900%; }
 
-.scroll { overflow: hidden; overflow-y: auto; }
+.scroll { overflow: hidden; overflow-y: auto; -webkit-transform:translate(0px,0px) translateZ(0);}
 
 .main { position: absolute; bottom: 0px; right: 0px; left: 0px; top: 43px; width: 100%; overflow: hidden; overflow-y: auto; }
 .content { width: 100%; padding: 10px 3%; border-top: 2px solid #d31145; margin-top: 5px; background: #fff; }
@@ -131,7 +131,7 @@ input[type="password"].prompt-text { letter-spacing: 2px; }
 .slidebar ul:after { clear: both; }
 .slidebar ul li { width: 20%; float: left; text-align: center; }
 
-.slider { position: relative; overflow: hidden; overflow-x: auto; }
+.slider { position: relative; overflow: hidden; overflow-x: auto; -webkit-transform:translate(0px,0px) translateZ(0); }
 .slider > ul { background:#fff; width: 200%; position: relative; z-index: 1; margin-left: 0; }
 .slider > ul:after { clear: both; content: ''; display: block; font-size: 0; height: 0; }
 .slider > ul > li { width: 320px; float: left; text-align: center; background:#fff; }
