@@ -1,4 +1,4 @@
-﻿define(['$','./../base','./../view','./../tween','./touch'],function(require,exports,module) {
+﻿define(['$','./../base','./../view','./../tween','./touch'],function (require,exports,module) {
     var $=require('$'),
         sl=require('./../base'),
         view=require('./../view'),
@@ -15,7 +15,7 @@
             hScroll: false
         },
 
-        start: function() {
+        start: function () {
             var that=this;
 
             that.maxX=that.scrollerW-that.wrapperW;
@@ -26,7 +26,7 @@
             return that.options.bounce?true:((that.wrapperW<that.scrollerW||that.wrapperH<that.scrollerH)==true);
         },
 
-        onScroll: function(x,y) {
+        onScroll: function (x,y) {
             var that=this;
             that.$el.trigger('scrollChange',[x,y]);
         }

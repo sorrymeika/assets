@@ -1,10 +1,16 @@
-﻿define(['$','./../base','./../view','./../tween'],function(require,exports,module) {
+﻿define(['$','./../base','./../view','./../tween'],function (require,exports,module) {
     var $=require('$'),
         view=require('./../view'),
         tween=require('./../tween'),
         hasTouch='ontouchstart' in window,
         m=Math,
-        easeOut=tween.Quad.easeOut;
+        easeOut=tween.Quad.easeOut,
+        isAndroid4_0=/Android 4\.0/.test(navigator.userAgent);
+
+    alert(navigator.userAgent)
+    alert(isAndroid4_0)
+
+    if(isAndroid4_0) $('<style></style>').append('.androidScrollFix{overflow: hidden !important;overflow-y: hidden !important;overflow-x: hidden !important;}').appendTo('head');
 
     var Touch=view.extend({
         events: {
@@ -18,7 +24,7 @@
             hScroll: true,
             vScroll: true
         },
-        initialize: function() {
+        initialize: function () {
             this.$scroll=this.$el;
             this.scroll=this.el;
         },
@@ -30,7 +36,7 @@
         bounceX: 0,
         bounceY: 0,
         minDelta: 6,
-        start: function() {
+        start: function () {
             var that=this;
             this.minX=0;
             this.maxX=0;
@@ -40,18 +46,18 @@
         },
         _aniTimer: 0,
 
-        stopAnimate: function() {
+        stopAnimate: function () {
             this._aniTimer&&(cancelAnimationFrame(this._aniTimer),this._aniTimer=0,this._isAniStop=true);
         },
 
-        animate: function(x,y,duration,fn) {
+        animate: function (x,y,duration,fn) {
             var that=this;
             var start=0,
                 during=duration,
                 fromX=that._posX,
                 fromY=that._posY,
                 startTime=Date.now(),
-                _run=function() {
+                _run=function () {
                     start=Date.now()-startTime;
 
                     if(start<=during) {
@@ -71,7 +77,7 @@
             _run();
         },
 
-        _pos: function(x,y) {
+        _pos: function (x,y) {
             var that=this;
             var maxX=that.scrollerW-that.wrapperW;
             var maxY=that.scrollerH-that.wrapperH;
@@ -104,7 +110,7 @@
             that.onScroll&&that.onScroll(x,y);
         },
 
-        bounceBack: function() {
+        bounceBack: function () {
             var that=this;
             if(that._posY!=that._y||that._posX!=that._x) {
                 that.animate(that._x,that._y,200,that._pos);
@@ -115,14 +121,14 @@
                 that.onScrollStop();
         },
 
-        end: function() {
+        end: function () {
             this.options.bounce?this.bounceBack():this.onScrollStop();
         },
 
-        onScrollStop: function() {
+        onScrollStop: function () {
         },
 
-        _start: function(e) {
+        _start: function (e) {
             var that=this,
                 point=hasTouch?e.touches[0]:e;
 
@@ -136,7 +142,7 @@
             that.stopAnimate();
         },
 
-        _refersh: function() {
+        _refersh: function () {
             var that=this;
             that._x=that.x=that.scroll.scrollLeft;
             that._y=that.y=that.scroll.scrollTop;
@@ -154,7 +160,7 @@
             that.scrollerH=that.scroll.scrollHeight;
         },
 
-        _move: function(e) {
+        _move: function (e) {
             if(this._isStop) return;
 
             if(e.isDefaultPrevented()) {
@@ -198,7 +204,7 @@
             }
         },
 
-        _end: function(e) {
+        _end: function (e) {
             var that=this;
             if((!that._moved||that._isStop)&&that._isAniStop) {
                 that.end();
@@ -247,7 +253,7 @@
         //maxDistUpper: 最大向上滚动距离
         //maxDistLower: 最大向下滚动距离
         //size:反弹距离
-        _momentum: function(dist,time,maxDistUpper,maxDistLower,size) {
+        _momentum: function (dist,time,maxDistUpper,maxDistLower,size) {
             var deceleration=0.0006,
                 speed=m.abs(dist)/time,
                 newDist=(speed*speed)/(2*deceleration),
@@ -271,11 +277,11 @@
             return { dist: newDist,time: m.round(newTime) };
         },
 
-        _startMomentumAni: function(x,y,duration) {
+        _startMomentumAni: function (x,y,duration) {
             this.animate(x,y,duration);
         },
 
-        pos: function(x,y,duration) {
+        pos: function (x,y,duration) {
             var that=this;
 
             if(typeof duration!='undefined') {
