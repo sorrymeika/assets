@@ -63,7 +63,6 @@
         initialize: function() {
             var that=this;
 
-            that.className&&that.$el.addClass(that.className);
             that.className=that.el.className;
 
             that._setRoute(that.options.route);

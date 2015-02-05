@@ -28,9 +28,8 @@
 
                     if(start<=duration) {
                         var c=ease(start,from,to,duration);
-
-                        ret.aniTimer=requestAnimationFrame(_run);
                         step.call(ret,c/to);
+                        ret.aniTimer=requestAnimationFrame(_run);
                     } else {
                         step.call(ret,1);
                         callback&&callback();

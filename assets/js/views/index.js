@@ -10,7 +10,6 @@
 
     var tween=require('sl/tween');
 
-
     return Activity.extend({
         template: 'views/index.html',
 

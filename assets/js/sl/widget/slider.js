@@ -1,14 +1,14 @@
-﻿define(['$','util','./../view','./../tmpl','extend/ortchange','./touch'],function(require,exports,module) {
+﻿define(['$','util','./../view','./../tmpl','extend/ortchange','./scroll'],function(require,exports,module) {
     var $=require('$'),
         _=require('util'),
         view=require('./../view'),
         tmpl=require('./../tmpl');
 
-    var Touch=require('./touch');
+    var Scroll=require('./scroll');
 
     require('extend/ortchange');
 
-    var Slider=Touch.extend({
+    var Slider=Scroll.extend({
         widgetName: 'Slider',
         options: {
             index: -1,
@@ -19,7 +19,8 @@
             imagelazyload: false,
             bounce: true,
             arrow: false,
-            vScroll: false
+            vScroll: false,
+            hScroll: true
         },
 
         getIndex: function() {

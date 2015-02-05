@@ -2,9 +2,13 @@
     var ArrayProto=Array.prototype,
         push=ArrayProto.push,
         slice=ArrayProto.slice,
-        concat=ArrayProto.concat;
+        concat=ArrayProto.concat,
+        guid=0;
 
     var util={
+        guid: function() {
+            return ++guid;
+        },
         indexOf: function(arr,val) {
             var fn=typeof val==='function'?val:function(item) { return item==val; }
             for(var i=0,n=arr.length;i<n;i++) {
