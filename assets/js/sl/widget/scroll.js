@@ -49,6 +49,8 @@
             vScroll: true
         },
         initialize: function() {
+            this.$scroll=this.$el;
+            this.scroll=this.el;
         },
         x: 0,
         y: 0,
@@ -125,7 +127,7 @@
         },
 
         onScroll: function(x,y) {
-            this.$el.trigger('scrollChange',[x,y]);
+            this.$scroll.trigger('scrollChange',[x,y]);
         },
 
         onScrollStop: function() {
@@ -148,17 +150,17 @@
 
         _refersh: function() {
             var that=this;
-            that.x=that.el.scrollLeft;
-            that.y=that.el.scrollTop;
+            that.x=that.scroll.scrollLeft;
+            that.y=that.scroll.scrollTop;
 
             that.startX=that.x;
             that.startY=that.y;
 
-            that.wrapperW=that.el.clientWidth;
-            that.wrapperH=that.el.clientHeight;
+            that.wrapperW=that.scroll.clientWidth;
+            that.wrapperH=that.scroll.clientHeight;
 
-            that.scrollerW=that.el.scrollWidth;
-            that.scrollerH=that.el.scrollHeight;
+            that.scrollerW=that.scroll.scrollWidth;
+            that.scrollerH=that.scroll.scrollHeight;
         },
 
         _move: function(e) {
@@ -285,10 +287,10 @@
                 that.x=x;
 
                 if(x>=0&&x<=maxX) {
-                    that.el.scrollLeft=x;
+                    that.scroll.scrollLeft=x;
                 } else {
                     var scrollLeft=x<0?0:maxX;
-                    that.el.scrollLeft=scrollLeft;
+                    that.scroll.scrollLeft=scrollLeft;
                     bounceX=scrollLeft-x;
                 }
             }
@@ -297,18 +299,18 @@
                 that.y=y;
 
                 if(y>=0&&y<=maxY) {
-                    that.el.scrollTop=y;
+                    that.scroll.scrollTop=y;
                 } else {
                     var scrollTop=y<0?0:maxY;
-                    that.el.scrollTop=scrollTop;
+                    that.scroll.scrollTop=scrollTop;
                     bounceY=scrollTop-y;
                 }
             }
 
             if(bounceX!=0||bounceY!=0)
-                that.$el.css({ '-webkit-transform': 'translate('+bounceX+'px,'+bounceY+'px) translateZ(0)' }),that._bounceChanged=true;
+                that.$scroll.css({ '-webkit-transform': 'translate('+bounceX+'px,'+bounceY+'px) translateZ(0)' }),that._bounceChanged=true;
             else if(that._bounceChanged)
-                that.$el.css({ '-webkit-transform': 'translate(0px,0px) translateZ(0)' }),that._bounceChanged=false;
+                that.$scroll.css({ '-webkit-transform': 'translate(0px,0px) translateZ(0)' }),that._bounceChanged=false;
 
             that.onScroll&&that.onScroll(that.x,that.y);
         }

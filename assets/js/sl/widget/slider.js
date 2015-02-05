@@ -213,7 +213,7 @@
                 return;
             }
 
-            Touch.prototype._start.call(this,e);
+            Scroll.prototype._start.call(this,e);
         },
 
         _change: function() {

@@ -1,11 +1,11 @@
 ﻿define(['$','util','./../base','./../view','./../tmpl','./touch'],function(require,exports,module) {
     var $=require('$'),
-        Touch=require('./touch');
+        Scroll=require('./scroll');
 
     var util=require('util');
     var tmpl=require('./../tmpl');
 
-    var selector=Touch.extend({
+    var selector=Scroll.extend({
         options: {
             bounce: false,
             vScroll: false
@@ -21,7 +21,7 @@
 
         _startMomentumAni: function(x,y,duration) {
             y=this._getY(y);
-            Touch.prototype._startMomentumAni.call(this,x,y,duration);
+            Scroll.prototype._startMomentumAni.call(this,x,y,duration);
         },
         _getY: function(y) {
             var a=y%this.itemHeight;

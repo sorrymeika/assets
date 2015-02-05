@@ -184,19 +184,6 @@
             var hash;
             var $win=$(window);
 
-            that.windowWidth=window.innerWidth;
-            that.windowHeight=window.innerHeight;
-            $win.on('heightchange',function() {
-                if(that.windowWidth==window.innerWidth&&that.windowHeight>window.innerHeight) {
-                    $win.trigger($.Event("showSoftInput",{ activeInput: that.activeInput }));
-                } else {
-                    that.windowWidth=window.innerWidth;
-                }
-                that.windowHeight=window.innerHeight;
-            });
-
-            that.listenTo($win,'showSoftInput',that._onShowSoftInput);
-
             if(!location.hash) location.hash='/';
             that.hash=hash=hashToUrl(location.hash);
 
@@ -241,24 +228,6 @@
             });
 
             that.$el.appendTo(document.body);
-        },
-
-        _onShowSoftInput: function(e) {
-            var that=this;
-            var scrollBottom;
-            var $target=$(e.activeInput);
-            var $el=$target.closest('.main,.scroll');
-
-            if($el.length) {
-                var offset=$target.offset();
-                var position=$target.position();
-                var height=window.innerHeight;
-                //console.log(position.top,scroll._y+position.top-(height-offset.height)/2);
-
-                //if(offset.top+offset.height>height)
-                $el[0].scrollTop=$el[0].scrollTop+position.top;
-                return false;
-            }
         },
 
         _to: function(url) {
@@ -320,6 +289,7 @@
 
             if(activity==null) {
                 seajs.use(that.viewPath+route.view,function(ActivityClass) {
+
                     if(ActivityClass!=null) {
                         activity=new ActivityClass({
                             application: that,

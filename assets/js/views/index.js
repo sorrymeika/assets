@@ -1,10 +1,10 @@
 ﻿define(['$','util','bridge','sl/activity','sl/widget/loading','sl/widget/slider','sl/tween'],function(require,exports,module) {
-    var util=require('util')
+    var util=require('util');
+
     var $=require('$'),
         Activity=require('sl/activity'),
         App=require('sl/app'),
         bridge=require('bridge'),
-        Touch=require('sl/widget/touch'),
         Loading=require('sl/widget/loading'),
         Slider=require('sl/widget/slider');
 
@@ -14,6 +14,9 @@
         template: 'views/index.html',
 
         events: {
+            'tap': function() {
+                alert(1);
+            },
             'tap .js_buy': function() { },
             'tap .js_create': function() {
                 if(!this.slider) {
