@@ -3,17 +3,12 @@
     var $=require('$'),
         util=require('util'),
         ua=navigator.userAgent,
-        ios=ua.match(/(iPhone|iPad|iPod).*OS\s([\d_]+)/i),
-        android=ua.match(/(Android);?[\s\/]+([\d.]+)?/),
-        isAndroid=!!android,
-        osVersion,
+        ios=util.ios,
+        isAndroid=util.android,
         slice=Array.prototype.slice,
         blankFn=function() { };
 
     var baseUrl=document.querySelector('meta[name="api-base-url"]').getAttribute('content');
-
-    ios&&(osVersion=ios[2].replace(/_/g,'.'));
-    android&&(osVersion=android[2]);
 
     window.hybridFunctions={};
     window.complete=function() {
@@ -22,7 +17,6 @@
             if(queue.length!=0) location.href=queue.shift();
         }
     };
-
 
     window.trigger=window.app_trigger=function() {
         $.fn.trigger.apply($(window),arguments);
@@ -69,9 +63,7 @@
         bridge={
             isAndroid: isAndroid,
             android: isAndroid,
-            android2: isAndroid&&/^2/.test(osVersion),
-            ios: !!ios,
-            osVersion: osVersion,
+            ios: ios,
             versionName: isAndroid?'1.0':"1.0",
             //needRefresh: /^HUAWEI_P7/.test(ua),
             log: function(msg) {

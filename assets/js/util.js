@@ -3,9 +3,19 @@
         push=ArrayProto.push,
         slice=ArrayProto.slice,
         concat=ArrayProto.concat,
+        ua=navigator.userAgent,
+        ios=ua.match(/(iPhone|iPad|iPod).*OS\s([\d_]+)/i),
+        android=ua.match(/(Android);?[\s\/]+([\d.]+)?/),
+        isAndroid=!!android,
         guid=0;
 
+    ios&&(osVersion=ios[2].split('_'));
+    android&&(osVersion=android[2].split('.'));
+
     var util={
+        ios: !!ios,
+        android: isAndroid,
+        osVersion: parseFloat(osVersion[0]+'.'+osVersion[1]),
         guid: function() {
             return ++guid;
         },

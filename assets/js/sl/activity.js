@@ -77,13 +77,10 @@
             that.on('Pause',that.onPause);
             that.on('QueryChange',that.onQueryChange);
             that.on('QueryChange',that.checkQuery);
-            that._scrolls=[];
 
             that._dfd=$.when(that.options.templateEnabled&&that.initWithTemplate())
                 .then(function() {
-                    that.$('.main,.scroll').each(function() {
-                        that._scrolls.push(new Scroll(this));
-                    });
+                    that._scrolls=Scroll.bind(that.$('.main,.scroll'),that.useScroll);
                 })
                 .then($.proxy(that.onCreate,that))
                 .then(function() {
@@ -382,7 +379,7 @@
         },
 
         destory: function() {
-            $.each(this._scrolls,function(i,scroll) {
+            if(this._scrolls) $.each(this._scrolls,function(i,scroll) {
                 scroll.destory();
             });
             this.application.remove(this.url);

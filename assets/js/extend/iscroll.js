@@ -631,7 +631,7 @@
 
 			that.minScrollY= -that.options.topOffset||0;
 			that.scrollerW=m.round(that.scroller.offsetWidth*that.scale);
-			that.scrollerH=m.round((that.scroller.offsetHeight+that.minScrollY)*that.scale);
+			that.scrollerH=10000;//m.round((that.scroller.offsetHeight+that.minScrollY)*that.scale);
 			that.maxScrollX=that.wrapperW-that.scrollerW;
 			that.maxScrollY=that.wrapperH-that.scrollerH+that.minScrollY;
 			that.dirX=0;

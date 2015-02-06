@@ -16,7 +16,9 @@
         events: {
             'tap': function() {
                 alert(1);
+                // this.$('.main,.scroll').iScroll('refresh');
             },
+
             'tap .js_buy': function() { },
             'tap .js_create': function() {
                 if(!this.slider) {
@@ -36,6 +38,8 @@
                 this.forward('/product/'+data.WorkID+'.html');
             }
         },
+
+        //useScroll: true,
 
         onCreate: function() {
             var that=this,

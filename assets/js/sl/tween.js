@@ -41,6 +41,10 @@
             return ret;
         },
         linear: function(t,b,c,d) { return c*t/d+b; },
+        ease: function(t,b,c,d) {
+            //return c*((t=t/d-1)*t*t*t*t+1)+b;
+            return -c*((t=t/d-1)*t*t*t-1)+b;
+        },
         easeIn: function(t,b,c,d) {
             return c*(t/=d)*t+b;
         },

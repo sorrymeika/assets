@@ -53,10 +53,10 @@
             'tap [data-forward]': function(e) {
                 this._currentActivity.forward($(e.currentTarget).attr('data-forward'));
             },
-            'touchmove': function(e) {
-                e.preventDefault();
-                return false;
-            },
+            //            'touchmove': function(e) {
+            //                e.preventDefault();
+            //                return false;
+            //            },
             'focus input': function(e) {
                 this.activeInput=e.target;
             }
