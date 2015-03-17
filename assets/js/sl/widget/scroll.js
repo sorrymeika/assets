@@ -46,14 +46,31 @@
         },
 
         options: {
+            ease: "ease",
             bounce: true,
             hScroll: false,
             vScroll: true
         },
         initialize: function() {
+            if(this.options.useTransform===true) this.useTransform=true;
+
+            this.init();
+
+            if(this.useTransform) {
+                var $scroll=this.$scroll;
+                this.$scrollInner=$('<div style="width:100%;-webkit-transform: translate(0px,0px) translateZ(0);"></div>').append($scroll.children()).appendTo($scroll);
+                this.scrollInner=this.$scrollInner[0];
+                $scroll.css({ overflow: 'hidden' });
+            }
+        },
+
+        init: function() {
             this.$scroll=this.$el;
             this.scroll=this.el;
         },
+
+        useTransform: util.isAndroid&&util.osVersion=="4.0",
+
         x: 0,
         y: 0,
         minX: 0,
@@ -80,8 +97,8 @@
             that.wrapperW=that.scroll.clientWidth;
             that.wrapperH=that.scroll.clientHeight;
 
-            that.scrollerW=that.scroll.scrollWidth;
-            that.scrollerH=that.scroll.scrollHeight;
+            that.scrollerW=that.useTransform?that.scrollInner.scrollWidth:that.scroll.scrollWidth;
+            that.scrollerH=that.useTransform?that.scrollInner.scrollHeight:that.scroll.scrollHeight;
         },
 
         stopAnimate: function() {
@@ -115,7 +132,7 @@
                 that.pos(m.round(cx),m.round(cy));
                 that._aniTimer=this;
 
-            },duration,'ease',function() {
+            },duration,this.options.ease||'ease',function() {
                 that._aniTimer=null;
                 that._isAniStop=true;
                 callback&&callback.call(that,x,y);
@@ -190,7 +207,7 @@
                     that.startY=that.y;
 
                 } else
-                    return;
+                    return false;
             }
 
             var newX=that.x+deltaX,
@@ -265,13 +282,13 @@
                 if(momentumY.outside!=0) newPosY=newPosY-momentumY.outside+momentumY.outside*400/newDuration;
                 if(momentumX.outside!=0) newPosX=newPosX-momentumX.outside+momentumX.outside*400/newDuration;
 
-                that._startMomentumAni(m.round(newPosX),m.round(newPosY),newDuration);
+                that._startAni(m.round(newPosX),m.round(newPosY),newDuration);
             } else {
                 that.end();
             }
         },
 
-        _startMomentumAni: function(x,y,duration) {
+        _startAni: function(x,y,duration) {
             this.animate(x,y,duration,this.end);
         },
 
@@ -284,9 +301,9 @@
 
         _pos: function(x,y) {
             var that=this;
-
             x=m.round(x);
             y=m.round(y);
+
             if(that.x==x&&that.y==y) return;
 
             var maxX=that.scrollerW-that.wrapperW;
@@ -294,34 +311,45 @@
             var bounceX=0;
             var bounceY=0;
 
-            if(that.options.hScroll) {
-                that.x=x;
-
-                if(x>=0&&x<=maxX) {
-                    that.scroll.scrollLeft=x;
-                } else {
-                    var scrollLeft=x<0?0:maxX;
-                    that.scroll.scrollLeft=scrollLeft;
-                    bounceX=scrollLeft-x;
+            if(this.useTransform) {
+                if(that.options.hScroll) {
+                    that.x=x;
                 }
-            }
-
-            if(that.options.vScroll) {
-                that.y=y;
-
-                if(y>=0&&y<=maxY) {
-                    that.scroll.scrollTop=y;
-                } else {
-                    var scrollTop=y<0?0:maxY;
-                    that.scroll.scrollTop=scrollTop;
-                    bounceY=scrollTop-y;
+                if(that.options.vScroll) {
+                    that.y=y;
                 }
-            }
+                that.$scrollInner.css({ '-webkit-transform': 'translate('+that.x* -1+'px,'+that.y* -1+'px) translateZ(0)' }),that._bounceChanged=true;
 
-            if(bounceX!=0||bounceY!=0)
-                that.$scroll.css({ '-webkit-transform': 'translate('+bounceX+'px,'+bounceY+'px) translateZ(0)' }),that._bounceChanged=true;
-            else if(that._bounceChanged)
-                that.$scroll.css({ '-webkit-transform': 'translate(0px,0px) translateZ(0)' }),that._bounceChanged=false;
+            } else {
+                if(that.options.hScroll) {
+                    that.x=x;
+
+                    if(x>=0&&x<=maxX) {
+                        that.scroll.scrollLeft=x;
+                    } else {
+                        var scrollLeft=x<0?0:maxX;
+                        that.scroll.scrollLeft=scrollLeft;
+                        bounceX=scrollLeft-x;
+                    }
+                }
+
+                if(that.options.vScroll) {
+                    that.y=y;
+
+                    if(y>=0&&y<=maxY) {
+                        that.scroll.scrollTop=y;
+                    } else {
+                        var scrollTop=y<0?0:maxY;
+                        that.scroll.scrollTop=scrollTop;
+                        bounceY=scrollTop-y;
+                    }
+                }
+
+                if(bounceX!=0||bounceY!=0)
+                    that.$scroll.css({ '-webkit-transform': 'translate('+bounceX+'px,'+bounceY+'px) translateZ(0)' }),that._bounceChanged=true;
+                else if(that._bounceChanged)
+                    that.$scroll.css({ '-webkit-transform': 'translate(0px,0px) translateZ(0)' }),that._bounceChanged=false;
+            }
 
             that.onScroll&&that.onScroll(that.x,that.y);
         }
@@ -331,7 +359,16 @@
         var $scroll=typeof selector==='string'?$(selector):selector;
         var result=[];
 
-        if(useScroll||util.android&&util.osVersion<=2.3)
+        //*test scroll begin
+        $scroll.each(function() {
+            result.push(new Scroll(this,{
+                useTransform: true
+            }));
+        });
+        return;
+        //test scroll end*/
+
+        if(useScroll||util.android&&parseFloat(util.osVersion<=2.3))
             $scroll.each(function() {
                 result.push(new Scroll(this));
             });

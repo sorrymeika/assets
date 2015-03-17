@@ -19,6 +19,7 @@
             imagelazyload: false,
             bounce: true,
             arrow: false,
+            ease: 'ease-out',
             vScroll: false,
             hScroll: true
         },
@@ -62,7 +63,7 @@
             x!=this.x&&this.animate(x,0,200);
         },
 
-        _startMomentumAni: function(x,y,duration) {
+        _startAni: function(x,y,duration) {
             //this.animate(x,y,duration);
             var w=this.wrapperW;
             var index=this.getIndex();
@@ -98,11 +99,11 @@
         render: function(dataItem) {
             return this.renderItem(this.itemTemplate(dataItem));
         },
-        renderItem: tmpl('<li class="js_slide_item">{%html $data%}</li>'),
+        renderItem: tmpl('<li class="js_slide_item slider_item">{%html $data%}</li>'),
         itemTemplate: '${TypeName}',
-        navTemplate: tmpl('<ol class="js_slide_navs">{%each(i,item) items%}<li class="slide_nav_item${current}"></li>{%/each%}</ol>'),
-        template: tmpl('<div class="slider"><ul class="js_slider">{%html items%}</ul>{%html navs%}</div>'),
-        initialize: function() {
+        navTemplate: tmpl('<ol class="js_slide_navs slider_nav">{%each(i,item) items%}<li class="slide_nav_item${current} slider_nav_item"></li>{%/each%}</ol>'),
+        template: tmpl('<div class="slider"><ul class="js_slider slider_con">{%html items%}</ul>{%html navs%}</div>'),
+        init: function() {
             $.extend(this,_.pick(this.options,['width','loop','render','template','itemTemplate','navTemplate']));
 
             var that=this,

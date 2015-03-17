@@ -19,9 +19,9 @@
         itemHeight: 26,
         minDelta: 0,
 
-        _startMomentumAni: function(x,y,duration) {
+        _startAni: function(x,y,duration) {
             y=this._getY(y);
-            Scroll.prototype._startMomentumAni.call(this,x,y,duration);
+            Scroll.prototype._startAni.call(this,x,y,duration);
         },
         _getY: function(y) {
             var a=y%this.itemHeight;
@@ -69,7 +69,7 @@
 
         template: tmpl('<li>${text}</li>'),
 
-        initialize: function() {
+        init: function() {
             var that=this;
             var options=this.options;
             var data=options.data||[];

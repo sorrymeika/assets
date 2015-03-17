@@ -255,7 +255,7 @@
             });
         },
 
-        _transitionTime: app.ios&&parseFloat(app.osVersion)<7?function(time) {
+        _transitionTime: app.ios&&parseFloat(util.osVersion)<7?function(time) {
             this.el.style.webkitTransition="all "+(time||0)+'ms ease 0ms';
         } :function(time) {
             this.el.style.webkitTransitionDuration=(time||0)+'ms';

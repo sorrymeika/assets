@@ -15,7 +15,7 @@
     var util={
         ios: !!ios,
         android: isAndroid,
-        osVersion: parseFloat(osVersion[0]+'.'+osVersion[1]),
+        osVersion: osVersion[0]+'.'+osVersion[1],
         guid: function() {
             return ++guid;
         },
