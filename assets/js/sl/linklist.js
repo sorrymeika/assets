@@ -1,57 +1,57 @@
-﻿define(function(require,exports,module) {
-    function init(list) {
-        list._idleNext=list;
-        list._idlePrev=list;
-    }
-    exports.init=init;
+﻿define(["./_linklist"],function (require,exports,module) {
 
+    var L=require("./_linklist");
 
-    // show the most idle item
-    function peek(list) {
-        if(list._idlePrev==list) return null;
-        return list._idlePrev;
-    }
-    exports.peek=peek;
-
-
-    // remove the most idle item from the list
-    function shift(list) {
-        var first=list._idlePrev;
-        remove(first);
-        return first;
-    }
-    exports.shift=shift;
-
-
-    // remove a item from its list
-    function remove(item) {
-        if(item._idleNext) {
-            item._idleNext._idlePrev=item._idlePrev;
+    var LinkList=function (item) {
+        if(item) {
+            this.list=item;
+            this.length=1;
+            L.init(item);
+        } else {
+            this.length=0;
         }
+    }
 
-        if(item._idlePrev) {
-            item._idlePrev._idleNext=item._idleNext;
+    LinkList.prototype={
+        each: function (each) {
+            var first=this.list;
+
+            while(first) {
+                each.call(this,first);
+
+                first=this.peek();
+            }
+        },
+        peek: function () {
+            return this.list==null?null:L.peek(this.list);
+        },
+        append: function (item) {
+            if(!this.list) {
+                this.list=item;
+                L.init(item);
+
+            } else {
+                L.append(this.list,item);
+            }
+            this.length++;
+        },
+        shift: function () {
+            var first=L.shift(this.list);
+            if(first==this.list) this.list=null;
+            this.length--;
+
+            return first;
+        },
+        remove: function (item) {
+            if(item==this.list) this.list=L.peek(item);
+            L.remove(item);
+            this.length--;
+        },
+        isEmpty: function () {
+            return this.list==null;
         }
+    };
 
-        item._idleNext=null;
-        item._idlePrev=null;
-    }
-    exports.remove=remove;
+    module.exports=LinkList;
 
-
-    // remove a item from its list and place at the end.
-    function append(list,item) {
-        remove(item);
-        item._idleNext=list._idleNext;
-        list._idleNext._idlePrev=item;
-        item._idlePrev=list;
-        list._idleNext=item;
-    }
-    exports.append=append;
-
-
-    function isEmpty(list) {
-        return list._idleNext===list;
-    }
-    exports.isEmpty=isEmpty;
 });

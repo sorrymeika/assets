@@ -12,8 +12,8 @@
 </head>
 <body>
     <script debug>
-        seajs.use(['zepto','tools/tools'],function($,tools,bridge) {
-        return;
+        seajs.use(['zepto','tools/tools'],function ($,tools,bridge) {
+            return;
             tools.build({
                 api: 'http://photo.ie1e.com',
                 compress: [
@@ -31,6 +31,8 @@
                         'util',
                         'bridge',
                         'sl/base',
+                        'sl/_linklist',
+                        'sl/linklist',
                         'sl/event',
                         'sl/tmpl',
                         'sl/view',
@@ -104,7 +106,7 @@
             }
         });
 
-        seajs.use(['$','sl/app','bridge'],function($,Application,bridge) {
+        seajs.use(['$','sl/app','bridge'],function ($,Application,bridge) {
             var app=new Application();
 
             app.mapRoute({
@@ -134,9 +136,9 @@
 
             app.start();
 
-//            bridge.isAndroid&&setTimeout(function() {
-//                bridge.exitLauncher(function() { });
-//            },1500);
+            //            bridge.isAndroid&&setTimeout(function() {
+            //                bridge.exitLauncher(function() { });
+            //            },1500);
         });
     </script>
 </body>
