@@ -15,7 +15,6 @@
 
         events: {
             'tap': function() {
-                alert(1);
                 // this.$('.main,.scroll').iScroll('refresh');
             },
 

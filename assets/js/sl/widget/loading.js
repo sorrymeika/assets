@@ -252,7 +252,7 @@
             if(this._autoRefreshingEnabled) return;
             this._autoRefreshingEnabled=true;
 
-            this.$el.on('scrollChange',$.proxy(this._scroll,this));
+            this.$el.on('scrollStop',$.proxy(this._scroll,this));
 
             this._scrollY=this.$el.scrollTop;
 

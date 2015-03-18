@@ -1,20 +1,109 @@
-﻿define(function() {
-    var defaults={ 'ease-in': 'quad.ease-in' };
+﻿define(["./linklist"],function(require) {
+    var $=require("$");
+    var L=require("./linklist");
+
+    var list;
+    var animationStop=true;
+
+    var run=function() {
+
+        if(!L.isEmpty(list)) {
+            animationStop=false;
+
+            var start,
+                ease,
+                arr;
+
+            while(first=L.peek(list)) {
+                start=Date.now()-first.startTime;
+                arr=[];
+                ease=first.ease,
+                ret={
+                    stop: (function() {
+                        return function() {
+                            L.remove(first);
+                        }
+                    })(first)
+                };
+
+                if(start<=first.duration) {
+                    for(var i=0,n=ease.length;i<n;i++) {
+                        arr.push(ease[i](start,from,to,duration)/to);
+                    }
+                    first.step.apply(ret,arr);
+
+                } else {
+                    for(var i=0,n=ease.length;i<n;i++) {
+                        arr.push(1);
+                    }
+                    first.step.apply(ret,arr);
+                    L.remove(first);
+                    first.callback&&first.callback();
+                }
+
+                L.remove(first);
+            }
+
+            requestAnimationFrame(run);
+        } else {
+            animationStop=true;
+        }
+    };
+
+    function parallel(animations) {
+
+        if(!list||L.isEmpty(list)) {
+            list=animations.shift();
+            L.init(list);
+        }
+
+        for(var i=0,n=animations.length,item;i<n;i++) {
+            item=animations[i];
+            item.startTime=Date.now();
+            item.ease=_ease(item.ease);
+            if(!item.duration) item.duration=300;
+
+            L.append(list,item);
+        }
+
+        if(animationStop)
+            run();
+    }
+
+    function _ease(ease) {
+        if(!ease) ease=[Tween.easeOut];
+        else {
+            if(!(ease instanceof Array)) ease=[ease];
+
+            for(var i=0,n=ease.length;i<n;i++) {
+                if(typeof ease[i]=="string")
+                    ease[i]=Tween[ease[i].replace(/\-([a-z])/g,function($0,$1) {
+                        return $1.toUpperCase();
+                    })];
+            }
+        }
+        return ease;
+    }
 
     var Tween={
+        parallel: parallel,
         animate: function(step,duration,ease,callback) {
-            if(ease&&!$.isFunction(ease))
-                ease=Tween[ease.replace(/\-([a-z])/g,function($0,$1) {
-                    return $1.toUpperCase();
-                })];
+            this.parallel([{
+                step: step,
+                duration: duration,
+                ease: ease,
+                callback: callback
+            }]);
+
+            return;
+
+            ease=_ease(ease);
 
             !duration&&(duration=300);
-            !ease&&(ease=Tween.easeOut);
 
             var start=0,
                 from=0,
                 to=100,
-                step,
                 ret={
                     aniTimer: 0,
                     stop: function() {
@@ -27,8 +116,11 @@
                     start=Date.now()-startTime;
 
                     if(start<=duration) {
-                        var c=ease(start,from,to,duration);
-                        step.call(ret,c/to);
+                        var arr=[];
+                        for(var i=0,n=ease.length;i<n;i++) {
+                            arr.push(ease[i](start,from,to,duration)/to);
+                        }
+                        step.apply(ret,arr);
                         ret.aniTimer=requestAnimationFrame(_run);
                     } else {
                         step.call(ret,1);

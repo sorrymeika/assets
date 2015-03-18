@@ -14,9 +14,9 @@
     //size:反弹距离
     var _momentum=function(dist,time,maxDistUpper,maxDistLower,size) {
         var deceleration=0.0006,
-                speed=m.abs(dist)/time,
-                newDist=(speed*speed)/(2*deceleration),
-                newTime=0,outsideDist=0;
+            speed=m.abs(dist)/time,
+            newDist=(speed*speed)/(2*deceleration),
+            newTime=0,outsideDist=0;
 
         if(dist>0&&newDist>maxDistUpper) {
             outsideDist=size/(6/(newDist/speed*deceleration))/2;
@@ -34,9 +34,17 @@
         outsideDist=outsideDist*(dist<0?-1:1);
         newTime=speed/deceleration;
 
+        if(outsideDist!=0&&outsideDist/newDist<0.05) {
+            newDist-=outsideDist/2;
+            outsideDist/=2;
+        }
+
         return { dist: newDist,time: m.round(newTime),outside: outsideDist };
     };
 
+    var addScrollInner=function($scroll) {
+        return $('<div class="sl_scroll_inner" style="width:100%;-webkit-transform: translate(0px,0px) translateZ(0);"></div>').append($scroll.children()).appendTo($scroll);
+    };
 
     var Scroll=view.extend({
         events: {
@@ -58,7 +66,7 @@
 
             if(this.useTransform) {
                 var $scroll=this.$scroll;
-                this.$scrollInner=$('<div style="width:100%;-webkit-transform: translate(0px,0px) translateZ(0);"></div>').append($scroll.children()).appendTo($scroll);
+                this.$scrollInner=addScrollInner($scroll);
                 this.scrollInner=this.$scrollInner[0];
                 $scroll.css({ overflow: 'hidden' });
             }
@@ -162,6 +170,7 @@
         },
 
         onScrollStop: function() {
+            this.$scroll.trigger('scrollStop');
         },
 
         _start: function(e) {
@@ -355,9 +364,20 @@
         }
     });
 
-    Scroll.bind=function(selector,useScroll) {
+    Scroll.bind=function(selector,options) {
         var $scroll=typeof selector==='string'?$(selector):selector;
         var result=[];
+
+        $scroll.on('scroll',function() {
+            var that=this;
+            if(that._stm) clearTimeout(that._stm);
+            that._stm=setTimeout(function() {
+                //for ios
+                that._scrollTop=that.scrollTop;
+
+                $(that).trigger('scrollStop');
+            },80);
+        });
 
         //*test scroll begin
         $scroll.each(function() {
@@ -368,34 +388,47 @@
         return;
         //test scroll end*/
 
-        if(useScroll||util.android&&parseFloat(util.osVersion<=2.3))
+        if(options&&options.useScroll||util.android&&parseFloat(util.osVersion<=2.3))
             $scroll.each(function() {
-                result.push(new Scroll(this));
+                result.push(new Scroll(this,options));
             });
         else if(util.ios)
-            $scroll.css({ '-webkit-overflow-scrolling': 'touch',overflowY: 'scroll' })
-                .on('touchend',function(e) {
-                    if(this._scrollTop!==this.scrollTop) {
-                        this._scrollTop=this.scrollTop;
-                        e.stopPropagation();
-                    }
-                }).on('scroll',function() {
-                    var that=this;
-                    if(that._stm) clearTimeout(that._stm),that._stm=0;
-                    that._stm=setTimeout(function() {
-                        that._scrollTop=that.scrollTop;
-                    },80);
-                }).each(function() {
-                    this._scrollTop=0;
-                }),
-                result.push({
-                    destory: function() {
-                        $scroll.off('touchend').off('scroll');
-                    }
-                });
+            $scroll.css({
+                '-webkit-overflow-scrolling': 'touch',
+                overflowY: 'scroll'
+            })
+            .on('touchend',function(e) {
+                if(this._scrollTop!==this.scrollTop) {
+                    this._scrollTop=this.scrollTop;
+                    e.stopPropagation();
+                }
+            }).each(function() {
+                this._scrollTop=0;
+            }),
+            result.push({
+                destory: function() {
+                    $scroll.off('touchend').off('scroll');
+                }
+            });
 
         else if(util.android)
             $scroll.css({ overflowY: 'scroll' });
+
+        if(options&&options.refresh) {
+
+            var $inner=$scroll.children('.sl_scroll_inner');
+            if(!$inner.length) $inner=addScrollInner($scroll);
+
+            $scroll.on('touchstart',function(e) {
+                var that=this;
+
+            }).on('touchmove',function(e) {
+                var that=this;
+                if(that.scrollTop<=0) {
+                    e.preventDefault();
+                }
+            });
+        }
 
         return result;
     };

@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','./tmpl','./view','./widget/scroll','./plugins/template','sl/widget/tip','sl/widget/dialog','extend/ortchange'],function(require,exports,module) {
+﻿define(['$','util','bridge','./tween','./tmpl','./view','./widget/scroll','./plugins/template','sl/widget/tip','sl/widget/dialog','extend/ortchange'],function(require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
@@ -6,6 +6,7 @@
         sl=require('./base'),
         tmpl=require('./tmpl'),
         view=require('./view'),
+        tween=require('./tween'),
         Scroll=require('./widget/scroll'),
         templatePlugin=require('./plugins/template');
 
@@ -27,6 +28,23 @@
             activity._setRoute(route);
             activity.trigger('QueryChange');
         }
+    };
+
+
+    $.fn.matrix=function(matrix) {
+        matrix=[1,0,0,1,'100%',0];
+        var e=matrix[4];
+        var f=matrix[5];
+
+        if(/\%$/.test(e)) {
+            matrix[4]=this.parentNode.offsetWidth*parseFloat(e)/100;
+        }
+        if(/\%$/.test(f)) {
+            matrix[5]=this.parentNode.offsetHeight*parseFloat(e)/100;
+        }
+    };
+
+    var superAnimate=function() {
     };
 
     var Activity=view.extend({
@@ -269,6 +287,22 @@
             this.$el.addClass((name?name+'-':'')+type);
         },
 
+        openEnterAnimationFrom: {
+            matrix: [1,0,0,1,'100%',0]
+        },
+        openEnterAnimationTo: {
+            matrix: [1,0,0,1,0,0]
+        },
+        openExitAnimationTo: {
+            matrix: [1,0,0,1,'-50%',0]
+        },
+        closeExitAnimationTo: {
+            matrix: [1,0,0,1,'100%',0]
+        },
+        closeEnterAnimationTo: {
+            matrix: [1,0,0,1,0,0]
+        },
+
         _to: function(url,duration,animationName,type,callback) {
             if(!duration) duration=400;
             url=hashToUrl(url);
@@ -307,6 +341,12 @@
 
                 activity.then(function() {
                     activity.trigger('Resume');
+                });
+
+                tween.animate(function(d) {
+                    var curr=from+(to-from)*d;
+
+                },duration,'ease-out',function() {
                 });
 
                 activity._animationFrom(animationName,type+'_enter_animation-from');
