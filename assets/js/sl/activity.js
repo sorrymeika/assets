@@ -30,23 +30,6 @@
         }
     };
 
-
-    $.fn.matrix=function(matrix) {
-        matrix=[1,0,0,1,'100%',0];
-        var e=matrix[4];
-        var f=matrix[5];
-
-        if(/\%$/.test(e)) {
-            matrix[4]=this.parentNode.offsetWidth*parseFloat(e)/100;
-        }
-        if(/\%$/.test(f)) {
-            matrix[5]=this.parentNode.offsetHeight*parseFloat(e)/100;
-        }
-    };
-
-    var superAnimate=function() {
-    };
-
     var Activity=view.extend({
         plugins: [templatePlugin],
         options: {

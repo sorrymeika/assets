@@ -1,4 +1,4 @@
-﻿define(['$','util','./../base','./../view','./../tween'],function (require,exports,module) {
+﻿define(['$','util','./../base','./../view','./../tween'],function(require,exports,module) {
     var $=require('$'),
         util=require('util'),
         view=require('./../view'),
@@ -12,7 +12,7 @@
     //maxDistUpper: 最大向上滚动距离
     //maxDistLower: 最大向下滚动距离
     //size:反弹距离
-    var _momentum=function (dist,time,maxDistUpper,maxDistLower,size) {
+    var _momentum=function(dist,time,maxDistUpper,maxDistLower,size) {
         var deceleration=0.0006,
             speed=m.abs(dist)/time,
             newDist=(speed*speed)/(2*deceleration),
@@ -65,7 +65,7 @@
             hScroll: false,
             vScroll: true
         },
-        initialize: function () {
+        initialize: function() {
             var that=this;
 
             if(that.options.useTransform===true) that.useTransform=true;
@@ -80,7 +80,7 @@
             }
         },
 
-        init: function () {
+        init: function() {
             this.$scroll=this.$el;
             this.scroll=this.el;
         },
@@ -94,7 +94,7 @@
         minY: 0,
         minDelta: 6,
 
-        start: function () {
+        start: function() {
             var that=this;
 
             that.maxX=that.scrollerW-that.wrapperW;
@@ -105,7 +105,7 @@
             return that.options.bounce?true:((that.wrapperW<that.scrollerW||that.wrapperH<that.scrollerH)==true);
         },
 
-        refresh: function () {
+        refresh: function() {
             var that=this;
             that.x=that.scroll.scrollLeft;
             that.y=that.scroll.scrollTop;
@@ -117,7 +117,7 @@
             that.scrollerH=that.useTransform?that.scrollInner.scrollHeight:that.scroll.scrollHeight;
         },
 
-        stopAnimate: function () {
+        stopAnimate: function() {
             var ani=this._aniTimer;
             if(ani) {
                 ani.stop();
@@ -128,7 +128,7 @@
             else return false;
         },
 
-        animate: function (x,y,duration,callback) {
+        animate: function(x,y,duration,callback) {
             var that=this,
                 fromX=that.x,
                 fromY=that.y;
@@ -141,21 +141,21 @@
 
             !duration&&(duration=200);
 
-            tween.animate(function (d) {
+            tween.animate(function(d) {
                 var cx=fromX+(x-fromX)*d,
                     cy=fromY+(y-fromY)*d;
 
                 that.pos(m.round(cx),m.round(cy));
                 that._aniTimer=this;
 
-            },duration,this.options.ease||'ease',function () {
+            },duration,this.options.ease||'ease',function() {
                 that._aniTimer=null;
                 that._isAniStop=true;
                 callback&&callback.call(that,x,y);
             });
         },
 
-        bounceBack: function () {
+        bounceBack: function() {
             var that=this;
             var newX=that.x<that.minX?that.minX:that.x>that.maxX?that.maxX:that.x;
             var newY=that.y<that.minY?that.minY:that.y>that.maxY?that.maxY:that.y;
@@ -169,19 +169,19 @@
             }
         },
 
-        end: function () {
+        end: function() {
             this.options.bounce?this.bounceBack():this.onScrollStop();
         },
 
-        onScroll: function (x,y) {
+        onScroll: function(x,y) {
             this.$scroll.trigger('scrollChange',[x,y]);
         },
 
-        onScrollStop: function () {
+        onScrollStop: function() {
             this.$scroll.trigger('scrollStop');
         },
 
-        _start: function (e) {
+        _start: function(e) {
             var that=this,
                 point=hasTouch?e.touches[0]:e;
 
@@ -196,7 +196,7 @@
             return !that.stopAnimate();
         },
 
-        _move: function (e) {
+        _move: function(e) {
             var point=hasTouch?e.touches[0]:e;
 
             if(this._isStop) return;
@@ -254,7 +254,7 @@
             return false;
         },
 
-        _end: function (e) {
+        _end: function(e) {
             var that=this;
             if((!that._moved||that._isStop)&&that._isAniStop) {
                 that.end();
@@ -305,18 +305,18 @@
             }
         },
 
-        _startAni: function (x,y,duration) {
+        _startAni: function(x,y,duration) {
             this.animate(x,y,duration,this.end);
         },
 
-        pos: function (x,y) {
+        pos: function(x,y) {
             //this.y=y;
             //this.$scroll.css({ '-webkit-transform': 'translate('+0+'px,'+y* -1+'px) translateZ(0)' });
 
             this._pos(x,y);
         },
 
-        _pos: function (x,y) {
+        _pos: function(x,y) {
             var that=this;
             x=m.round(x);
             y=m.round(y);
@@ -409,7 +409,7 @@
 
             target._startRefresh=false;
 
-            tween.animate(function (d) {
+            tween.animate(function(d) {
                 y=from+(end-from)*d;
 
                 $child.css({ '-webkit-transform': 'translate(0px,'+y+'px) translateZ(0)' });
@@ -418,21 +418,22 @@
         }
     }
 
-    Scroll.bind=function (selector,options) {
+    Scroll.bind=function(selector,options) {
         //*test scroll begin
         options={
-            useScroll: false,
-            refresh: true
+            useScroll: true,
+            refresh: false,
+            useTransform: true
         }
         //test scroll end*/
 
         var $scroll=typeof selector==='string'?$(selector):selector;
         var result=[];
 
-        $scroll.on('scroll',function () {
+        $scroll.on('scroll',function() {
             var that=this;
             if(that._stm) clearTimeout(that._stm);
-            that._stm=setTimeout(function () {
+            that._stm=setTimeout(function() {
                 //for ios
                 that._scrollTop=that.scrollTop;
 
@@ -441,7 +442,7 @@
         });
 
         if(options&&options.useScroll||util.android&&parseFloat(util.osVersion<=2.3))
-            $scroll.each(function () {
+            $scroll.each(function() {
                 result.push(new Scroll(this,options));
             });
         else if(util.ios)
@@ -449,16 +450,16 @@
                 '-webkit-overflow-scrolling': 'touch',
                 overflowY: 'scroll'
             })
-            .on('touchend',function (e) {
+            .on('touchend',function(e) {
                 if(this._scrollTop!==this.scrollTop) {
                     this._scrollTop=this.scrollTop;
                     e.stopPropagation();
                 }
-            }).each(function () {
+            }).each(function() {
                 this._scrollTop=0;
             }),
             result.push({
-                destory: function () {
+                destory: function() {
                     $scroll.off('touchend').off('scroll');
                 }
             });

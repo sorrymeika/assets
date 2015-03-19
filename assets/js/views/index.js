@@ -69,6 +69,15 @@
             });
         },
         onShow: function() {
+
+            tween.parallel([{
+                el: '.view',
+                css: {
+                    opacity: .5,
+                    left: '50%',
+                    translate: '15%,10%'
+                }
+            }]);
         },
         onDestory: function() {
         }
