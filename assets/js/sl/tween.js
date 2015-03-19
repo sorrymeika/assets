@@ -191,8 +191,6 @@
                                         return parseFloat(m[i])+(parseFloat(num)-parseFloat(m[i++]))*d;
                                     }).replace(translatePercentReg,function ($0,$1,$2) {
                                         return 'translate('+(parseFloat(m[4])+(parseFloat($1)-parseFloat(m[4]))*d)+'px,'+(parseFloat(m[5])+(parseFloat($2)-parseFloat(m[5]))*d)+'px)';
-                                    }).replace(translatePercentReg,function ($0,$1,$2) {
-                                        return 'translate('+(parseFloat(m[4])+(parseFloat($1)-parseFloat(m[4]))*d)+'px,'+(parseFloat(m[5])+(parseFloat($2)-parseFloat(m[5]))*d)+'px)';
                                     });
 
                                 } else {
