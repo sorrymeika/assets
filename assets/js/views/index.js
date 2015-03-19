@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','sl/activity','sl/widget/loading','sl/widget/slider','sl/tween'],function(require,exports,module) {
+﻿define(['$','util','bridge','sl/activity','sl/widget/loading','sl/widget/slider','tween'],function (require,exports,module) {
     var util=require('util');
 
     var $=require('$'),
@@ -8,18 +8,18 @@
         Loading=require('sl/widget/loading'),
         Slider=require('sl/widget/slider');
 
-    var tween=require('sl/tween');
+    var tween=require('tween');
 
     return Activity.extend({
         template: 'views/index.html',
 
         events: {
-            'tap': function() {
+            'tap': function () {
                 // this.$('.main,.scroll').iScroll('refresh');
             },
 
-            'tap .js_buy': function() { },
-            'tap .js_create': function() {
+            'tap .js_buy': function () { },
+            'tap .js_create': function () {
                 if(!this.slider) {
                     sl.tip('T恤尚未载入，请稍候');
                 } else {
@@ -30,7 +30,7 @@
                     this.forward('/create/'+data.WorkID+'.html');
                 }
             },
-            'tap .js_buy': function() {
+            'tap .js_buy': function () {
                 var data=this.slider.data();
 
                 util.store('product',data);
@@ -40,7 +40,7 @@
 
         //useScroll: true,
 
-        onCreate: function() {
+        onCreate: function () {
             var that=this,
                 $list=that.$('.js_list');
 
@@ -49,7 +49,7 @@
                 $.post(bridge.url('/json/user/isLogin'),{
                     Account: userinfo.Account,
                     Auth: userinfo.Auth
-                },function(res) {
+                },function (res) {
                     if(!res||!res.returnCode=='0000') util.store('USERINFO',null);
                 },'json');
 
@@ -59,7 +59,7 @@
                 url: '/Json/Product/GetProducts',
                 pageIndex: 1,
                 pageSize: 5,
-                success: function(res) {
+                success: function (res) {
                     that.slider=new Slider($list,{
                         data: res.data,
                         itemTemplate: '<div style="position:relative"><img class="home_tee_img" src="${Picture}" onerror="this.removeAttribute(\'src\')" /><b class="home_buy_btn js_buy""></b><p class="t_info"><span>COMBED COTTON TEE</span> <span>可与皮肤直接接触</span> </p></div>'
@@ -67,19 +67,24 @@
                 }
             });
         },
-        onShow: function() {
+        onShow: function () {
 
-            tween.parallel([{
-                el: '.view',
-                css: {
-                    opacity: .5,
-                    left: '50%',
-                    translate: '15%,10%'
-                },
-                duration: 1000
-            }]);
+            setTimeout(function () {
+
+                tween.parallel([{
+                    el: '.js_main',
+                    css: {
+                        opacity: .5,
+                        translate: '15%,10%',
+                        scale: '1,.5'
+                    },
+                    duration: 1000
+                }]);
+
+            },100)
+
         },
-        onDestory: function() {
+        onDestory: function () {
         }
     });
 });
