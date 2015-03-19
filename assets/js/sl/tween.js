@@ -74,7 +74,11 @@
             run();
     }
 
-    var TRANSFORM='-webkit-transform';
+    var TRANSFORM='-webkit-transform',
+        numReg=/\d+\.\d+|\d+/g,
+        translatePercentReg=/translate\((\d+(\.\d+){0,1}\%)\,(\d+(\.\d+){0,1}\%)\)/,
+        matrixReg=/matrix\(((\d+\.\d+|\d+)\,{0,1})\)/,
+        translateReg=/translate\((\d+\.\d+|\d+)\s*\,\s*(\d+\.\d+|\d+)\)/g
 
     function parallelAnimate(animations) {
         var anims=[],
@@ -109,10 +113,13 @@
                     originVal;
 
                     $.each(css,function(key,val) {
-                        if(typeof val==='string')
-                            val=val.replace(/\d+(\.\d+){0,1}\%$/g,function($0) {
-                                return that.parentNode.offsetWidth*parseFloat($0)/100;
+                        if(typeof val==='string') {
+                            val=val.replace(translatePercentReg,function($0,$1,$2) {
+                                console.log($0,$1,$2)
+                                return $0;//(key=="top"?that.parentNode.offsetHeight:that.parentNode.offsetWidth)*parseFloat($0)/100+"px";
                             });
+                        }
+                        console.log(val)
 
                         originStyle[key]=style[key];
                         animationStyle[key]=val;
@@ -127,13 +134,39 @@
                 anim._step=anim.step;
                 anim.step=function(d) {
                     var style,
-                    originStyle;
+                        originStyle,
+                        originVal,
+                        val,
+                        newStyle;
 
                     this.el.each(function() {
+                        newStyle={};
                         style=this._animationStyle;
                         originStyle=this._originStyle;
 
-                        console.log(style,originStyle)
+                        for(var key in style) {
+                            val=style[key];
+                            originVal=originStyle[key];
+
+                            if(key==TRANSFORM) {
+                                var m=originVal.match(matrixReg);
+                                if(m) {
+
+                                } else {
+                                    from=0;
+                                    newStyle[key]=val.replace(numReg,function(num) {
+                                        return from+(parseFloat(num)-from)*d
+                                    });
+                                }
+
+                            } else if(!isNaN(parseFloat(val))) {
+                                originVal=isNaN(parseFloat(originVal))?0:parseFloat(originVal);
+                                newStyle[key]=originVal+(parseFloat(val)-originVal)*d;
+                            }
+                        }
+                        $(this).css(newStyle);
+
+                        console.log(newStyle)
                     });
 
                     //var cx=fromX+(end-fromX)*d;
@@ -143,6 +176,7 @@
 
                 anim._finish=anim.finish;
                 anim.finish=function() {
+                    console.log(this.css)
 
                     this.el.css(this.css);
                     this._finish&&this._finish(d);
