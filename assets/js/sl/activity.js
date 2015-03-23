@@ -287,14 +287,13 @@
             url=hashToUrl(url);
 
             var that=this,
-                application=that.application;
+                application=that.application,
+                currentActivity=application._currentActivity,
+                route=application.matchRoute(url);
 
             if(url!=hashToUrl(location.hash)) {
                 application.navigate(url);
             }
-
-            var currentActivity=application._currentActivity;
-            var route=application.matchRoute(url);
 
             if(currentActivity.path==route.path) {
                 checkQueryString(currentActivity,route);
