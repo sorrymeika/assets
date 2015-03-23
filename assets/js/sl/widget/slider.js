@@ -1,12 +1,10 @@
-﻿define(['$','util','./../view','./../tmpl','extend/ortchange','./scroll'],function(require,exports,module) {
+﻿define(['$','util','./../view','./../tmpl','./scroll'],function(require,exports,module) {
     var $=require('$'),
         _=require('util'),
         view=require('./../view'),
         tmpl=require('./../tmpl');
 
     var Scroll=require('./scroll');
-
-    require('extend/ortchange');
 
     var Slider=Scroll.extend({
         widgetName: 'Slider',

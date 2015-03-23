@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','./tween','./tmpl','./view','./widget/scroll','./plugins/template','sl/widget/tip','sl/widget/dialog','extend/ortchange'],function(require,exports,module) {
+﻿define(['$','util','bridge','./tween','./tmpl','./view','./widget/scroll','./plugins/template','sl/widget/tip','sl/widget/dialog'],function(require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
@@ -13,7 +13,6 @@
     var Dialog=require('sl/widget/dialog');
 
     require('sl/widget/tip');
-    require('extend/ortchange');
 
     var noop=util.noop,
         indexOf=util.indexOf,
@@ -65,6 +64,7 @@
             var that=this;
 
             that.className=that.el.className;
+            that.$el.transform(that.openEnterAnimationFrom);
 
             that._setRoute(that.options.route);
 
@@ -262,28 +262,24 @@
             this.el.style.webkitTransitionDuration=(time||0)+'ms';
         },
 
-        _animationFrom: function(name,type) {
-            this.el.className=this.className+' '+(name?name+'-':'')+type;
-        },
-
         _animationTo: function(name,type) {
             this.$el.addClass((name?name+'-':'')+type);
         },
 
         openEnterAnimationFrom: {
-            matrix: [1,0,0,1,'100%',0]
+            translate: '100%,0'
         },
         openEnterAnimationTo: {
-            matrix: [1,0,0,1,0,0]
+            translate: '0,0'
         },
         openExitAnimationTo: {
-            matrix: [1,0,0,1,'-50%',0]
+            translate: '-50%,0'
         },
         closeExitAnimationTo: {
-            matrix: [1,0,0,1,'100%',0]
+            translate: '100%,0'
         },
         closeEnterAnimationTo: {
-            matrix: [1,0,0,1,0,0]
+            translate: '0,0'
         },
 
         _to: function(url,duration,animationName,type,callback) {
@@ -315,7 +311,7 @@
                     return;
                 }
 
-                application.$el.children(':not([data-path="'+that.path+'"]),:not([data-path="'+route.path+'"])').addClass('stop');
+                application.$el.children(':not([data-path="'+that.path+'"])').filter(':not([data-path="'+route.path+'"])').addClass('stop')[0];
                 application._currentActivity=activity;
 
                 that.prepareExitAnimation();
@@ -326,39 +322,26 @@
                     activity.trigger('Resume');
                 });
 
-                tween.animate(function(d) {
-                    var curr=from+(to-from)*d;
+                //console.log(activity.openExitAnimationTo)
 
-                },duration,'ease-out',function() {
-                });
+                var animActivity=type=='open'?activity:that;
+                tween.parallel([{
+                    el: activity.el,
+                    css: animActivity[type+'EnterAnimationTo'],
+                    duration: duration,
+                    ease: 'ease-out'
+                },{
+                    el: that.el,
+                    css: animActivity[type+'ExitAnimationTo'],
+                    duration: duration,
+                    ease: 'ease-out',
+                    finish: function() {
+                        callback&&callback(activity);
+                        activity.finishEnterAnimation();
+                        application.turning();
+                    }
+                }]);
 
-                activity._animationFrom(animationName,type+'_enter_animation-from');
-                that._animationFrom(animationName,type+'_exit_animation-from');
-                that.el.clientHeight;
-
-                that._transitionTime(duration);
-                activity._transitionTime(duration);
-
-                var timer;
-                var isExecuted=false;
-                var $els=$(activity.$el).add(that.$el);
-                var end=function() {
-                    if(isExecuted) return;
-                    isExecuted=true;
-                    timer&&clearTimeout(timer);
-
-                    that._transitionTime(0);
-                    activity._transitionTime(0);
-
-                    callback&&callback(activity);
-                    activity.finishEnterAnimation();
-                    application.turning();
-                };
-                $els.one($.fx.transitionEnd,end);
-
-                that._animationTo(animationName,type+'_exit_animation-to');
-                activity._animationTo(animationName,type+'_enter_animation-to');
-                timer=setTimeout(end,duration);
             });
         },
 

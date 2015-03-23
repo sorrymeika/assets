@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','./activity','./tmpl','./view','./plugins/template','extend/ortchange'],function(require,exports,module) {
+﻿define(['$','util','bridge','./activity','./tmpl','./view','./plugins/template'],function(require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
@@ -8,8 +8,6 @@
         view=require('./view'),
         Activity=require('./activity'),
         plugin=require('./plugins/template');
-
-    require('extend/ortchange');
 
     var noop=util.noop,
         lastIndexOf=util.lastIndexOf,
@@ -192,7 +190,7 @@
                 that._history.push(activity.hash);
                 that._historyCursor++;
 
-                activity.$el.appendTo(that.$el);
+                activity.$el.transform(activity.openEnterAnimationTo).appendTo(that.$el);
                 activity.then(function() {
                     activity.trigger('Resume');
                     activity.trigger('Show');

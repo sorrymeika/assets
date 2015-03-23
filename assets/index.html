@@ -8,12 +8,18 @@
     <link href="anim.css" rel="stylesheet" type="text/css" />
     <link href="style.css" rel="stylesheet" type="text/css" />
     <script src="js/seajs/sea.js"></script>
+    <script debug src="js/zepto.js"></script>
+    <script debug src="js/extend/touch.js"></script>
+    <script debug src="js/extend/deferred.js"></script>
+    <script debug src="js/extend/fx.js"></script>
+    <script debug src="js/extend/matchMedia.js"></script>
+    <script debug src="js/extend/ortchange.js"></script>
     <script debug src="js/tools/tools.js"></script>
 </head>
 <body>
     <script debug>
-        seajs.use(['zepto','tools/tools'],function ($,tools,bridge) {
-            return;
+        seajs.use(['zepto','tools/tools'],function($,tools,bridge) {
+        return;
             tools.build({
                 api: 'http://photo.ie1e.com',
                 compress: [
@@ -24,15 +30,17 @@
                 js: {
                     sl: [
                         'zepto',
+                        'extend/touch',
+                        'extend/deferred',
+                        'extend/fx',
                         'extend/matchMedia',
-                        'extend/throttle',
                         'extend/ortchange',
-                        'extend/scrollStop',
+                        'extend/throttle',
                         'util',
                         'bridge',
+                        'graphics/matrix2d',
                         'sl/base',
                         'sl/_linklist',
-                        'sl/linklist',
                         'sl/event',
                         'sl/tmpl',
                         'sl/view',
@@ -43,12 +51,10 @@
                         'sl/widget/dialog',
                         'sl/widget/tip',
                         'sl/widget/button',
-                        'sl/widget/touch',
                         'sl/widget/scroll',
                         'sl/widget/selector',
                         'sl/widget/loading',
                         'sl/widget/slider',
-                        'sl/widget/imglazyload',
                         'sl/widget/dropdown'
                         ],
                     views: [
@@ -101,13 +107,14 @@
     </script>
     <script>
         seajs.config({
+            base: './js',
             alias: {
                 "$": "zepto",
                 "tween": "sl/tween"
             }
         });
 
-        seajs.use(['$','sl/app','bridge'],function ($,Application,bridge) {
+        seajs.use(['$','sl/app','bridge'],function($,Application,bridge) {
             var app=new Application();
 
             app.mapRoute({

@@ -93,8 +93,8 @@
     var TRANSFORM='-webkit-transform',
         numReg=/\d+\.\d+|\d+/g,
         percentReg=/(\d+\.\d+|\d+)\%/g,
-        translatePercentReg=/translate\((\d+(?:\.\d+){0,1}(?:\%|px){0,1})\s*\,\s*(\d+(?:\.\d+){0,1}(?:\%|px){0,1})\)/,
-        matrixReg=/matrix\((\d+\.\d+|\d+)\s*\,\s*(\d+\.\d+|\d+)\s*\,\s*(\d+\.\d+|\d+)\s*\,\s*(\d+\.\d+|\d+)\s*\,\s*(\d+\.\d+|\d+)\s*\,\s*(\d+\.\d+|\d+)\s*\)/,
+        translatePercentReg=/translate\((\-{0,1}\d+(?:\.\d+){0,1}(?:\%|px){0,1})\s*\,\s*(\-{0,1}\d+(?:\.\d+){0,1}(?:\%|px){0,1})\)/,
+        matrixReg=/matrix\((\-{0,1}\d+\.\d+|\-{0,1}\d+)\s*\,\s*(\-{0,1}\d+\.\d+|\-{0,1}\d+)\s*\,\s*(\-{0,1}\d+\.\d+|\-{0,1}\d+)\s*\,\s*(\-{0,1}\d+\.\d+|\-{0,1}\d+)\s*\,\s*(\-{0,1}\d+\.\d+|\-{0,1}\d+)\s*\,\s*(\-{0,1}\d+\.\d+|\-{0,1}\d+)\s*\)/,
         transformReg=/(translate|skew|rotate|scale|matrix)\(([^\)]+)\)/g,
         matrixEndReg=/matrix\([^\)]+\)\s*$/;
 
@@ -123,17 +123,17 @@
         var anims=[],
             anim,
             el,
-            css;
+            css,
+            m2d,
+            origTransform;
 
         for(var i=0,n=animations.length,item;i<n;i++) {
             anim=animations[i];
 
             if(anim.css) {
-
                 css=toTransform(anim.css);
-
-                anim.css=css.css;
                 anim.matrix=css.matrix;
+                css=anim.css=css.css;
 
                 anim.selector=anim.el;
                 el=anim.el=$(anim.el);
@@ -150,6 +150,7 @@
                                 val=val.replace(translatePercentReg,function($0,$1,$2) {
                                     return 'translate('+($1.indexOf('%')!== -1?that.offsetWidth*parseFloat($1)/100:parseFloat($1))+'px,'+($2.indexOf('%')!== -1?that.offsetHeight*parseFloat($2)/100:parseFloat($2))+'px)';
                                 });
+                                console.log(val)
                             } else if(/^(top|margin(-t|T)op)$/.test(key)) {
                                 val=val.replace(percentReg,function($0) {
                                     return that.parentNode.offsetHeight*parseFloat($0)/100+"px";
@@ -273,12 +274,15 @@
 
     $.fn.transform=function(css) {
         this.css(toTransform(css).css);
+
+        return this;
     }
 
     $.fn.matrix=function(matrix) {
         if(matrix instanceof Matrix2D) {
             this.css(TRANSFORM,matrix.toString());
 
+            return this;
         } else
             return getMatrixByTransform(getComputedStyle(this[0],null)[TRANSFORM]);
     };

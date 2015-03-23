@@ -1,5 +1,4 @@
-﻿define('extend/matchMedia',['$'],function(require,exports,module) {
-    var $=require('$');
+﻿(function($,undefined) {
 
     $.matchMedia=(function() {
         var mediaId=0,
@@ -61,4 +60,4 @@
         };
     } ());
 
-});
+})(Zepto);
