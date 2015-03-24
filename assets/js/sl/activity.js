@@ -283,7 +283,7 @@
         },
 
         _to: function (url,duration,animationName,type,callback) {
-            if(!duration) duration=400;
+            if(!duration) duration=300;
             url=hashToUrl(url);
 
             var that=this,
@@ -324,7 +324,7 @@
                 //console.log(activity.openExitAnimationTo)
 
                 var animActivity=type=='open'?activity:that,
-                    ease=type=='open'?'ease-in':'ease-out';
+                    ease=type=='open'?'ease-out':'ease-out';
 
                 activity.el.style.zIndex=3;
                 that.el.style.zIndex=1;

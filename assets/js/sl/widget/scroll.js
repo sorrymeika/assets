@@ -220,6 +220,8 @@
                     that._isStart=(isV&&that.options.vScroll||isH&&that.options.hScroll)&&(that.start()!==false);
                     if(that._isStop=!that._isStart) return;
 
+                    if(that.maxX<0) that.maxX=0;
+                    if(that.maxY<0) that.maxY=0;
                     that.startX=that.x;
                     that.startY=that.y;
 
