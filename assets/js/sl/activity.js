@@ -8,9 +8,8 @@
         view=require('./view'),
         tween=require('./tween'),
         Scroll=require('./widget/scroll'),
-        templatePlugin=require('./plugins/template');
-
-    var Dialog=require('sl/widget/dialog');
+        templatePlugin=require('./plugins/template'),
+        Dialog=require('sl/widget/dialog');
 
     require('sl/widget/tip');
 
