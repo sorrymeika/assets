@@ -1,4 +1,12 @@
 ﻿define(function(require) {
+    if(!Object.create) {
+        Object.create=function(o) {
+            var F=function() { };
+            F.prototype=o;
+            return new F();
+        };
+    }
+
     var Class=function() {
         var that=this,
             args=Array.prototype.slice.call(arguments),
