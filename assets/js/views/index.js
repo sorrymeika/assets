@@ -66,8 +66,7 @@
                     });
                 }
             });
-        },
-        onShow: function() {
+
 
             function run() {
                 tween.parallel([{
@@ -89,7 +88,7 @@
                             },
                             duration: 1000,
                             finish: function() {
-                                //run()
+                                run()
                             }
                         },{
                             el: '.js_list',
@@ -141,6 +140,10 @@
 
 
             },100)
+        },
+        onShow: function() {
+
+            
 
         },
         onDestory: function() {
