@@ -325,16 +325,19 @@
                 var animActivity=type=='open'?activity:that,
                     ease=type=='open'?'ease-out':'ease-out';
 
-                activity.el.style.zIndex=3;
-                that.el.style.zIndex=1;
-
                 tween.parallel([{
                     el: activity.el,
+                    start: {
+                        zIndex: 3
+                    },
                     css: animActivity[type+'EnterAnimationTo'],
                     duration: duration,
                     ease: ease
                 },{
                     el: that.el,
+                    start: {
+                        zIndex: 1
+                    },
                     css: animActivity[type+'ExitAnimationTo'],
                     duration: duration,
                     ease: ease,
