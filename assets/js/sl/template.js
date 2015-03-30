@@ -5,6 +5,14 @@
         view=require('./../view'),
         slice=Array.prototype.slice;
 
+    //'f@(data(")").a["asdfasdf"](a))'.match(/([^@]|^)@(?![@])([\w\d]+(?:\[\"[^\"]+\"\]|\.[\w\d]+|\([^\)]*\))*|\((?:.+?\((?:\"[^\"]+\"|[^\)]+?)\)|.+)?\))/mg)
+
+    //'@for(var i=0;i<n;i++){ if(){} if(){ if(){if(){}} } } <div>}'.match(/([^@]|^)@(?![@])(for|if|each)\(([^\)]+?)\)\s*\{((?:[^\{\}]+?\{(?:[^\{\}]+?\{(?:[^\{\}]+?\{(?:[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}])+|.+?)\}/);
+
+    function getRemoteTemplate(url) {
+        $.get(url,function(res) {
+        });
+    }
 
     function template(templateStr) {
         var templates=[],
@@ -60,6 +68,8 @@
             dfd.resolveWith(that,[record]);
         }
 
+        return function(data) {
+        }
     }
 
     var templatesRecords={};

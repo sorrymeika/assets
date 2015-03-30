@@ -1,4 +1,4 @@
-﻿define(function(require) {
+﻿define(function(require,exports) {
     if(!Object.create) {
         Object.create=function(o) {
             var F=function() { };
@@ -56,40 +56,37 @@
         return childClass;
     };
 
-    var sl={
-        Class: Class,
-        functionlize: function(Class,defaultFunc) {
+    exports.Class=Class;
 
-            return function() {
-                var one=Class._single,
+    exports.functionlize=function(Class,defaultFunc) {
+
+        return function() {
+            var one=Class._single,
                     args=slice.apply(arguments);
 
-                if(!one) one=Class._single=new Class();
+            if(!one) one=Class._single=new Class();
 
-                if(!args.length) return one;
+            if(!args.length) return one;
 
-                var actionName=args.shift()+'',
+            var actionName=args.shift()+'',
                     key,
                     val,
                     action;
 
-                for(var key in one) {
-                    if(key==actionName) {
-                        action=val;
-                        break;
-                    }
+            for(var key in one) {
+                if(key==actionName) {
+                    action=val;
+                    break;
                 }
+            }
 
-                typeof action==='function'?
+            typeof action==='function'?
                     action.apply(one,args):
                     (defaultFunc&&defaultFunc.call(one,actionName));
 
-                return this;
-            }
+            return this;
         }
     };
 
-    window.sl=sl;
-
-    return sl;
+    window.sl=exports;
 });
