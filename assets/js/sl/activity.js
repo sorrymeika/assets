@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','./tween','./tmpl','./view','./widget/scroll','./plugins/template','sl/widget/tip','sl/widget/dialog'],function (require,exports,module) {
+﻿define(['$','util','bridge','./tween','./tmpl','./view','./widget/scroll','./plugins/template','sl/widget/tip','sl/widget/dialog','./razor'],function (require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
@@ -8,6 +8,7 @@
         view=require('./view'),
         tween=require('./tween'),
         Scroll=require('./widget/scroll'),
+        razor=require('./razor'),
         templatePlugin=require('./plugins/template'),
         Dialog=require('sl/widget/dialog');
 

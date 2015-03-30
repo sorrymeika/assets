@@ -1,16 +1,16 @@
-﻿define(['$','bridge','./../tmpl','views.text'],function(require,exports,module) {
+﻿define(['$','bridge','./../tmpl','views.text'],function (require,exports,module) {
     var $=require('$'),
         bridge=require('bridge'),
-        tmpl=require('./../tmpl'),
-        view=require('./../view'),
         slice=Array.prototype.slice;
 
     //'f@(data(")").a["asdfasdf"](a))'.match(/([^@]|^)@(?![@])([\w\d]+(?:\[\"[^\"]+\"\]|\.[\w\d]+|\([^\)]*\))*|\((?:.+?\((?:\"[^\"]+\"|[^\)]+?)\)|.+)?\))/mg)
 
-    //'@for(var i=0;i<n;i++){ if(){} if(){ if(){if(){}} } } <div>}'.match(/([^@]|^)@(?![@])(for|if|each)\(([^\)]+?)\)\s*\{((?:[^\{\}]+?\{(?:[^\{\}]+?\{(?:[^\{\}]+?\{(?:[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}])+|.+?)\}/);
+    '@for(var i=0;i<n;i++){ if(){} if(){ if(){if(){}} } } <div>}'.match(/([^@]|^)@(?![@])(for|if|each)\(([^\)]+?)\)\s*\{((?:[^\{\}]+?\{(?:[^\{\}]+?\{(?:[^\{\}]+?\{(?:[^\{\}]+?\{(?:[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}])+|.+?)\}/);
+
+    //^\{\}]+?\{[^\}]*\}[^\{\}]*|[^\}]*
 
     function getRemoteTemplate(url) {
-        $.get(url,function(res) {
+        $.get(url,function (res) {
         });
     }
 
@@ -23,10 +23,10 @@
                 includes: []
             };
 
-        templateStr=templateStr.replace(/<include src=("|')(.+?)\1[^>]*?>/img,function($0,$1,$2) {
+        templateStr=templateStr.replace(/<include src=("|')(.+?)\1[^>]*?>/img,function ($0,$1,$2) {
             var replacement='<include_'+$2+'>';
-            includes.push(function() {
-                return buildTemplate.call(that,$2,function(rec) {
+            includes.push(function () {
+                return buildTemplate.call(that,$2,function (rec) {
                     record.main=record.main.replace(replacement,rec.main);
                     record.includes.push(rec);
                 });
@@ -34,7 +34,7 @@
             return replacement;
         });
 
-        template=template.replace(/<script([^>]+)>([\S\s]+?)<\/script>/mgi,function(r0,r1,r2) {
+        template=template.replace(/<script([^>]+)>([\S\s]+?)<\/script>/mgi,function (r0,r1,r2) {
             var m=r1.match(/\bid=("|')(.+?)\1/i);
             if(m) {
                 record._templates[m[2]]=templates.length;
@@ -45,8 +45,8 @@
 
         templates.push(template);
 
-        $.each(templates,function(i,str) {
-            templates[i]=str.replace(/\{\%include\s+(\w+)\%\}/mgi,function(r0,r1) {
+        $.each(templates,function (i,str) {
+            templates[i]=str.replace(/\{\%include\s+(\w+)\%\}/mgi,function (r0,r1) {
                 return templates[record._templates[r1]];
             });
         });
@@ -59,7 +59,7 @@
             while(includes.length) {
                 incDfd=incDfd.then(includes.shift());
             }
-            incDfd.then(function() {
+            incDfd.then(function () {
                 callback&&callback(record);
                 dfd.resolveWith(that,[record]);
             });
@@ -68,12 +68,12 @@
             dfd.resolveWith(that,[record]);
         }
 
-        return function(data) {
+        return function (data) {
         }
     }
 
     var templatesRecords={};
-    var buildTemplate=function(url,callback) {
+    var buildTemplate=function (url,callback) {
 
         var that=this,
             dfd=$.Deferred(),
@@ -84,7 +84,7 @@
             dfd.resolveWith(that,[record]);
 
         } else
-            getTemplate(url,function(template) {
+            getTemplate(url,function (template) {
                 var templates=[],
                     includes=[];
 
@@ -94,10 +94,10 @@
                     includes: []
                 };
 
-                template=template.replace(/<include src=("|')(.+?)\1[^>]*?>/img,function(r0,r1,r2) {
+                template=template.replace(/<include src=("|')(.+?)\1[^>]*?>/img,function (r0,r1,r2) {
                     var replacement='<include_'+r2+'>';
-                    includes.push(function() {
-                        return buildTemplate.call(that,r2,function(rec) {
+                    includes.push(function () {
+                        return buildTemplate.call(that,r2,function (rec) {
                             record.main=record.main.replace(replacement,rec.main);
                             record.includes.push(rec);
                         });
@@ -105,7 +105,7 @@
                     return replacement;
                 });
 
-                template=template.replace(/<script([^>]+)>([\S\s]+?)<\/script>/mgi,function(r0,r1,r2) {
+                template=template.replace(/<script([^>]+)>([\S\s]+?)<\/script>/mgi,function (r0,r1,r2) {
                     var m=r1.match(/\bid=("|')(.+?)\1/i);
                     if(m) {
                         record._templates[m[2]]=templates.length;
@@ -116,8 +116,8 @@
 
                 templates.push(template);
 
-                $.each(templates,function(i,str) {
-                    templates[i]=str.replace(/\{\%include\s+(\w+)\%\}/mgi,function(r0,r1) {
+                $.each(templates,function (i,str) {
+                    templates[i]=str.replace(/\{\%include\s+(\w+)\%\}/mgi,function (r0,r1) {
                         return templates[record._templates[r1]];
                     });
                 });
@@ -130,7 +130,7 @@
                     while(includes.length) {
                         incDfd=incDfd.then(includes.shift());
                     }
-                    incDfd.then(function() {
+                    incDfd.then(function () {
                         callback&&callback(record);
                         dfd.resolveWith(that,[record]);
                     });
