@@ -325,9 +325,6 @@
                     for(var i=0,anim,n=animations.length;i<n;i++) {
                         anim=animations[i];
                         anim.from=per;
-
-                        console.log(anim)
-
                         anim.step(per/100);
                     }
                 },

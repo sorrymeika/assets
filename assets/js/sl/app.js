@@ -273,7 +273,7 @@
         },
 
         remove: function (url) {
-            this._activities[getUrlPath(url)]=undefined;
+            this._activities[getUrlPath(url)]=void 0;
         },
 
         viewPath: 'views/',
