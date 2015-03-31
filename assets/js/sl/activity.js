@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','./tween','./tmpl','./view','./widget/scroll','./plugins/template','sl/widget/tip','sl/widget/dialog','./razor'],function (require,exports,module) {
+﻿define(['$','util','bridge','./tween','./tmpl','./view','./widget/scroll','./plugins/template','sl/widget/tip','sl/widget/dialog','./razor','./animations'],function(require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
@@ -9,6 +9,7 @@
         tween=require('./tween'),
         Scroll=require('./widget/scroll'),
         razor=require('./razor'),
+        animations=require('./animations'),
         templatePlugin=require('./plugins/template'),
         Dialog=require('sl/widget/dialog');
 
@@ -18,11 +19,11 @@
         indexOf=util.indexOf,
         slice=Array.prototype.slice,
         getUrlPath=util.getUrlPath,
-        hashToUrl=function (hash) {
+        hashToUrl=function(hash) {
             return (hash.replace(/^#/,'')||'/').toLowerCase();
         };
 
-    var checkQueryString=function (activity,route) {
+    var checkQueryString=function(activity,route) {
         if(activity.route.url!=route.url) {
             activity._setRoute(route);
             activity.trigger('QueryChange');
@@ -34,11 +35,11 @@
         options: {
             route: null
         },
-        animationName: null,
+        animationName: 'def',
         application: null,
         el: '<div class="view"></div>',
 
-        _setRoute: function (route) {
+        _setRoute: function(route) {
             this.route=route;
             this.hash=route.hash;
             this.url=route.url;
@@ -47,7 +48,7 @@
             this.queries=$.extend({},route.queries);
         },
 
-        queryString: function (key,val) {
+        queryString: function(key,val) {
             if(typeof val==='undefined')
                 return this.route.queries[key];
 
@@ -60,11 +61,13 @@
             this.application.to(this.route.path+(queries?'?'+queries:''));
         },
 
-        initialize: function () {
+        initialize: function() {
             var that=this;
 
             that.className=that.el.className;
-            that.$el.transform(that.openEnterAnimationFrom);
+            that.animation=animations[that.animationName];
+
+            that.$el.transform(that.animation.openEnterAnimationFrom);
 
             that._setRoute(that.options.route);
 
@@ -80,11 +83,11 @@
             that.on('QueryChange',that.checkQuery);
 
             that._dfd=$.when(that.options.templateEnabled&&that.initWithTemplate())
-                .then(function () {
+                .then(function() {
                     that._scrolls=Scroll.bind(that.$('.main,.scroll'),that.useScroll);
                 })
                 .then($.proxy(that.onCreate,that))
-                .then(function () {
+                .then(function() {
                     that.trigger('Start');
                     that.checkQuery();
                 });
@@ -105,15 +108,15 @@
 
         onQueryChange: noop,
 
-        then: function (fn) {
+        then: function(fn) {
             this._dfd=this._dfd.then($.proxy(fn,this));
             return this;
         },
 
-        wait: function () {
+        wait: function() {
             var dfd=$.Deferred();
 
-            this._dfd=this._dfd.then(function () {
+            this._dfd=this._dfd.then(function() {
                 return dfd;
             });
 
@@ -121,14 +124,14 @@
         },
 
         _queryActions: {},
-        checkQuery: function () {
+        checkQuery: function() {
             var that=this;
             var queries=that.queries;
             var prevQueries=that._queries;
             var queryActions=that._queryActions;
             var action;
 
-            queryActions&&$.each(queryActions,function (i,qa) {
+            queryActions&&$.each(queryActions,function(i,qa) {
                 action=queries[i]||'';
 
                 if((action&&!prevQueries)||(prevQueries&&action!=prevQueries[i])) {
@@ -139,13 +142,13 @@
             });
         },
 
-        bindQueryAction: function (name,cls,fnMap) {
+        bindQueryAction: function(name,cls,fnMap) {
             var map={};
             var that=this;
             var newFn;
 
-            $.each(fnMap,function (i,fn) {
-                newFn=function () {
+            $.each(fnMap,function(i,fn) {
+                newFn=function() {
                     var args=slice.apply(arguments);
                     var queryFn=arguments.callee.__query_action;
                     (that.queryString(name)==i)?queryFn.apply(cls,args):(queryFn.__arguments=args,that.queryString(name,i));
@@ -161,7 +164,7 @@
             return this;
         },
 
-        prompt: function (title,val,fn,target) {
+        prompt: function(title,val,fn,target) {
             target=typeof fn!=='function'?fn:target;
             fn=typeof val==='function'?val:fn;
             val=typeof val==='function'?'':val;
@@ -170,12 +173,12 @@
                 content: '<input type="text" class="prompt-text" />',
                 buttons: [{
                     text: '取消',
-                    click: function () {
+                    click: function() {
                         this.hide();
                     }
                 },{
                     text: '确认',
-                    click: function () {
+                    click: function() {
                         this.hide();
                         this.ok&&this.ok(this.$('.prompt-text').val());
                     }
@@ -189,7 +192,7 @@
             prompt.ok=$.proxy(fn,this);
         },
 
-        createDialog: function (options) {
+        createDialog: function(options) {
             var that=this;
             var dialog=new Dialog(options);
 
@@ -201,16 +204,16 @@
             return dialog;
         },
 
-        onActivityResult: function (event,fn) {
+        onActivityResult: function(event,fn) {
             this.listenTo(this.application,event,fn);
         },
 
-        setResult: function () {
+        setResult: function() {
             this.application.trigger.apply(this.application,arguments);
         },
 
         isPrepareExitAnimation: false,
-        prepareExitAnimation: function () {
+        prepareExitAnimation: function() {
             var that=this;
             if(that.isPrepareExitAnimation) return;
             var application=that.application;
@@ -222,177 +225,54 @@
             application.mask.show();
         },
 
-        finishEnterAnimation: function () {
+        finishEnterAnimation: function() {
             var that=this;
             that.application.mask.hide();
 
             that.isPrepareExitAnimation=false;
-            that.then(function () {
+            that.then(function() {
                 that.$el.addClass('active');
                 that.trigger('Show');
             });
         },
 
-        compareUrl: function (url) {
+        compareUrl: function(url) {
             return getUrlPath(url)===this.route.path.toLowerCase();
         },
 
         //onShow后才可调用
-        redirect: function (url) {
+        redirect: function(url) {
             var that=this,
                 application=that.application;
 
-            application._getActivity(url,function (activity,route) {
+            application._getActivity(url,function(activity,route) {
                 activity.el.className=activity.className+' active';
                 application.$el.append(activity.$el);
                 application._currentActivity=activity;
                 that.$el.remove();
                 that.trigger('Pause');
 
-                activity.then(function () {
+                activity.then(function() {
                     activity.trigger('Resume');
                     activity.trigger('Show');
                 });
             });
         },
 
-        _transitionTime: app.ios&&parseFloat(util.osVersion)<7?function (time) {
-            this.el.style.webkitTransition="all "+(time||0)+'ms ease 0ms';
-        } :function (time) {
-            this.el.style.webkitTransitionDuration=(time||0)+'ms';
-        },
-
-        _animationTo: function (name,type) {
-            this.$el.addClass((name?name+'-':'')+type);
-        },
-
-        openEnterAnimationFrom: {
-            translate: '100%,0'
-        },
-        openEnterAnimationTo: {
-            translate: '0,0'
-        },
-        openExitAnimationTo: {
-            translate: '-50%,0'
-        },
-        closeExitAnimationTo: {
-            translate: '100%,0'
-        },
-        closeEnterAnimationTo: {
-            translate: '0,0'
-        },
-
-        _to: function (url,duration,animationName,type,callback) {
-            if(!duration) duration=300;
-            url=hashToUrl(url);
-
-            var that=this,
-                application=that.application,
-                currentActivity=application._currentActivity,
-                route=application.matchRoute(url);
-
-            if(url!=hashToUrl(location.hash)) {
-                application.navigate(url);
-            }
-
-            if(currentActivity.path==route.path) {
-                checkQueryString(currentActivity,route);
-                application.turning();
-                return;
-            }
-
-            application._getActivity(route,function (activity) {
-                animationName=animationName||(type=='open'?activity:that).animationName;
-
-                if(activity.path==that.path) {
-                    checkQueryString(activity,route);
-                    application.turning();
-                    return;
-                }
-
-                application.$el.children(':not([data-path="'+that.path+'"])').filter(':not([data-path="'+route.path+'"])').addClass('stop')[0];
-                application._currentActivity=activity;
-
-                that.prepareExitAnimation();
-
-                activity.el.parentNode===null&&activity.$el.appendTo(application.$el);
-
-                activity.then(function () {
-                    activity.trigger('Resume');
-                });
-
-                //console.log(activity.openExitAnimationTo)
-
-                var animActivity=type=='open'?activity:that,
-                    ease=type=='open'?'ease-out':'ease-out';
-
-                tween.parallel([{
-                    el: activity.el,
-                    start: {
-                        zIndex: 3
-                    },
-                    css: animActivity[type+'EnterAnimationTo'],
-                    duration: duration,
-                    ease: ease
-                },{
-                    el: that.el,
-                    start: {
-                        zIndex: 1
-                    },
-                    css: animActivity[type+'ExitAnimationTo'],
-                    duration: duration,
-                    ease: ease,
-                    finish: function () {
-                        callback&&callback(activity);
-                        activity.finishEnterAnimation();
-                        application.turning();
-                    }
-                }]);
-
-            });
-        },
-
-        _forward: function (url,duration,animationName) {
-            var that=this;
-            that._to(url,duration,animationName,'open',function () {
-                that.trigger('Pause');
-            });
-        },
-
-        forward: function (url,duration,animationName) {
-            this.application.queue(this,this._forward,url,duration,animationName);
-        },
-
-        _back: function (url,duration,animationName) {
-            var that=this;
-
-            if(typeof url!=='string') {
-                that.prepareExitAnimation();
-                that.application.back();
-                that.application.turning();
-
-            } else {
-                if(typeof duration==='string') {
-                    animationName=duration;
-                    duration=null;
-                }
-
-                that._to(url,duration,animationName,'close',function () {
-                    that.destory();
-                });
-            }
-        },
-
-        back: function (url,duration,animationName) {
-            this.application.queue(this,this._back,url,duration,animationName);
-        },
-
-        finish: function () {
+        finish: function() {
             this.destory();
         },
 
-        destory: function () {
-            if(this._scrolls) $.each(this._scrolls,function (i,scroll) {
+        forward: function() {
+            this.application.forward.apply(this.application,arguments);
+        },
+
+        back: function() {
+            this.application.back.apply(this.application,arguments);
+        },
+
+        destory: function() {
+            if(this._scrolls) $.each(this._scrolls,function(i,scroll) {
                 scroll.destory();
             });
             this.application.remove(this.url);

@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','./activity','./tmpl','./view','./plugins/template'],function(require,exports,module) {
+﻿define(['$','util','bridge','./activity','./tmpl','./view','./plugins/template','./tween','./animations'],function(require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
@@ -6,6 +6,8 @@
         sl=require('./base'),
         tmpl=require('./tmpl'),
         view=require('./view'),
+        tween=require('./tween'),
+        animations=require('./animations'),
         Activity=require('./activity'),
         plugin=require('./plugins/template');
 
@@ -28,7 +30,7 @@
                     if(e.type=='tap') {
                         var href=target.attr('href');
                         if(!/^#/.test(href)) href='#'+href;
-                        target.attr('forward')!=null?that._currentActivity.forward(href):target.attr('back')!=null?that._currentActivity.back(href):that.to(href);
+                        target.attr('forward')!=null?that.forward(href):target.attr('back')!=null?that.back(href):that.to(href);
                     }
 
                 } else {
@@ -46,10 +48,10 @@
                 }
             },
             'tap [data-back]': function(e) {
-                this._currentActivity.back($(e.currentTarget).attr('data-back'));
+                this.back($(e.currentTarget).attr('data-back'));
             },
             'tap [data-forward]': function(e) {
-                this._currentActivity.forward($(e.currentTarget).attr('data-forward'));
+                this.forward($(e.currentTarget).attr('data-forward'));
             },
             //            'touchmove': function(e) {
             //                e.preventDefault();
@@ -186,11 +188,12 @@
             that.hash=hash=hashToUrl(location.hash);
 
             that.queue(that,that._getActivity,hash,function(activity) {
+
                 that._currentActivity=activity;
-                that._history.push(activity.hash);
+                that._history.push(activity.url);
                 that._historyCursor++;
 
-                activity.$el.transform(activity.openEnterAnimationTo).appendTo(that.$el);
+                activity.$el.transform(activity.animation.openEnterAnimationTo).appendTo(that.$el);
                 activity.then(function() {
                     activity.trigger('Resume');
                     activity.trigger('Show');
@@ -201,7 +204,7 @@
                     hash=that.hash=hashToUrl(location.hash);
 
                     var index=lastIndexOf(that._history,hash),
-                    isForward=(that._skipRecordHistory||index== -1)&&!that.isHistoryBack;
+                        isForward=(that._skipRecordHistory||index== -1)&&!that.isHistoryBack;
 
                     if(that._skipRecordHistory!==true) {
                         if(index== -1) {
@@ -214,7 +217,7 @@
                         that._skipRecordHistory=false;
 
                     if(that.skip==0) {
-                        that._currentActivity[isForward?'forward':'back'](hash);
+                        that[isForward?'forward':'back'](hash);
 
                     } else if(that.skip>0)
                         that.skip--;
@@ -241,7 +244,6 @@
             url=hashToUrl(url);
 
             var that=this,
-                activity=that._currentActivity,
                 index=lastIndexOf(that._history,url);
 
             if(index== -1) {
@@ -277,6 +279,45 @@
 
         viewPath: 'views/',
 
+        _forward: function(url,duration,animationName) {
+            var currentActivity=this._currentActivity;
+
+            this._animationTo(url,duration,animationName,'open',function() {
+                currentActivity.trigger('Pause');
+            });
+        },
+
+        forward: function(url,duration,animationName) {
+            this.queue(this,this._forward,url,duration,animationName);
+        },
+
+        isHistoryBack: false,
+
+        _back: function(url,duration,animationName) {
+            var that=this,
+                currentActivity=that._currentActivity;
+
+            if(typeof url!=='string') {
+                currentActivity.prepareExitAnimation();
+                that.isHistoryBack=true;
+                history.back();
+                that.turning();
+
+            } else {
+                if(typeof duration==='string') {
+                    animationName=duration;
+                    duration=null;
+                }
+                that._animationTo(url,duration,animationName,'close',function() {
+                    currentActivity.destory();
+                });
+            }
+        },
+
+        back: function(url,duration,animationName) {
+            this.queue(this,this._back,url,duration,animationName);
+        },
+
         _getActivity: function(url,callback) {
             var that=this,
                 route=typeof url==='string'?that.matchRoute(url):url;
@@ -311,11 +352,80 @@
             }
         },
 
-        isHistoryBack: false,
-        back: function() {
-            this.isHistoryBack=true;
-            history.back();
+        _animationTo: function(url,duration,animationName,type,callback) {
+            if(!duration) duration=400;
+            url=hashToUrl(url);
+
+            var application=this,
+                currentActivity=application._currentActivity,
+                route=application.matchRoute(url);
+
+            if(url!=hashToUrl(location.hash)&&application._queue.length==3&&hashToUrl(application._queue[2][0])===url) {
+                application.navigate(url);
+            }
+
+            if(currentActivity.path==route.path) {
+                checkQueryString(currentActivity,route);
+                application.turning();
+                return;
+            }
+
+            application._getActivity(route,function(activity) {
+                if(!animationName) animationName=(type=='open'?activity:currentActivity).animationName;
+
+                if(activity.path==currentActivity.path) {
+                    checkQueryString(activity,route);
+                    application.turning();
+                    return;
+                }
+
+                application.$el.children(':not([data-path="'+currentActivity.path+'"])').filter(':not([data-path="'+route.path+'"])').addClass('stop')[0];
+                application._currentActivity=activity;
+
+                currentActivity.prepareExitAnimation();
+
+                activity.el.parentNode===null&&activity.$el.appendTo(application.$el);
+
+                activity.then(function() {
+                    activity.trigger('Resume');
+                });
+
+                var anim=animations[animationName],
+                    ease=type=='open'?'ease-out':'ease-out';
+
+                /*
+                console.log(type,$.extend({
+                zIndex: type=='open'?2:1
+                },anim[type+'EnterAnimationFrom']),$.extend({
+                zIndex: type=='open'?1:3
+                },anim[type+'ExitAnimationFrom']))
+                */
+
+                tween.parallel([{
+                    el: activity.el,
+                    start: $.extend({
+                        zIndex: type=='open'?2:1
+                    },anim[type+'EnterAnimationFrom']),
+                    css: anim[type+'EnterAnimationTo'],
+                    duration: duration,
+                    ease: ease
+                },{
+                    el: currentActivity.el,
+                    start: $.extend({
+                        zIndex: type=='open'?1:3
+                    },anim[type+'ExitAnimationFrom']),
+                    css: anim[type+'ExitAnimationTo'],
+                    duration: duration,
+                    ease: ease,
+                    finish: function() {
+                        callback&&callback(activity);
+                        activity.finishEnterAnimation();
+                        application.turning();
+                    }
+                }]);
+            });
         }
+
     });
 
     sl.Application=Application;

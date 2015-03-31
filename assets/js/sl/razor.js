@@ -1,4 +1,4 @@
-﻿define(['$'],function (require,exports,module) {
+﻿define(['$'],function(require,exports,module) {
     var $=require('$'),
         slice=Array.prototype.slice;
 
@@ -6,60 +6,101 @@
 
     //'@for(var i=0;i<n;i++){ if(){} if(){ if(){if(){}} } } <div>}'.match(/([^@]|^)@(?![@])(for|if|each)\(([^\)]+?)\)\s*\{((?:[^\{\}]+?\{(?:[^\{\}]+?\{(?:[^\{\}]+?\{(?:[^\{\}]+?\{(?:[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}])+|.+?)\}/);
 
-    //^\{\}]+?\{[^\}]*\}[^\{\}]*|[^\}]*
+    //八层{}
+    //([^@]|^)@(?![@])(?:(for|if|each|function\s+[a-zA-Z1-9_]*)\s*(?:\(([^\)]*?)\)){0,1}\s*){0,1}\{([^\{\}]+?(?:else|\))\s*\{(?:[^\{\}]+?(?:else|\))\s*\{(?:[^\{\}]+?(?:else|\))\s*\{(?:[^\{\}]+?(?:else|\))\s*\{(?:[^\{\}]+?(?:else|\))\s*\{(?:[^\{\}]+?(?:else|\))\s*\{(?:[^\{\}]+?(?:else|\))\s*\{(?:[^\{\}]+?(?:else|\))\s*\{[^\}]*\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}
 
-    var expReg=/([^@]|^)@(?![@])(?:(for|if|each)\(([^\)]+?)\)\s*){0,1}\{((?:[^\{\}]+?\{(?:[^\{\}]+?\{(?:[^\{\}]+?\{(?:[^\{\}]+?\{(?:[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}])+|.+?)\}/mg;
+    //([^@]|^)@(?![@])(for|if|each)\(([^\)]+?)\)\s*\{(替换这里)\}
+    //[^\{\}]+?(?:else|\))\s*\{(?:替换这里)\}[^\{\}]*|[^\}]*
+    //[^\{\}]+?(?:else|\))\s*\{[^\}]*\}[^\{\}]*|[^\}]*
 
-    var paramReg=/([^@]|^)@(?![@])(html|ajax|)([\w\d]+(?:\[(?:\"[^\"]+\"|\w+?)\]|\.[\w\d]+|\([^\)]*\))*|\((?:.+?\((?:\"[^\"]+\"|[^\)]+?)\)|.+?)\))/mg;
+    var expReg=/([^@]|^)@(?![@])(?:(for|if|each|(?:helper|function)\s+[a-zA-Z1-9_]*)\s*(?:\(([^\)]*?)\)){0,1}\s*){0,1}\{([^\{\}]+?(?:else|\))\s*\{(?:[^\{\}]+?(?:else|\))\s*\{(?:[^\{\}]+?(?:else|\))\s*\{(?:[^\{\}]+?(?:else|\))\s*\{(?:[^\{\}]+?(?:else|\))\s*\{(?:[^\{\}]+?(?:else|\))\s*\{(?:[^\{\}]+?(?:else|\))\s*\{(?:[^\{\}]+?(?:else|\))\s*\{[^\}]*\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}[^\{\}]*|[^\}]*)\}/mg;
+
+    var cmdReg=/([^@]|^)@(?![@])(html|)([\w\d]+(?:\[(?:\"[^\"]+\"|\w+?)\]|\.[\w\d]+|\([^\)]*\))*|\((?:.+?\((?:\"[^\"]+\"|[^\)]+?)\)|.+?)\))/mg;
 
     var tagReg=/<(\w+)(?:\s+[^>]+)*>(.*?)<\/\1>/img;
 
-    $.encodeHTML=function (text) {
+
+    $.encodeHTML=function(text) {
         return (""+text).split("<").join("&lt;").split(">").join("&gt;").split('"').join("&#34;").split("'").join("&#39;");
     }
 
-    function template(templateStr,data) {
+    var razor={};
+
+    razor.cache={};
+
+    razor.use=function(url,data) {
+    };
+
+    razor.create=function(templateStr,args) {
+        var result={
+            helper: {}
+        },
+        name;
 
         templateStr=templateStr.replace(/\\/g,'\\\\')
             .replace(/'/g,'\\\'')
-            .replace(expReg,function (text,pre,cmd,exp,code) {
-                code=code.replace(/\\'/,'\'')
-                    .replace(/[\r\n\t]/g,' ')
-                    .replace(tagReg,function (text,tag,html) {
-                        return "__.push('"+(tag=='text'?html:text)+"')";
-                    });
+            .replace(expReg,function(text,pre,cmd,exp,code) {
+                //console.log(text)
 
-                if(cmd=='each') {
-                    code='$.each('+exp.replace(/\,/,',function(')+'){'+code+'});';
-                } else if(cmd) {
-                    code=cmd+'('+exp+'){'+code+'}';
+                if(/^(function|helper)\s+/.test(cmd)) {
+                    cmd=cmd.split(/\s+/);
+                    name=cmd[1];
+
+                    if(cmd[0]==='helper') {
+                        result.helper[name]=razor.create(code,exp).T;
+
+                    } else {
+                        result[name]=eval('[function('+exp+'){'+code+'}][0]');
+                    }
+                    return pre;
+
+                } else {
+                    code=code.replace(/\\'/,'\'')
+                        .replace(/[\r\n\t]/g,' ')
+                        .replace(tagReg,function(text,tag,html) {
+                            return "__.push('"+(tag=='text'?html:text)+"');";
+                        });
+
+                    if(cmd=='each') {
+                        code='$.each('+exp.replace(/\,/,',function(')+'){'+code+'});';
+                    } else if(cmd) {
+                        code=cmd+'('+exp+'){'+code+'}';
+                    }
+
+                    return pre+'\');'+code+'__.push(\'';
                 }
-
-                return pre+'\');'+
-                        code
-                    +'__.push(\'';
             })
-            .replace(paramReg,function (text,pre,cmd,code) {
+            .replace(cmdReg,function(text,pre,cmd,code) {
                 code=code.replace(/\\'/,'\'');
                 return pre+'\','+(cmd=="html"?code:'$.encodeHTML('+code+')')+',\'';
             })
             .replace(/\r/g,'\\r')
             .replace(/\n/g,'\\n')
-            .replace(/\t/g,'\\t');
+            .replace(/\t/g,'\\t')
+            .replace(/@@/g,'@');
 
-        var parsed_markup_data="var __=[]; with($data){__.push('"+templateStr+"');}return __;",
-            fn=new Function("$data",parsed_markup_data);
+        if(typeof args!=='string') args="$data";
 
-        console.log(parsed_markup_data);
+        console.log(args)
 
-        return data?fn(data):fn;
+        var parsed_markup_data="var __=[]; "+(args==="$data"?"with($data)":"")+"{__.push('"+templateStr+"');}return __.join('');",
+            fn=new Function(args,parsed_markup_data);
+
+        result.template=result.T=fn;
+        return result;
     }
 
-    template('<div></div>\
+    var a=razor.create('<div></div>\
     @for(var i=0;i<data.length;i++){\
         <div>@(data[i].name)</div>\
+        <div>@html(data[i].id)</div>\
     }\
-    @{ adsf="\'"; } @each(data,i,item){ }')
+    @{ var a="333"; }\
+    @helper aasdf(asdf){ alert(1) }\
+    @function aasdf(){ alert(1) }\
+    @{ var adsf="\'"; } @each(data,i,item){ }')
 
-    module.exports=template;
+    console.log(a.T({ data: [{ name: 'as<df',id: 1}] }))
+
+    module.exports=razor;
 });

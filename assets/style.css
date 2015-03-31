@@ -27,20 +27,12 @@ header.big_hd { background: #000; color: #fff; height: 49px; line-height: 49px; 
 header.big_hd em { padding-top: 3px; }
 
 .viewport { position: absolute; overflow: hidden; width: 100%; display: -webkit-box; background: #fff; bottom: 0px; top: 0px; }
-.viewport .view { position: relative; width: 100%; top: 0; left: 0; height: 100%; background: #fff; }
+.viewport .view { position: absolute; width: 100%; top: 0; left: 0; height: 100%; background: #fff; }
 .viewport .view.active { z-index: 4; }
 .viewport .view.active header, .viewport .view.active footer { z-index: 2000; }
 .viewport .view.stop { z-index: -1; }
 .viewport .view.transparent { background: rgba(0,0,0,0); }
-.viewport .view:nth-child(2) { left: -100%; }
-.viewport .view:nth-child(3) { left: -200%; }
-.viewport .view:nth-child(4) { left: -300%; }
-.viewport .view:nth-child(5) { left: -400%; }
-.viewport .view:nth-child(6) { left: -500%; }
-.viewport .view:nth-child(7) { left: -600%; }
-.viewport .view:nth-child(8) { left: -700%; }
-.viewport .view:nth-child(9) { left: -800%; }
-.viewport .view:nth-child(10) { left: -900%; }
+
 
 .scroll { overflow: hidden; -webkit-transform: translate(0px,0px) translateZ(0); }
 

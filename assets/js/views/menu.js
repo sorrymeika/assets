@@ -13,21 +13,7 @@
             }
         },
         className: 'transparent',
-        openEnterAnimationFrom: {
-            translate: '-80%,0'
-        },
-        openEnterAnimationTo: {
-            translate: '0,0'
-        },
-        openExitAnimationTo: {
-            translate: '60%,0'
-        },
-        closeEnterAnimationTo: {
-            translate: '0,0'
-        },
-        closeExitAnimationTo: {
-            translate: '-80%,0'
-        },
+        animationName: 'menu',
         onCreate: function() {
             var that=this;
         },
