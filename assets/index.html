@@ -18,8 +18,7 @@
 </head>
 <body>
     <script debug>
-        seajs.use(['zepto','tools/tools'],function($,tools,bridge) {
-            return;
+        seajs.use(['zepto','tools/tools'],function ($,tools,bridge) {
             tools.build({
                 api: 'http://photo.ie1e.com',
                 compress: [
@@ -43,6 +42,7 @@
                         'sl/_linklist',
                         'sl/event',
                         'sl/tmpl',
+                        'sl/razor',
                         'sl/view',
                         'sl/animations',
                         'sl/app',
@@ -99,6 +99,25 @@
                     'views/create.html',
                     'views/support.html'
                     ],
+                razor: [
+                    'views/index.html',
+                    'views/cart.html',
+                    'views/order.html',
+                    'views/orderinfo.html',
+                    'views/orderlist.html',
+                    'views/user.html',
+                    'views/login.html',
+                    'views/register.html',
+                    'views/registerS1.html',
+                    'views/registerS2.html',
+                    'views/menu.html',
+                    'views/product.html',
+                    'views/about.html',
+                    'views/eco.html',
+                    'views/ourdesigner.html',
+                    'views/create.html',
+                    'views/support.html'
+                    ],
                 resource: [
                     'images'
                     ]
@@ -115,7 +134,7 @@
             }
         });
 
-        seajs.use(['$','sl/app','bridge'],function($,Application,bridge) {
+        seajs.use(['$','sl/app','bridge'],function ($,Application,bridge) {
             var app=new Application();
 
             app.mapRoute({

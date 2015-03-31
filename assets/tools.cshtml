@@ -33,6 +33,13 @@
     {
         return System.IO.Path.Combine(Server.MapPath("~/"), "..\\..\\Android\\assets");
     }
+
+    private string compressHTML(string html)
+    {
+        var r = new System.Text.RegularExpressions.Regex(@"\s*(<\/\w+>|<[a-zA-Z0-9-_]+(?:\s+[a-zA-Z0-9-_]+(?:\=""[^""]+?""){0,1})*\s*\/{0,1}\s*>)\s+", System.Text.RegularExpressions.RegexOptions.Multiline);
+
+        return r.Replace(html, "$1");
+    }
 }
 @{
     string dir = Request.QueryString["dir"];
@@ -95,7 +102,7 @@
                 {
                     if (!result.ContainsKey(newPath))
                     {
-                        result.Add(newPath, File.ReadAllText(newPath));
+                        result.Add(newPath, compressHTML(File.ReadAllText(newPath)));
                     }
                 }
             }
@@ -105,14 +112,49 @@
                 {
                     using (var sr = file.OpenText())
                     {
-                        result.Add(path, sr.ReadToEnd());
+                        result.Add(path, compressHTML(sr.ReadToEnd()));
                     }
                 }
             }
-
-            File.WriteAllText(dest, "define('views.text',function(){return " + Json.Encode(result).Replace("\\u003c", "<").Replace("\\u003e", ">") + "})");
             return true;
         });
+
+        File.WriteAllText(dest, "define('views.text',function(){return " + Json.Encode(result).Replace("\\u003c", "<").Replace("\\u003e", ">") + "})");
+    }
+    else if ("razor" == action)
+    {
+        var resourcePath = Request.Unvalidated().Form["razor"].Trim();
+
+        IDictionary<string, string> result = new Dictionary<string, string>();
+        var dest = dir + "\\js\\razor.text.js";
+        string resultStr = "";
+
+        resourcePath.Split(',').All(path =>
+        {
+            var origin = Server.MapPath("~/" + path);
+
+            string saveDir = System.IO.Path.GetDirectoryName(dest);
+
+            if (!System.IO.Directory.Exists(saveDir))
+            {
+                System.IO.Directory.CreateDirectory(saveDir);
+            }
+
+            System.IO.FileInfo file = new FileInfo(origin);
+
+            if (!result.ContainsKey(path))
+            {
+                using (var sr = file.OpenText())
+                {
+                    resultStr += "define('" + path + "',function(){return \"" + compressHTML(sr.ReadToEnd()).Replace("\\", "\\\\").Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"") + "\"; })";
+                }
+            }
+            return true;
+        });
+
+
+        File.WriteAllText(dest, resultStr);
+
     }
     else if ("finish" == action)
     {
