@@ -18,7 +18,7 @@
 </head>
 <body>
     <script debug>
-        seajs.use(['zepto','tools/tools'],function ($,tools,bridge) {
+        seajs.use(['zepto','tools/tools'],function($,tools,bridge) {
             return;
             tools.build({
                 api: 'http://photo.ie1e.com',
@@ -135,7 +135,10 @@
             }
         });
 
-        seajs.use(['$','sl/app','bridge'],function ($,Application,bridge) {
+
+        seajs.use(['$','sl/app','bridge','sl/views'],function($,Application,bridge,views) {
+            $(document).on('touchmove',function() { return false });
+
             var app=new Application();
 
             app.mapRoute({

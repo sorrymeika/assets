@@ -26,13 +26,12 @@ header.hd_white .ico-back:before { background-position: -100px 0px; margin-left:
 header.big_hd { background: #000; color: #fff; height: 49px; line-height: 49px; box-sizing: content-box; }
 header.big_hd em { padding-top: 3px; }
 
-.viewport { position: absolute; overflow: hidden; width: 100%; display: -webkit-box; background: #fff; bottom: 0px; top: 0px; }
-.viewport .view { position: absolute; width: 100%; top: 0; left: 0; height: 100%; background: #fff; }
+.viewport { position: absolute; overflow: hidden; width: 100%; background: #fff; bottom: 0px; top: 0px; }
+.viewport .view { position: absolute; width: 100%; top: 0; left: 0; height: 100%; background: #fff;-webkit-transform: translate(0px,0px) translateZ(0); overflow: hidden; }
 .viewport .view.active { z-index: 4; }
 .viewport .view.active header, .viewport .view.active footer { z-index: 2000; }
-.viewport .view.stop { z-index: -1; }
+.viewport .view.stop { display: none; }
 .viewport .view.transparent { background: rgba(0,0,0,0); }
-
 
 .scroll { overflow: hidden; -webkit-transform: translate(0px,0px) translateZ(0); }
 

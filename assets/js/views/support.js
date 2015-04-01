@@ -1,4 +1,4 @@
-﻿define(['$','sl/activity','bridge','sl/widget/loading'],function (require,exports,module) {
+﻿define(['$','sl/activity','bridge','sl/widget/loading'],function(require,exports,module) {
     var $=require('$'),
         Activity=require('sl/activity'),
         bridge=require('bridge'),
@@ -7,15 +7,15 @@
     module.exports=Activity.extend({
         template: 'views/support.html',
         events: {},
-        onCreate: function () {
+        //swipeRightBackAction: '/',
+        onCreate: function() {
             var that=this;
-
         },
-        onStart: function () {
+        onStart: function() {
         },
-        onResume: function () {
+        onResume: function() {
         },
-        onDestory: function () {
+        onDestory: function() {
         }
     });
 });

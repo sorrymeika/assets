@@ -14,6 +14,7 @@
         },
         className: 'transparent',
         animationName: 'menu',
+        //swipeLeftBackAction: '/',
         onCreate: function() {
             var that=this;
         },

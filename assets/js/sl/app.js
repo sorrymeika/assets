@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','./activity','./tmpl','./view','./plugins/template','./tween','./animations'],function (require,exports,module) {
+﻿define(['$','util','bridge','./activity','./tmpl','./view','./plugins/template','./tween','./animations'],function(require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
@@ -15,13 +15,52 @@
         lastIndexOf=util.lastIndexOf,
         slice=Array.prototype.slice,
         getUrlPath=util.getUrlPath,
-        hashToUrl=function (hash) {
+        hashToUrl=function(hash) {
             return (hash.replace(/^#/,'')||'/').toLowerCase();
         };
 
+    var checkQueryString=function(activity,route) {
+        if(activity.route.url!=route.url) {
+            activity._setRoute(route);
+            activity.trigger('QueryChange');
+        }
+    };
+
+    var getAcitivityAnimation=function(isOpen,currentActivity,activity,animationName) {
+        if(!animationName) animationName=(isOpen?activity:currentActivity).animationName;
+
+        var anim=animations[animationName],
+            type=isOpen?"open":"close",
+            ease=isOpen?'ease-out':'ease-out',
+            enterFrom=Object.create(anim[type+'EnterAnimationFrom']),
+            exitFrom=Object.create(anim[type+'ExitAnimationFrom']);
+
+        enterFrom.zIndex=isOpen?2:1;
+        enterFrom.display='block';
+        exitFrom.zIndex=isOpen?1:3;
+
+        return [{
+            el: activity.$el,
+            start: enterFrom,
+            css: anim[type+'EnterAnimationTo'],
+            ease: ease
+        },{
+            el: currentActivity.$el,
+            start: exitFrom,
+            css: anim[type+'ExitAnimationTo'],
+            ease: ease
+        }];
+    }
+
+    var prepareActivity=function(currentActivity,activity) {
+        currentActivity.prepareExitAnimation();
+        currentActivity.$el.siblings(':not([data-path="'+activity.path+'"])').hide();
+        activity.el.parentNode===null&&activity.$el.appendTo(currentActivity.$el.parent());
+    }
+
     var Application=view.extend({
         events: {
-            'tap,click a[href]:not(.js-link-default)': function (e) {
+            'tap,click a[href]:not(.js-link-default)': function(e) {
                 var that=this,
                     target=$(e.currentTarget);
 
@@ -30,6 +69,7 @@
                     if(e.type=='tap') {
                         var href=target.attr('href');
                         if(!/^#/.test(href)) href='#'+href;
+
                         target.attr('forward')!=null?that.forward(href):target.attr('back')!=null?that.back(href):that.to(href);
                     }
 
@@ -39,7 +79,7 @@
 
                 return false;
             },
-            'tap [data-href]': function (e) {
+            'tap [data-href]': function(e) {
                 var that=this,
                     target=$(e.currentTarget);
 
@@ -47,31 +87,155 @@
                     that.to(target.attr('data-href'));
                 }
             },
-            'tap [data-back]': function (e) {
+            'tap [data-back]': function(e) {
                 this.back($(e.currentTarget).attr('data-back'));
             },
-            'tap [data-forward]': function (e) {
+            'tap [data-forward]': function(e) {
                 this.forward($(e.currentTarget).attr('data-forward'));
             },
-            //            'touchmove': function(e) {
-            //                e.preventDefault();
-            //                return false;
-            //            },
-            'focus input': function (e) {
+            'focus input': function(e) {
                 this.activeInput=e.target;
+            },
+            'touchstart': function(e) {
+                var that=this,
+                    point=e.touches[0];
+
+                that.pointX=that.startX=point.pageX;
+                that.pointY=that.startY=point.pageY;
+
+                that.isTouchStop=false;
+                that.isTouchStart=false;
+                that.isTouchMoved=false;
+                that.width=window.innerWidth;
+            },
+            'touchmove': function(e) {
+                if(this.isTouchStop) return;
+
+                var that=this,
+                    minDelta=12,
+                    point=e.touches[0],
+                    deltaX=point.pageX-that.startX,
+                    deltaY=point.pageY-that.startY,
+                    currentActivity,
+                    per,
+                    action,
+                    isSwipeLeft,
+                    isOpen;
+
+                if(!that.isTouchStart) {
+                    var isDirectionX=Math.abs(deltaX)>=minDelta,
+                        isDirectionY=Math.abs(deltaY)>=minDelta;
+
+                    if(isDirectionY) {
+                        that.isTouchStop=true;
+                        return;
+                    } else if(isDirectionX) {
+                        that.isTouchStart=true;
+                        currentActivity=that._currentActivity;
+
+                        isSwipeLeft=that.isSwipeLeft=deltaX<0;
+                        that.swiper=null;
+
+                        action=isSwipeLeft?(currentActivity.swipeLeftForwardAction?(isOpen=true,currentActivity.swipeLeftForwardAction):(isOpen=false,currentActivity.swipeLeftBackAction))
+                        :(currentActivity.swipeRightForwardAction?(isOpen=true,currentActivity.swipeRightForwardAction):(isOpen=false,currentActivity.swipeRightBackAction));
+
+                        if(!action) {
+                            if(isSwipeLeft&&currentActivity.referrerDir=="Left") {
+                                action=currentActivity.referrer;
+                            } else if(!isSwipeLeft&&currentActivity.referrerDir!="Left") {
+                                action=currentActivity.referrer;
+                            }
+                            isOpen=false;
+                        }
+                        //console.log(isOpen,action,isSwipeLeft)
+
+                        if(action) {
+                            that.mask.show();
+                            that._getActivity(action,function(activity) {
+                                prepareActivity(currentActivity,activity);
+
+                                that.isSwipeOpen=isOpen;
+
+                                that.swiper=tween.prepare(getAcitivityAnimation(isOpen,currentActivity,activity));
+                                that.swipeActivity=activity;
+                            });
+                        }
+
+                    } else {
+                        return;
+                    }
+                }
+
+                if(!that.swiper) return;
+
+                if(that.isSwipeLeft&&deltaX>0||!that.isSwipeLeft&&deltaX<0) {
+                    that.swiper.step(0);
+                    return;
+                }
+
+                per=Math.abs(deltaX)*100/that.width;
+
+                that.swiper.step(per);
+
+                that.isTouchMoved=true;
+
+                that.isMoveLeft=that.pointX-point.pageX>0?true:false;
+
+                that.pointX=point.pageX;
+                that.pointY=point.pageY;
+            },
+            'touchend': function(e) {
+                var that=this;
+
+                if(!that.isTouchMoved) return;
+                that.isTouchMoved=false;
+
+                if(that.isTouchStop) return;
+                that.isTouchStop=true;
+
+                var isCancel=that.isMoveLeft!==that.isSwipeLeft,
+                    swipeAction;
+
+                that.queue(that.swiper,that.swiper.animate,200,isCancel?0:100,function() {
+                    if(isCancel) {
+                        that.isPrepareExitAnimation=false;
+                        that.mask.hide();
+                    } else {
+                        //var swipeAction='swipe'+(that.isSwipeLeft?'Right':'Left')+(that.isSwipeOpen?'BackAction':'ForwardAction');
+
+                        var activity=that.swipeActivity,
+                            currentActivity=that._currentActivity;
+
+                        that._currentActivity=that.swipeActivity;
+                        that.navigate(activity.url);
+
+                        activity.finishEnterAnimation();
+
+                        if(that.isSwipeOpen) {
+                            activity.referrer=currentActivity.url;
+                            activity.referrerDir=that.isSwipeLeft?"Right":"Left";
+                            currentActivity.trigger('Pause');
+                        } else {
+                            currentActivity.destory();
+                        }
+                    }
+                    that.turning();
+                });
+
+                return false;
             }
         },
 
         el: '<div class="viewport"></div>',
 
         routes: [],
-        mapRoute: function (options) {
+        mapRoute: function(options) {
             var routes=this.routes;
-            $.each(options,function (k,opt) {
+            $.each(options,function(k,opt) {
                 var parts=[],
                     routeOpt={};
 
-                var reg='^(?:\/{0,1})'+k.replace(/(\/|^|\?){([^\/\?]+)}/g,function (r0,r1,r2) {
+                var reg='^(?:\/{0,1})'+k.replace(/(\/|^|\?)\{([^\{\}]+?\{[^\}]*\}[^\{\}]*|[^\}]*)\}/g,function(r0,r1,r2) {
                     var ra=r2.split(':');
 
                     if(ra.length>1) {
@@ -79,7 +243,7 @@
                         r2=ra.join(':');
                     }
 
-                    return r1.replace('?','\\?*')+'('+r2+')';
+                    return r1+'('+r2+')';
                 })+'$';
 
                 routeOpt={
@@ -94,7 +258,7 @@
                 routes.push(routeOpt);
             });
         },
-        matchRoute: function (url) {
+        matchRoute: function(url) {
             var result=null,
                 queries={},
                 hash=hashToUrl(url);
@@ -108,7 +272,7 @@
 
                 url=url.substr(0,index);
 
-                query.replace(/(?:^|&)([^=&]+)=([^&]*)/g,function (r0,r1,r2) {
+                query.replace(/(?:^|&)([^=&]+)=([^&]*)/g,function(r0,r1,r2) {
                     queries[r1]=decodeURIComponent(r2);
                     return '';
                 })
@@ -116,7 +280,7 @@
                 query='';
             }
 
-            $.each(this.routes,function (i,route) {
+            $.each(this.routes,function(i,route) {
                 var m=route.reg?url.match(route.reg):null;
 
                 if(m) {
@@ -129,7 +293,7 @@
                         queryString: query,
                         queries: queries
                     };
-                    $.each(route.parts,function (i,name) {
+                    $.each(route.parts,function(i,name) {
                         result.data[name]=m[i+1];
                     });
                     return false;
@@ -139,11 +303,11 @@
             return result;
         },
 
-        initialize: function () {
+        initialize: function() {
             var that=this;
 
-            that.mask=$('<div class="screen" style="position:fixed;top:0px;bottom:0px;right:0px;width:100%;background:rgba(0,0,0,0);z-index:2000;display:none"></div>').on('tap click touchend touchmove touchstart',function (e) {
-                e.preventDefault();
+            that.mask=$('<div class="screen" style="position:fixed;top:0px;bottom:0px;right:0px;width:100%;background:rgba(0,0,0,0);z-index:2000;display:none"></div>').on('tap click touchend touchmove touchstart',function(e) {
+                return false;
             }).appendTo(document.body);
         },
 
@@ -154,7 +318,7 @@
 
         _queue: [],
 
-        queue: function (context,fn) {
+        queue: function(context,fn) {
             var queue=this._queue;
             var args=slice.call(arguments,2);
             queue.push(context,fn,args);
@@ -163,7 +327,7 @@
                 fn.apply(context,args);
         },
 
-        turning: function () {
+        turning: function() {
             var that=this;
             var queue=that._queue;
 
@@ -175,7 +339,7 @@
             }
         },
 
-        start: function () {
+        start: function() {
             sl.app=this;
 
             util.style(bridge.android?'header,footer{position:absolute}':'header,footer{position:fixed}.viewport .view.active{-webkit-transform:none}');
@@ -187,19 +351,19 @@
             if(!location.hash) location.hash='/';
             that.hash=hash=hashToUrl(location.hash);
 
-            that.queue(that,that._getActivity,hash,function (activity) {
+            that.queue(that,that._getActivity,hash,function(activity) {
                 that._currentActivity=activity;
                 that._history.push(activity.url);
                 that._historyCursor++;
 
                 activity.$el.transform(animations[activity.animationName].openEnterAnimationTo).appendTo(that.$el);
-                activity.then(function () {
+                activity.then(function() {
                     activity.trigger('Resume');
                     activity.trigger('Show');
                     that.turning();
                 });
 
-                $win.on('hashchange',function () {
+                $win.on('hashchange',function() {
                     hash=that.hash=hashToUrl(location.hash);
 
                     var index=lastIndexOf(that._history,hash),
@@ -230,20 +394,24 @@
             that.$el.appendTo(document.body);
         },
 
-        _to: function (url) {
+        _to: function(url) {
             this._navigate(url);
             this.turning();
         },
 
-        to: function (url) {
+        to: function(url) {
             this.queue(this,this._to,url);
         },
 
-        _navigate: function (url) {
+        _navigate: function(url,skip) {
             url=hashToUrl(url);
 
             var that=this,
                 index=lastIndexOf(that._history,url);
+
+            if(skip===true) {
+                that.skip++;
+            }
 
             if(index== -1) {
                 that._history.splice(that._historyCursor+1,0,url);
@@ -252,47 +420,52 @@
                 that._skipRecordHistory=true;
                 location.hash=url;
 
-            } else if(index!=that._historyCursor) {
-                history.go(index-that._historyCursor);
+            } else {
+                if(index!=that._historyCursor) {
+                    history.go(index-that._historyCursor);
+                }
+                if(skip===true) {
+                    that._history.length=index+1;
+                    that._historyCursor=index;
+                }
             }
         },
 
-        navigate: function (url) {
-            this.skip++;
-            this._navigate(url);
+        navigate: function(url) {
+            this._navigate(url,true);
         },
 
         _activities: {},
 
-        get: function (url) {
+        get: function(url) {
             return this._activities[getUrlPath(url)];
         },
 
-        set: function (url,activity) {
+        set: function(url,activity) {
             this._activities[getUrlPath(url)]=activity;
         },
 
-        remove: function (url) {
+        remove: function(url) {
             this._activities[getUrlPath(url)]=void 0;
         },
 
         viewPath: 'views/',
 
-        _forward: function (url,duration,animationName) {
+        _forward: function(url,duration,animationName) {
             var currentActivity=this._currentActivity;
 
-            this._animationTo(url,duration,animationName,'open',function () {
+            this._animationTo(url,duration,animationName,'open',function() {
                 currentActivity.trigger('Pause');
             });
         },
 
-        forward: function (url,duration,animationName) {
+        forward: function(url,duration,animationName) {
             this.queue(this,this._forward,url,duration,animationName);
         },
 
         isHistoryBack: false,
 
-        _back: function (url,duration,animationName) {
+        _back: function(url,duration,animationName) {
             var that=this,
                 currentActivity=that._currentActivity;
 
@@ -307,17 +480,17 @@
                     animationName=duration;
                     duration=null;
                 }
-                that._animationTo(url,duration,animationName,'close',function () {
+                that._animationTo(url,duration,animationName,'close',function() {
                     currentActivity.destory();
                 });
             }
         },
 
-        back: function (url,duration,animationName) {
+        back: function(url,duration,animationName) {
             this.queue(this,this._back,url,duration,animationName);
         },
 
-        _getActivity: function (url,callback) {
+        _getActivity: function(url,callback) {
             var that=this,
                 route=typeof url==='string'?that.matchRoute(url):url;
 
@@ -326,7 +499,7 @@
             var activity=that.get(route.path);
 
             if(activity==null) {
-                seajs.use(that.viewPath+route.view,function (ActivityClass) {
+                seajs.use(that.viewPath+route.view,function(ActivityClass) {
 
                     if(ActivityClass!=null) {
                         activity=new ActivityClass({
@@ -335,7 +508,7 @@
                         });
                         that.set(route.path,activity);
 
-                        activity.then(function () {
+                        activity.then(function() {
                             callback.call(that,activity,route);
                         });
 
@@ -351,77 +524,63 @@
             }
         },
 
-        _animationTo: function (url,duration,animationName,type,callback) {
+        _animationTo: function(url,duration,animationName,type,callback) {
             if(!duration) duration=400;
             url=hashToUrl(url);
 
-            var application=this,
-                currentActivity=application._currentActivity,
-                route=application.matchRoute(url);
+            var that=this,
+                currentActivity=that._currentActivity,
+                route=that.matchRoute(url);
 
-            if(url!=hashToUrl(location.hash)&&application._queue.length==3&&hashToUrl(application._queue[2][0])===url) {
-                application.navigate(url);
+            if(url!=hashToUrl(location.hash)&&that._queue.length==3&&hashToUrl(that._queue[2][0])===url) {
+                that.navigate(url);
             }
 
             if(currentActivity.path==route.path) {
                 checkQueryString(currentActivity,route);
-                application.turning();
+                that.turning();
                 return;
             }
 
-            application._getActivity(route,function (activity) {
-                if(!animationName) animationName=(type=='open'?activity:currentActivity).animationName;
-
+            that._getActivity(route,function(activity) {
                 if(activity.path==currentActivity.path) {
                     checkQueryString(activity,route);
-                    application.turning();
+                    that.turning();
                     return;
                 }
+                that._currentActivity=activity;
 
-                application.$el.children(':not([data-path="'+currentActivity.path+'"])').filter(':not([data-path="'+route.path+'"])').addClass('stop')[0];
-                application._currentActivity=activity;
+                prepareActivity(currentActivity,activity);
 
-                currentActivity.prepareExitAnimation();
-
-                activity.el.parentNode===null&&activity.$el.appendTo(application.$el);
-
-                activity.then(function () {
+                activity.then(function() {
                     activity.trigger('Resume');
                 });
 
-                var anim=animations[animationName],
-                    ease=type=='open'?'ease-out':'ease-out';
+                var isOpen=type=='open',
+                    ease=type=='open'?'ease-out':'ease-out',
+                    anims=getAcitivityAnimation(isOpen,currentActivity,activity,animationName),
+                    anim;
 
-                /*
-                console.log(type,$.extend({
-                zIndex: type=='open'?2:1
-                },anim[type+'EnterAnimationFrom']),$.extend({
-                zIndex: type=='open'?1:3
-                },anim[type+'ExitAnimationFrom']))
-                */
+                if(isOpen) {
+                    activity.referrer=currentActivity.url;
+                    activity.referrerDir=currentActivity.swipeRightForwardAction==url?"Left":"Right";
+                }
 
-                tween.parallel([{
-                    el: activity.el,
-                    start: $.extend({
-                        zIndex: type=='open'?2:1
-                    },anim[type+'EnterAnimationFrom']),
-                    css: anim[type+'EnterAnimationTo'],
-                    duration: duration,
-                    ease: ease
-                },{
-                    el: currentActivity.el,
-                    start: $.extend({
-                        zIndex: type=='open'?1:3
-                    },anim[type+'ExitAnimationFrom']),
-                    css: anim[type+'ExitAnimationTo'],
-                    duration: duration,
-                    ease: ease,
-                    finish: function () {
-                        callback&&callback(activity);
-                        activity.finishEnterAnimation();
-                        application.turning();
-                    }
-                }]);
+                for(var i=0,n=anims.length;i<n;i++) {
+                    anim=anims[i];
+                    anim.ease=ease;
+                    anim.duration=duration;
+                }
+
+                anim.finish=function() {
+                    callback&&callback(activity);
+                    activity.finishEnterAnimation();
+                    that.turning();
+
+                    //console.log(that._history);
+                }
+
+                tween.parallel(anims);
             });
         }
 
