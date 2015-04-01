@@ -4,7 +4,6 @@
         util=require('util'),
         sl=require('./base'),
         Event=require('./event'),
-        tmpl=require('./tmpl'),
         slice=Array.prototype.slice,
 
         plugin=function(host,options) {

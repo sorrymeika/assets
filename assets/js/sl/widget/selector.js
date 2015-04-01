@@ -1,9 +1,9 @@
-﻿define(['$','util','./../base','./../view','./../tmpl','./touch'],function(require,exports,module) {
+﻿define(['$','util','./../base','./../view','./../razor'],function(require,exports,module) {
     var $=require('$'),
+        razor=require('./../razor'),
         Scroll=require('./scroll');
 
     var util=require('util');
-    var tmpl=require('./../tmpl');
 
     var selector=Scroll.extend({
         options: {
@@ -67,7 +67,7 @@
 
         el: '<div class="selector"><div class="selectorcon"><ul></ul></div></div>',
 
-        template: tmpl('<li>${text}</li>'),
+        template: razor.create('<li>@text</li>').T,
 
         init: function() {
             var that=this;

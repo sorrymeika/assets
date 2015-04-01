@@ -1,7 +1,7 @@
-﻿define(['$','./../view','./../tmpl'],function(require,exports,module) {
+﻿define(['$','./../view','./../razor'],function(require,exports,module) {
     var $=require('$'),
-        tmpl=require('./../tmpl'),
         sl=require('./../base'),
+        razor=require('./../razor'),
         view=require('./../view');
 
     var Dropdown=view.extend({
@@ -34,7 +34,7 @@
             });
 
             that.$bd=that.$('.js_dropdown');
-            that._template=tmpl(that.$bd.html());
+            that._template=razor.create(that.$bd.html()).T;
             that.$bd.html(that._template(that.options));
 
             that.$attacher=$(that.options.attacher);

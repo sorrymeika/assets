@@ -1,28 +1,25 @@
-﻿define(['$','util','bridge','./tmpl','./view','./widget/scroll','./plugins/template','sl/widget/tip','sl/widget/dialog','./razor'],function(require,exports,module) {
+﻿define(['$','util','bridge','./view','./widget/scroll','./widget/tip','./widget/dialog','./razor'],function (require,exports,module) {
+
+    require('./widget/tip');
 
     var $=require('$'),
         util=require('util'),
         app=require('bridge'),
         sl=require('./base'),
-        tmpl=require('./tmpl'),
         view=require('./view'),
         Scroll=require('./widget/scroll'),
         razor=require('./razor'),
-        templatePlugin=require('./plugins/template'),
-        Dialog=require('sl/widget/dialog');
-
-    require('sl/widget/tip');
+        Dialog=require('./widget/dialog');
 
     var noop=util.noop,
         indexOf=util.indexOf,
         slice=Array.prototype.slice,
         getUrlPath=util.getUrlPath,
-        hashToUrl=function(hash) {
+        hashToUrl=function (hash) {
             return (hash.replace(/^#/,'')||'/').toLowerCase();
         };
 
     var Activity=view.extend({
-        plugins: [templatePlugin],
         options: {
             route: null
         },
@@ -30,7 +27,7 @@
         application: null,
         el: '<div class="view"></div>',
 
-        _setRoute: function(route) {
+        _setRoute: function (route) {
             this.route=route;
             this.hash=route.hash;
             this.url=route.url;
@@ -39,7 +36,7 @@
             this.queries=$.extend({},route.queries);
         },
 
-        queryString: function(key,val) {
+        queryString: function (key,val) {
             if(typeof val==='undefined')
                 return this.route.queries[key];
 
@@ -52,7 +49,22 @@
             this.application.to(this.route.path+(queries?'?'+queries:''));
         },
 
-        initialize: function() {
+        template: 'views/home.html',
+
+        loadTemplate: function () {
+            var that=this,
+                dfd=$.Deferred();
+
+            seajs.use(this.template,function (r) {
+                that.$el.html(r.T())
+
+                dfd.resolveWith(that,[r]);
+            });
+
+            return dfd.promise();
+        },
+
+        initialize: function () {
             var that=this;
 
             that.className=that.el.className;
@@ -70,8 +82,8 @@
             that.on('QueryChange',that.onQueryChange);
             that.on('QueryChange',that.checkQuery);
 
-            that._dfd=$.when(that.options.templateEnabled&&that.initWithTemplate())
-                .then(function() {
+            that._dfd=$.when(that.loadTemplate())
+                .then(function () {
                     if(!that.swipeRightBackAction) {
                         var $btnBack=that.$('header [data-back]');
                         if($btnBack.length) {
@@ -81,7 +93,7 @@
                     that._scrolls=Scroll.bind(that.$('.main,.scroll'),that.useScroll);
                 })
                 .then($.proxy(that.onCreate,that))
-                .then(function() {
+                .then(function () {
                     that.trigger('Start');
                     that.checkQuery();
                 });
@@ -102,15 +114,15 @@
 
         onQueryChange: noop,
 
-        then: function(fn) {
+        then: function (fn) {
             this._dfd=this._dfd.then($.proxy(fn,this));
             return this;
         },
 
-        wait: function() {
+        wait: function () {
             var dfd=$.Deferred();
 
-            this._dfd=this._dfd.then(function() {
+            this._dfd=this._dfd.then(function () {
                 return dfd;
             });
 
@@ -118,14 +130,14 @@
         },
 
         _queryActions: {},
-        checkQuery: function() {
+        checkQuery: function () {
             var that=this;
             var queries=that.queries;
             var prevQueries=that._queries;
             var queryActions=that._queryActions;
             var action;
 
-            queryActions&&$.each(queryActions,function(i,qa) {
+            queryActions&&$.each(queryActions,function (i,qa) {
                 action=queries[i]||'';
 
                 if((action&&!prevQueries)||(prevQueries&&action!=prevQueries[i])) {
@@ -136,13 +148,13 @@
             });
         },
 
-        bindQueryAction: function(name,cls,fnMap) {
+        bindQueryAction: function (name,cls,fnMap) {
             var map={};
             var that=this;
             var newFn;
 
-            $.each(fnMap,function(i,fn) {
-                newFn=function() {
+            $.each(fnMap,function (i,fn) {
+                newFn=function () {
                     var args=slice.apply(arguments);
                     var queryFn=arguments.callee.__query_action;
                     (that.queryString(name)==i)?queryFn.apply(cls,args):(queryFn.__arguments=args,that.queryString(name,i));
@@ -158,7 +170,7 @@
             return this;
         },
 
-        prompt: function(title,val,fn,target) {
+        prompt: function (title,val,fn,target) {
             target=typeof fn!=='function'?fn:target;
             fn=typeof val==='function'?val:fn;
             val=typeof val==='function'?'':val;
@@ -167,12 +179,12 @@
                 content: '<input type="text" class="prompt-text" />',
                 buttons: [{
                     text: '取消',
-                    click: function() {
+                    click: function () {
                         this.hide();
                     }
                 },{
                     text: '确认',
-                    click: function() {
+                    click: function () {
                         this.hide();
                         this.ok&&this.ok(this.$('.prompt-text').val());
                     }
@@ -186,7 +198,7 @@
             prompt.ok=$.proxy(fn,this);
         },
 
-        createDialog: function(options) {
+        createDialog: function (options) {
             var that=this;
             var dialog=new Dialog(options);
 
@@ -198,16 +210,16 @@
             return dialog;
         },
 
-        onActivityResult: function(event,fn) {
+        onActivityResult: function (event,fn) {
             this.listenTo(this.application,event,fn);
         },
 
-        setResult: function() {
+        setResult: function () {
             this.application.trigger.apply(this.application,arguments);
         },
 
         isPrepareExitAnimation: false,
-        prepareExitAnimation: function() {
+        prepareExitAnimation: function () {
             var that=this;
             if(that.isPrepareExitAnimation) return;
             var application=that.application;
@@ -219,54 +231,54 @@
             application.mask.show();
         },
 
-        finishEnterAnimation: function() {
+        finishEnterAnimation: function () {
             var that=this;
             that.application.mask.hide();
 
             that.isPrepareExitAnimation=false;
-            that.then(function() {
+            that.then(function () {
                 that.$el.addClass('active');
                 that.trigger('Show');
             });
         },
 
-        compareUrl: function(url) {
+        compareUrl: function (url) {
             return getUrlPath(url)===this.route.path.toLowerCase();
         },
 
         //onShow后才可调用
-        redirect: function(url) {
+        redirect: function (url) {
             var that=this,
                 application=that.application;
 
-            application._getActivity(url,function(activity,route) {
+            application._getActivity(url,function (activity,route) {
                 activity.el.className=activity.className+' active';
                 application.$el.append(activity.$el);
                 application._currentActivity=activity;
                 that.$el.remove();
                 that.trigger('Pause');
 
-                activity.then(function() {
+                activity.then(function () {
                     activity.trigger('Resume');
                     activity.trigger('Show');
                 });
             });
         },
 
-        finish: function() {
+        finish: function () {
             this.destory();
         },
 
-        forward: function() {
+        forward: function () {
             this.application.forward.apply(this.application,arguments);
         },
 
-        back: function() {
+        back: function () {
             this.application.back.apply(this.application,arguments);
         },
 
-        destory: function() {
-            if(this._scrolls) $.each(this._scrolls,function(i,scroll) {
+        destory: function () {
+            if(this._scrolls) $.each(this._scrolls,function (i,scroll) {
                 scroll.destory();
             });
             this.application.remove(this.url);

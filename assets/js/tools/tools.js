@@ -1,5 +1,6 @@
 ﻿define(function (require) {
     var $=require('$');
+    var util=require('util');
 
     require('./uglify');
 
@@ -14,6 +15,11 @@
     bridge.url=function (url) {
         return /^http\:\/\//.test(url)?url:('index.cshtml?path='+encodeURIComponent(url));
     };
+
+    var compressCss=function (res) {
+        return res.replace(/\s*([;|\:|,|\{|\}])\s*/img,'$1').replace(/[\r\n]/mg,'')
+                                .replace(/;}/mg,'}');
+    }
 
     var compressor=UglifyJS.Compressor({
         sequences: true,  // join consecutive statemets with the “comma operator”
@@ -38,6 +44,8 @@
     });
 
     var parse=function (code) {
+        code=code.replace(/\/\/<--debug[\s\S]+?\/\/debug-->/img,'');
+
         var ast=UglifyJS.parse(code);
         ast.figure_out_scope();
         ast=ast.transform(compressor);
@@ -97,7 +105,7 @@
             });
         },
 
-        js: function (path) {
+        combine: function (path) {
             var that=this;
 
             $.each(path,function (i,items) {
@@ -124,35 +132,58 @@
                     });
                 };
 
-                combine();
+                var combineCss=function () {
+
+                    if(!items.length) {
+                        var code=result.join('\n');
+
+                        that.save(i,code);
+                        return;
+                    }
+
+                    var url=items.shift();
+                    $.get(url+'?'+new Date().getTime(),function (res) {
+                        result.push(compressCss(res));
+
+                        combineCss();
+                    });
+                };
+
+                if(/\.css$/.test(i)) combineCss();else combine();
             });
 
             return this;
         },
 
-        html: function (path,js,api) {
+        html: function (path,combine,api) {
             var api='<meta name="api-base-url" content="'+api+'" />';
             var now=new Date().getTime();
             var that=this,
-                scriptOpen='<script src="js/',
-                scriptClose='.js?v='+now+'"></script>';
+                script=util.template('<script src="js/<%=name%>.js?v='+now+'"></script>'),
+                link=util.template('<link href="<%=name%>?v='+now+'" rel="stylesheet" type="text/css" />');
 
             $.each(path,function (i,url) {
                 $.get(url+'?'+new Date().getTime(),function (res) {
                     res=res.replace(/<script[^>]+debug[^>]*>[\S\s]*?<\/script>/img,'')
+                            .replace(/<link[^>]+debug[^>]*\/*\s*>/img,'')
                             .replace('<head>','<head>'+api)
                             .replace(/<script[^>]*>([\S\s]*?)<\/script>/img,function (r0,r1) {
                                 if(!$.trim(r1)) return r0;
                                 return '<script>'+parse(r1)+'</script>';
                             });
 
-                    if(js) {
-                        var list=$.isArray(js)?js:(function (arr) {
-                            $.each(js,function (k) { arr.push(k); });
+                    if(combine) {
+                        var list=$.isArray(combine)?combine:(function (arr) {
+                            $.each(combine,function (k) { arr.push(k); });
                             return arr;
-                        })([]);
+                        })([]),
+                        result=[];
 
-                        res=res.replace(/<\/head>/i,scriptOpen+list.join(scriptClose+scriptOpen)+scriptClose+'</head>');
+                        $.each(list,function (i,item) {
+                            result.push((/\.css/.test(item)?link:script)({ name: item }))
+                        });
+
+                        res=res.replace(/<\/head>/i,result.join('')+'<script data-template="razor" src="js/razor.text.js"></script></head>');
                     }
                     that.save(url,compressHTML(res));
                 });
@@ -214,8 +245,8 @@
         },
 
         build: function (options) {
-            options.js&&this.js(options.js);
-            options.html&&this.html(options.html,options.js,options.api);
+            options.combine&&this.combine(options.combine);
+            options.html&&this.html(options.html,options.combine,options.api);
             options.resource&&this.resource(options.resource);
             options.compress&&this.compress(options.compress);
             options.template&&this.template(options.template);

@@ -5,8 +5,8 @@
     <meta charset="utf-8" />
     <meta name="format-detection" content="telephone=no" />
     <title></title>
-    <link href="anim.css" rel="stylesheet" type="text/css" />
-    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link debug href="anim.css" rel="stylesheet" type="text/css" />
+    <link debug href="style.css" rel="stylesheet" type="text/css" />
     <script src="js/seajs/sea.js"></script>
     <script debug src="js/zepto.js"></script>
     <script debug src="js/extend/touch.js"></script>
@@ -18,15 +18,17 @@
 </head>
 <body>
     <script debug>
-        seajs.use(['zepto','tools/tools'],function($,tools,bridge) {
+        seajs.use(['zepto','tools/tools'],function ($,tools,bridge) {
             tools.build({
                 api: 'http://photo.ie1e.com',
                 compress: [
-                    'seajs/sea.js',
-                    'anim.css',
-                    'style.css'
+                    'seajs/sea.js'
                     ],
-                js: {
+                combine: {
+                    'style.css': [
+                        'anim.css',
+                        'style.css'
+                    ],
                     sl: [
                         'zepto',
                         'extend/touch',
@@ -41,14 +43,12 @@
                         'sl/base',
                         'sl/_linklist',
                         'sl/event',
-                        'sl/tmpl',
                         'sl/razor',
                         'sl/view',
                         'sl/animations',
                         'sl/app',
                         'sl/activity',
                         'sl/tween',
-                        'sl/plugins/template',
                         'sl/widget/dialog',
                         'sl/widget/tip',
                         'sl/widget/button',
@@ -134,9 +134,8 @@
             }
         });
 
-
-        seajs.use(['$','sl/app','bridge'],function($,Application,bridge,views) {
-            $(document).on('touchmove',function() { return false });
+        seajs.use(['$','sl/app','bridge'],function ($,Application,bridge,views) {
+            $(document).on('touchmove',function () { return false });
 
             var app=new Application();
 

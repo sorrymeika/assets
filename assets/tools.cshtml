@@ -82,6 +82,7 @@
 
         IDictionary<string, string> result = new Dictionary<string, string>();
         var dest = dir + "\\js\\views.text.js";
+        string resultStr = "";
 
         resourcePath.Split(',').All(path =>
         {
@@ -96,30 +97,17 @@
 
             System.IO.FileInfo file = new FileInfo(origin);
 
-            if (file.Attributes == FileAttributes.Directory)
+            if (!result.ContainsKey(path))
             {
-                foreach (string newPath in Directory.GetFiles(origin, "*.*", SearchOption.AllDirectories))
+                using (var sr = file.OpenText())
                 {
-                    if (!result.ContainsKey(newPath))
-                    {
-                        result.Add(newPath, compressHTML(File.ReadAllText(newPath)));
-                    }
-                }
-            }
-            else
-            {
-                if (!result.ContainsKey(path))
-                {
-                    using (var sr = file.OpenText())
-                    {
-                        result.Add(path, compressHTML(sr.ReadToEnd()));
-                    }
+                    resultStr += "define('" + path + "',function(){return \"" + compressHTML(sr.ReadToEnd()).Replace("\\", "\\\\").Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"") + "\"});";
                 }
             }
             return true;
         });
 
-        File.WriteAllText(dest, "define('views.text',function(){return " + Json.Encode(result).Replace("\\u003c", "<").Replace("\\u003e", ">") + "})");
+        File.WriteAllText(dest, resultStr);
     }
     else if ("razor" == action)
     {
@@ -146,7 +134,7 @@
             {
                 using (var sr = file.OpenText())
                 {
-                    resultStr += "define('" + path + "',function(){return \"" + compressHTML(sr.ReadToEnd()).Replace("\\", "\\\\").Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"") + "\"; })";
+                    resultStr += "define('" + path + "',function(R){var r=R('sl/razor');return r.create(\"" + compressHTML(sr.ReadToEnd()).Replace("\\", "\\\\").Replace("\r", "\\r").Replace("\n", "\\n").Replace("\t", "\\t").Replace("\"", "\\\"") + "\")});";
                 }
             }
             return true;

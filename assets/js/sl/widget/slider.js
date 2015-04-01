@@ -1,8 +1,8 @@
-﻿define(['$','util','./../view','./../tmpl','./scroll'],function(require,exports,module) {
+﻿define(['$','util','./../view','./../razor','./scroll'],function (require,exports,module) {
     var $=require('$'),
         _=require('util'),
         view=require('./../view'),
-        tmpl=require('./../tmpl');
+        razor=require('./../razor');
 
     var Scroll=require('./scroll');
 
@@ -22,12 +22,12 @@
             hScroll: true
         },
 
-        getIndex: function() {
+        getIndex: function () {
 
             return Math.round(this.x/this.wrapperW);
         },
 
-        start: function() {
+        start: function () {
             var that=this;
             var index=this.getIndex();
 
@@ -36,10 +36,10 @@
             return true;
         },
 
-        onScroll: function(x,y) {
+        onScroll: function (x,y) {
         },
 
-        onScrollStop: function() {
+        onScrollStop: function () {
             var that=this;
             var x=that.x;
 
@@ -48,7 +48,7 @@
         },
 
         _index: 0,
-        index: function(i) {
+        index: function (i) {
             if(typeof i==='undefined') return this._index;
             i=i>=this._data.length?0:i<0?this._data.length-1:i;
 
@@ -61,7 +61,7 @@
             x!=this.x&&this.animate(x,0,200);
         },
 
-        _startAni: function(x,y,duration) {
+        _startAni: function (x,y,duration) {
             //this.animate(x,y,duration);
             var w=this.wrapperW;
             var index=this.getIndex();
@@ -75,10 +75,10 @@
         },
 
         loop: false,
-        data: function(index) {
+        data: function (index) {
             return this._data[index||this._index];
         },
-        appendItem: function() {
+        appendItem: function () {
             var item=$(this.renderItem(''));
             this.$slider.append(item);
             this.length++;
@@ -86,7 +86,7 @@
 
             return item;
         },
-        prependItem: function() {
+        prependItem: function () {
             var item=$(this.renderItem(''));
             this.$slider.prepend(item);
             this.length++;
@@ -94,14 +94,14 @@
 
             return item;
         },
-        render: function(dataItem) {
+        render: function (dataItem) {
             return this.renderItem(this.itemTemplate(dataItem));
         },
-        renderItem: tmpl('<li class="js_slide_item slider_item">{%html $data%}</li>'),
-        itemTemplate: '${TypeName}',
-        navTemplate: tmpl('<ol class="js_slide_navs slider_nav">{%each(i,item) items%}<li class="slide_nav_item${current} slider_nav_item"></li>{%/each%}</ol>'),
-        template: tmpl('<div class="slider"><ul class="js_slider slider_con">{%html items%}</ul>{%html navs%}</div>'),
-        init: function() {
+        renderItem: razor.create('<li class="js_slide_item slider_item">@html($data)</li>').T,
+        itemTemplate: '@html(TypeName)',
+        navTemplate: razor.create('<ol class="js_slide_navs slider_nav">@each(items,i,item){<li class="slide_nav_item@(current) slider_nav_item"></li>}</ol>').T,
+        template: razor.create('<div class="slider"><ul class="js_slider slider_con">@html(items)</ul>@html(navs)</div>'),
+        init: function () {
             $.extend(this,_.pick(this.options,['width','loop','render','template','itemTemplate','navTemplate']));
 
             var that=this,
@@ -113,7 +113,7 @@
 
             that._data=data;
 
-            typeof that.itemTemplate==='string'&&(that.itemTemplate=tmpl(that.itemTemplate));
+            typeof that.itemTemplate==='string'&&(that.itemTemplate=razor.create(that.itemTemplate).T);
             typeof that.width=='string'&&(that.width=parseInt(that.width.replace('%','')));
 
             !$.isArray(data)&&(data=[data]);
@@ -148,7 +148,7 @@
             that._adjustWidth();
 
             if(that.options.imagelazyload) {
-                that.bind("Change",function() {
+                that.bind("Change",function () {
                     that._loadImage();
                 });
                 that._loadImage();
@@ -158,10 +158,10 @@
                 that._prev=$('<span class="slider-pre js_pre"></span>').appendTo(that.$el);
                 that._next=$('<span class="slider-next js_next"></span>').appendTo(that.$el);
 
-                that.listen('tap .js_pre',function(e) {
+                that.listen('tap .js_pre',function (e) {
                     that.index(that._index-1);
                 })
-                .listen('tap .js_next',function(e) {
+                .listen('tap .js_next',function (e) {
                     that.index(that._index+1);
                 });
             }
@@ -169,7 +169,7 @@
             $(window).on('ortchange',$.proxy(that._adjustWidth,that));
         },
 
-        _loadImage: function() {
+        _loadImage: function () {
             var that=this;
 
             var item=that.$items.eq(that._index);
@@ -183,7 +183,7 @@
                     }
                 }
 
-                item.find('img[lazyload]').each(function() {
+                item.find('img[lazyload]').each(function () {
                     this.src=this.getAttribute('lazyload');
                     this.removeAttribute('lazyload');
                 });
@@ -192,7 +192,7 @@
             }
         },
 
-        _adjustWidth: function() {
+        _adjustWidth: function () {
             var that=this,
                 slider=that.$slider,
                 children=slider.children(),
@@ -205,7 +205,7 @@
             children.css({ width: 100/length+'%' });
         },
 
-        _start: function(e) {
+        _start: function (e) {
             var that=this;
 
             if(/js_pre|js_next/.test(e.target.className)) {
@@ -215,14 +215,14 @@
             Scroll.prototype._start.call(this,e);
         },
 
-        _change: function() {
+        _change: function () {
             var that=this;
 
             that.options.onChange&&that.options.onChange.call(that,that._index);
             that.trigger('Change',[that._index,that.currentData]);
         },
 
-        onDestory: function() {
+        onDestory: function () {
             $(window).off('ortchange',this._adjustWidth);
         }
     });
