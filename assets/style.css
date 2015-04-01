@@ -29,7 +29,7 @@ header.big_hd em { padding-top: 3px; }
 .viewport { position: absolute; overflow: hidden; width: 100%; background: #fff; bottom: 0px; top: 0px; }
 .viewport .view { position: absolute; width: 100%; top: 0; left: 0; height: 100%; background: #fff;-webkit-transform: translate(0px,0px) translateZ(0); overflow: hidden; }
 .viewport .view.active { z-index: 4; }
-.viewport .view.active header, .viewport .view.active footer { z-index: 2000; }
+.viewport .view header, .viewport .view footer { z-index: 2000; }
 .viewport .view.stop { display: none; }
 .viewport .view.transparent { background: rgba(0,0,0,0); }
 

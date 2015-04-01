@@ -31,7 +31,7 @@
 
         var anim=animations[animationName],
             type=isOpen?"open":"close",
-            ease=isOpen?'ease-out':'ease-out',
+            ease=isOpen?'ease':'ease',
             enterFrom=Object.create(anim[type+'EnterAnimationFrom']),
             exitFrom=Object.create(anim[type+'ExitAnimationFrom']);
 
@@ -342,8 +342,6 @@
         start: function() {
             sl.app=this;
 
-            util.style(bridge.android?'header,footer{position:absolute}':'header,footer{position:fixed}.viewport .view.active{-webkit-transform:none}');
-
             var that=this;
             var hash;
             var $win=$(window);
@@ -557,7 +555,7 @@
                 });
 
                 var isOpen=type=='open',
-                    ease=type=='open'?'ease-out':'ease-out',
+                    ease=type=='open'?'ease':'ease',
                     anims=getAcitivityAnimation(isOpen,currentActivity,activity,animationName),
                     anim;
 
