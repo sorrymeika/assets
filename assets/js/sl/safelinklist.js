@@ -1,41 +1,48 @@
 ﻿define(function(require,exports,module) {
-    var guid=0;
 
     var LinkList=function(item) {
-        this.G=guid++;
-        this.N='_idleNext'+this.G;
-        this.P='_idlePrev'+this.G;
-
         if(item) this.init(item);
-    }
-
-    var next=function(item,keyPrev) {
-        if(null===item||item[keyPrev]==item) return null;
-        return item[keyPrev];
     };
 
-    var remove=function(item,keyNext,keyPrev) {
-        if(item[keyNext]) {
-            item[keyNext][keyPrev]=item[keyPrev];
+    var next=function(item) {
+        if(null===item||item._idlePrev==item) return null;
+        return item._idlePrev;
+    };
+
+    var _next=function() {
+        var list=next(this.list);
+        return list?{
+            list: list,
+            data: list.data,
+            next: function() {
+                return _next.call(this)
+            }
+        }:null;
+    };
+
+    var remove=function(item) {
+        if(item._idleNext) {
+            item._idleNext._idlePrev=item._idlePrev;
         }
 
-        if(item[keyPrev]) {
-            item[keyPrev][keyNext]=item[keyNext];
+        if(item._idlePrev) {
+            item._idlePrev._idleNext=item._idleNext;
         }
 
-        item[keyNext]=null;
-        item[keyPrev]=null;
+        item._idleNext=null;
+        item._idlePrev=null;
     };
 
     LinkList.prototype={
         length: 0,
 
         init: function(item) {
+            item={ data: item };
             this.list=item;
             this.length=1;
 
-            item[this.N]=item;
-            item[this.P]=item;
+            item._idleNext=item;
+            item._idlePrev=item;
         },
 
         get: function(fn) {
@@ -64,20 +71,19 @@
         },
 
         first: function() {
-            return this.list;
+            return this.list?this.list.data:null;
         },
 
         fastEach: function(fn) {
             var first=this.list,
                 i=0,
                 nextItem,
-                length=this.length,
-                p=this.P;
+                length=this.length;
 
             while(i<length) {
-                nextItem=next(first,p);
+                nextItem=next(first);
 
-                if(fn.call(first,first)===false) break;
+                if(fn.call(first,first.data)===false) break;
 
                 first=nextItem;
                 i++;
@@ -85,58 +91,77 @@
         },
         each: function(fn) {
             var first=this.list,
-                nextItem,
-                p=this.P;
+                nextItem;
 
             while(first) {
-                nextItem=next(first,p);
+                nextItem=next(first);
 
-                if(fn.call(first,first)===false) break;
+                if(fn.call(first,first.data)===false) break;
 
                 if(nextItem===this.list) break;
                 first=nextItem;
             }
         },
 
-        next: function(item) {
-            if(null===item||item[this.P]==item) return null;
-            return item[this.P];
-        },
+        next: _next,
 
         append: function(item) {
             var list=this.list;
             if(!list) {
                 this.init(item);
 
-            } else if(list!==item) {
-                var p=this.P,
-                    n=this.N;
+            } else {
+                item={ data: item };
 
-                remove(item,n,p);
-
-                item[n]=list[n];
-                list[n][p]=item;
-                item[p]=list;
-                list[n]=item;
+                item._idleNext=list._idleNext;
+                list._idleNext._idlePrev=item;
+                item._idlePrev=list;
+                list._idleNext=item;
                 this.length++;
             }
+        },
+
+        contains: function(item) {
+            var res=false;
+            that.fastEach(function(cItem) {
+                if(item===cItem) {
+                    res=true;
+                    return false;
+                }
+            });
+            return res;
         },
 
         shift: function() {
             var first=this.list;
             if(first) {
-                this.list=next(this.list,this.P);
-                this.remove(first);
+                this._remove(first);
             }
-            return first;
+            return first?first.data:null;
         },
 
-        remove: function(item) {
-            remove(item,this.N,this.P);
+        _remove: function(item) {
+            if(this.length==0) return;
+
             this.length--;
             if(this.length==0) {
                 this.list=null;
+
+            } else if(item==this.list) {
+                this.list=next(item);
             }
+            remove(item);
+        },
+
+        remove: function(item) {
+            var that=this;
+
+            that.fastEach(function(cItem) {
+                if(cItem===item) {
+                    that._remove(this);
+                    return false;
+                }
+            });
         },
 
         isEmpty: function() {

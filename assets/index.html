@@ -18,11 +18,72 @@
 </head>
 <body>
     <script debug>
-        seajs.use(['sl/linklist'],function(linklist) {
+        seajs.use(['sl/linklist','sl/safelinklist'],function(LinkList,SafeLinkList) {
 
+            var a=new LinkList();
+            var b=new SafeLinkList();
+
+            window.test=function() {
+                var now=Date.now();
+                var r=[];
+                for(var i=0;i<2000000;i++) {
+                    a.append({
+                        a: {
+                            a: 1
+                        }
+                    })
+                }
+
+                for(var i=0;i<2000000;i++) {
+                    a.shift()
+                }
+                console.log(Date.now()-now,a.length)
+            }
+
+            window.test1=function() {
+                var now=Date.now();
+                for(var i=0;i<2000000;i++) {
+                    b.append({
+                        a: 1
+                    })
+                }
+
+                console.log(Date.now()-now,b.length)
+            }
+
+            window.test2=function() {
+                var now=Date.now();
+
+                for(var i=0;i<2000000;i++) {
+                    b.shift()
+                }
+                console.log(Date.now()-now,b.length)
+            }
+
+            var count=0;
+
+            window.test3=function() {
+                var now=Date.now();
+
+                for(var i=0;i<6000000;i++) {
+                    b.append({
+                        a: 1
+                    })
+                }
+
+                for(var i=0;i<6000000;i++) {
+                    b.shift()
+                }
+
+                count++;
+
+                console.log(Date.now()-now,b.length)
+            }
+
+            window.a=a;
+            window.b=b;
         });
     </script>
-
     <!--
 
     <script debug>
