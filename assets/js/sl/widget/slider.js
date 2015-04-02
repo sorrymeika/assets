@@ -100,7 +100,7 @@
         renderItem: razor.create('<li class="js_slide_item slider_item">@html($data)</li>').T,
         itemTemplate: '@html(TypeName)',
         navTemplate: razor.create('<ol class="js_slide_navs slider_nav">@each(items,i,item){<li class="slide_nav_item@(current) slider_nav_item"></li>}</ol>').T,
-        template: razor.create('<div class="slider"><ul class="js_slider slider_con">@html(items)</ul>@html(navs)</div>'),
+        template: razor.create('<div class="slider"><ul class="js_slider slider_con">@html(items)</ul>@html(navs)</div>').T,
         init: function () {
             $.extend(this,_.pick(this.options,['width','loop','render','template','itemTemplate','navTemplate']));
 
@@ -123,9 +123,9 @@
             for(var i=0,n=data.length;i<n;i++) {
                 items.push(that.render(data[i]));
             }
-
             that.$scroll=$(that.template({
-                items: items.join('')
+                items: items.join(''),
+                navs: ''
             })).appendTo(that.$el);
             that.scroll=that.$scroll[0];
 
