@@ -29,7 +29,7 @@
 
         var anim=animations[animationName],
             type=isOpen?"open":"close",
-            ease=isOpen?'ease':'ease',
+            ease=isOpen?'ease-out':'ease-out',
             enterFrom=Object.create(anim[type+'EnterAnimationFrom']),
             exitFrom=Object.create(anim[type+'ExitAnimationFrom']);
 
@@ -558,7 +558,7 @@
                 });
 
                 var isOpen=type=='open',
-                    ease=type=='open'?'ease':'ease',
+                    ease=type=='open'?'ease-out':'ease-out',
                     anims=getAcitivityAnimation(isOpen,currentActivity,activity,animationName),
                     anim;
 

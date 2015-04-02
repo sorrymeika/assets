@@ -18,7 +18,16 @@
 </head>
 <body>
     <script debug>
-        seajs.use(['zepto','tools/tools'],function ($,tools,bridge) {
+        seajs.use(['sl/linklist'],function(linklist) {
+
+        });
+    </script>
+
+    <!--
+
+    <script debug>
+        seajs.use(['zepto','tools/tools','sl/linklist'],function($,tools,linklist) {
+            return;
             tools.build({
                 api: 'http://photo.ie1e.com',
                 compress: [
@@ -125,6 +134,7 @@
         });
         
     </script>
+
     <script>
         seajs.config({
             base: './js',
@@ -134,8 +144,8 @@
             }
         });
 
-        seajs.use(['$','sl/app','bridge'],function ($,Application,bridge,views) {
-            $(document).on('touchmove',function () { return false });
+        seajs.use(['$','sl/app','bridge'],function($,Application,bridge,views) {
+            $(document).on('touchmove',function() { return false });
 
             var app=new Application();
 
@@ -171,5 +181,7 @@
             //            },1500);
         });
     </script>
+
+    -->
 </body>
 </html>

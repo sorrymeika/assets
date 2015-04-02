@@ -1,57 +1,134 @@
-﻿define(["./_linklist"],function (require,exports,module) {
+﻿define(function(require,exports,module) {
 
-    var L=require("./_linklist");
-
-    var LinkList=function (item) {
-        if(item) {
-            this.list=item;
-            this.length=1;
-            L.init(item);
-        } else {
-            this.length=0;
-        }
+    var LinkList=function(item) {
+        if(item) this.init(item);
     }
 
+    var next=function(item) {
+        if(null===item||item._idlePrev==item) return null;
+        return item._idlePrev;
+    };
+
+    var remove=function(item) {
+        if(item._idleNext) {
+            item._idleNext._idlePrev=item._idlePrev;
+        }
+
+        if(item._idlePrev) {
+            item._idlePrev._idleNext=item._idleNext;
+        }
+
+        item._idleNext=null;
+        item._idlePrev=null;
+    };
+
     LinkList.prototype={
-        each: function (each) {
-            var first=this.list;
+        length: 0,
+
+        init: function(item) {
+            this.list=item;
+            this.length=1;
+
+            item._idleNext=item;
+            item._idlePrev=item;
+        },
+
+        get: function(fn) {
+            var result=null;
+
+            this.fastEach(function(item) {
+                if(fn(item)===true) {
+                    result=item;
+                    return false;
+                }
+            });
+
+            return result;
+        },
+
+        find: function(fn) {
+            var result=[];
+
+            this.fastEach(function(item) {
+                if(fn(item)===true) {
+                    result.push(item);
+                }
+            });
+
+            return result;
+        },
+
+        first: function() {
+            return this.list;
+        },
+
+        fastEach: function(fn) {
+            var first=this.list,
+                i=0,
+                nextItem,
+                length=this.length;
+
+            while(i<length) {
+                nextItem=next(first);
+
+                if(fn.call(first,first)===false) break;
+
+                first=nextItem;
+                i++;
+            }
+        },
+        each: function(fn) {
+            var first=this.list,
+                nextItem;
 
             while(first) {
-                each.call(this,first);
+                nextItem=next(first);
 
-                first=this.peek();
+                if(fn.call(first,first)===false) break;
+
+                if(nextItem===this.list) break;
+                first=nextItem;
             }
         },
-        peek: function () {
-            return this.list==null?null:L.peek(this.list);
-        },
-        append: function (item) {
-            if(!this.list) {
-                this.list=item;
-                L.init(item);
 
-            } else {
-                L.append(this.list,item);
+        next: next,
+
+        append: function(item) {
+            var list=this.list;
+            if(!list) {
+                this.init(item);
+
+            } else if(list!==item) {
+                remove(item);
+                item._idleNext=list._idleNext;
+                list._idleNext._idlePrev=item;
+                item._idlePrev=list;
+                list._idleNext=item;
+                this.length++;
             }
-            this.length++;
         },
-        shift: function () {
-            var first=L.shift(this.list);
-            if(first==this.list) this.list=null;
-            this.length--;
 
+        shift: function() {
+            var first=this.list;
+            if(first) {
+                this.list=next(this.list);
+                this.remove(first);
+            }
             return first;
         },
-        remove: function (item) {
-            if(item==this.list) this.list=L.peek(item);
-            L.remove(item);
+
+        remove: function(item) {
+            remove(item);
             this.length--;
+            if(this.length==0) {
+                this.list=null;
+            }
         },
-        isEmpty: function () {
+
+        isEmpty: function() {
             return this.list==null;
         }
     };
 
     module.exports=LinkList;
-
 });
