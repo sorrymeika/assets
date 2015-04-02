@@ -24,43 +24,44 @@
             var b=new SafeLinkList();
 
             window.test=function() {
+                for(var i=0;i<6000000;i++) {
+                    a.shift();
+                }
+
                 var now=Date.now();
-                var r=[];
-                for(var i=0;i<2000000;i++) {
+                for(var i=0;i<6000000;i++) {
                     a.append({
-                        a: {
-                            a: 1
-                        }
+                        a: 1
                     })
                 }
 
-                for(var i=0;i<2000000;i++) {
-                    a.shift()
-                }
-                console.log(Date.now()-now,a.length)
+                a.each(function() {
+                    count++;
+                });
+                console.log(Date.now()-now,a.length,count)
             }
 
             window.test1=function() {
+                for(var i=0;i<6000000;i++) {
+                    b.shift();
+                }
+
                 var now=Date.now();
-                for(var i=0;i<2000000;i++) {
+                for(var i=0;i<6000000;i++) {
                     b.append({
                         a: 1
                     })
                 }
 
-                console.log(Date.now()-now,b.length)
+                var count=0;
+
+                b.each(function() {
+                    count++;
+                });
+
+                console.log(Date.now()-now,b.length,count)
             }
 
-            window.test2=function() {
-                var now=Date.now();
-
-                for(var i=0;i<2000000;i++) {
-                    b.shift()
-                }
-                console.log(Date.now()-now,b.length)
-            }
-
-            var count=0;
 
             window.test3=function() {
                 var now=Date.now();

@@ -1,11 +1,12 @@
 ﻿define(function(require,exports,module) {
 
-    var LinkList=function(item) {
-        if(item) this.init(item);
-    }
+    var LinkList=function() {
+        this._idlePrev=this;
+        this._idleNext=this;
+    };
 
     var next=function(item) {
-        if(null===item||item._idlePrev==item) return null;
+        if(item._idlePrev==item) return null;
         return item._idlePrev;
     };
 
@@ -24,9 +25,9 @@
 
     LinkList.prototype={
         length: 0,
-        list: null,
 
         init: function(item) {
+            item={ data: item };
             this.list=item;
             this.length=1;
 
@@ -37,7 +38,7 @@
         get: function(fn) {
             var result=null;
 
-            this.fastEach(function(item) {
+            this.each(function(item) {
                 if(fn(item)===true) {
                     result=item;
                     return false;
@@ -50,7 +51,7 @@
         find: function(fn) {
             var result=[];
 
-            this.fastEach(function(item) {
+            this.each(function(item) {
                 if(fn(item)===true) {
                     result.push(item);
                 }
@@ -60,34 +61,22 @@
         },
 
         first: function() {
-            return this.list;
+            return this._idlePrev!=this?this._idlePrev.data:null;
         },
 
-        fastEach: function(fn) {
-            var first=this.list,
-                i=0,
-                nextItem,
-                length=this.length;
-
-            while(i<length) {
-                nextItem=next(first);
-
-                if(fn.call(first,first)===false) break;
-
-                first=nextItem;
-                i++;
-            }
+        peek: function() {
+            return this._idlePrev==this?null:this._idlePrev;
         },
+
         each: function(fn) {
-            var first=this.list,
+            var first=this._idlePrev,
                 nextItem;
 
-            while(first) {
-                nextItem=next(first);
+            while(first!=this) {
+                nextItem=first._idlePrev;
 
-                if(fn.call(first,first)===false) break;
+                if(fn.call(first,first.data)===false) break;
 
-                if(nextItem===this.list) break;
                 first=nextItem;
             }
         },
@@ -95,43 +84,56 @@
         next: next,
 
         append: function(item) {
-            var list=this.list;
-            if(list===null) {
-                this.init(item);
+            item={ data: item };
 
-            } else if(list!==item) {
-                remove(item);
-                item._idleNext=list._idleNext;
-                list._idleNext._idlePrev=item;
-                item._idlePrev=list;
-                list._idleNext=item;
-                this.length++;
-            }
+            item._idleNext=this._idleNext;
+            this._idleNext._idlePrev=item;
+            item._idlePrev=this;
+            this._idleNext=item;
+            this.length++;
+        },
+
+        contains: function(item) {
+            var res=false;
+            this.each(function(cItem) {
+                if(item===cItem) {
+                    res=true;
+                    return false;
+                }
+            });
+            return res;
         },
 
         shift: function() {
-            var first=this.list;
-            if(first!==null) {
-                this.remove(first);
+            var first=this._idlePrev;
+            if(first!=this) {
+                this._remove(first);
+                return first.data;
+            } else {
+                return null;
             }
-            return first;
         },
 
-        remove: function(item) {
+        _remove: function(item) {
             if(this.length==0) return;
 
             this.length--;
-            if(this.length==0) {
-                this.list=null;
-
-            } else if(item==this.list) {
-                this.list=next(item);
-            }
             remove(item);
         },
 
+        remove: function(item) {
+            var that=this;
+
+            that.each(function(cItem) {
+                if(cItem===item) {
+                    that._remove(this);
+                    return false;
+                }
+            });
+        },
+
         isEmpty: function() {
-            return this.list===null;
+            return this._idlePrev==this;
         }
     };
 
