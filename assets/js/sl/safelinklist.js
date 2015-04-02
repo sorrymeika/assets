@@ -5,7 +5,7 @@
     };
 
     var next=function(item) {
-        if(null===item||item._idlePrev==item) return null;
+        if(!item||item._idlePrev==item) return null;
         return item._idlePrev;
     };
 
