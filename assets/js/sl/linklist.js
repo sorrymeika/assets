@@ -24,6 +24,7 @@
 
     LinkList.prototype={
         length: 0,
+        list: null,
 
         init: function(item) {
             this.list=item;
@@ -95,7 +96,7 @@
 
         append: function(item) {
             var list=this.list;
-            if(!list) {
+            if(list===null) {
                 this.init(item);
 
             } else if(list!==item) {
@@ -110,7 +111,7 @@
 
         shift: function() {
             var first=this.list;
-            if(first) {
+            if(first!==null) {
                 this.remove(first);
             }
             return first;
@@ -130,7 +131,7 @@
         },
 
         isEmpty: function() {
-            return this.list==null;
+            return this.list===null;
         }
     };
 

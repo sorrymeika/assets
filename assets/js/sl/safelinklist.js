@@ -136,8 +136,10 @@
             var first=this.list;
             if(first) {
                 this._remove(first);
+                return first.data;
+            } else {
+                return null;
             }
-            return first?first.data:null;
         },
 
         _remove: function(item) {
