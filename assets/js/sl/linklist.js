@@ -111,18 +111,22 @@
         shift: function() {
             var first=this.list;
             if(first) {
-                this.list=next(this.list);
                 this.remove(first);
             }
             return first;
         },
 
         remove: function(item) {
-            remove(item);
+            if(this.length==0) return;
+
             this.length--;
             if(this.length==0) {
                 this.list=null;
+
+            } else if(item==this.list) {
+                this.list=next(item);
             }
+            remove(item);
         },
 
         isEmpty: function() {
