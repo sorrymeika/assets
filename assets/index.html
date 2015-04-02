@@ -18,76 +18,6 @@
 </head>
 <body>
     <script debug>
-        seajs.use(['sl/linklist','sl/safelinklist'],function(LinkList,SafeLinkList) {
-
-            var a=new LinkList();
-            var b=new SafeLinkList();
-
-            window.test=function() {
-                for(var i=0;i<6000000;i++) {
-                    a.shift();
-                }
-
-                var now=Date.now();
-                for(var i=0;i<6000000;i++) {
-                    a.append({
-                        a: 1
-                    })
-                }
-
-                a.each(function() {
-                    count++;
-                });
-                console.log(Date.now()-now,a.length,count)
-            }
-
-            window.test1=function() {
-                for(var i=0;i<6000000;i++) {
-                    b.shift();
-                }
-
-                var now=Date.now();
-                for(var i=0;i<6000000;i++) {
-                    b.append({
-                        a: 1
-                    })
-                }
-
-                var count=0;
-
-                b.each(function() {
-                    count++;
-                });
-
-                console.log(Date.now()-now,b.length,count)
-            }
-
-
-            window.test3=function() {
-                var now=Date.now();
-
-                for(var i=0;i<6000000;i++) {
-                    b.append({
-                        a: 1
-                    })
-                }
-
-                for(var i=0;i<6000000;i++) {
-                    b.shift()
-                }
-
-                count++;
-
-                console.log(Date.now()-now,b.length)
-            }
-
-            window.a=a;
-            window.b=b;
-        });
-    </script>
-    <!--
-
-    <script debug>
         seajs.use(['zepto','tools/tools','sl/linklist'],function($,tools,linklist) {
             return;
             tools.build({
@@ -196,7 +126,6 @@
         });
         
     </script>
-
     <script>
         seajs.config({
             base: './js',
@@ -243,7 +172,5 @@
             //            },1500);
         });
     </script>
-
-    -->
 </body>
 </html>
