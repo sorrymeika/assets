@@ -10,8 +10,9 @@
             sy=imageList.scrollTop-imageTop;
 
         if(top+imageList.height>=0) {
+            sy=sy<=0?0:sy;
 
-            ctx.drawImage(item.img,0,sy<=0?0:sy*(item.img.width/imageList.width),item.img.width*.5,item.img.height*.5,imageList.left,imageList.top+(top<0?0:top),imageList.width,imageList.height/2);
+            ctx.drawImage(item.img,0,sy,item.img.width,item.img.height-sy,imageList.left,imageList.top+(top<0?0:top),imageList.width,imageList.height-sy);
         }
     }
 
