@@ -91,6 +91,8 @@
             item._idlePrev=this;
             this._idleNext=item;
             this.length++;
+
+            return item;
         },
 
         contains: function(item) {

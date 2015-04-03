@@ -265,7 +265,7 @@
             if(!this._autoRefreshingEnabled) return;
             this._autoRefreshingEnabled=false;
 
-            this.$el.off('scrollChange',this._scroll);
+            this.$el.off('scrollStop',this._scroll);
 
             this.$refreshing&&this.$refreshing.remove();
         },

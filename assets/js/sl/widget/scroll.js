@@ -68,6 +68,7 @@
         initialize: function() {
             var that=this;
 
+            if(that.onScroll) that.on('Scroll',$.proxy(that.onScroll,that));
             if(that.options.useTransform===true) that.useTransform=true;
 
             that.init();
@@ -173,9 +174,7 @@
             this.options.bounce?this.bounceBack():this.onScrollStop();
         },
 
-        onScroll: function(x,y) {
-            this.$scroll.trigger('scrollChange',[x,y]);
-        },
+        onScroll: null,
 
         onScrollStop: function() {
             this.$scroll.trigger('scrollStop');
@@ -370,7 +369,7 @@
                     that.$scroll.css({ '-webkit-transform': 'translate(0px,0px) translateZ(0)' }),that._bounceChanged=false;
             }
 
-            that.onScroll&&that.onScroll(that.x,that.y);
+            that.trigger('scroll',that.x,that.y);
         }
     });
 
@@ -443,11 +442,13 @@
             },80);
         });
 
-        if(options&&options.useScroll||util.android&&parseFloat(util.osVersion<=2.3))
+        if(options&&options.useScroll||util.android&&parseFloat(util.osVersion<=2.3)) {
             $scroll.each(function() {
                 result.push(new Scroll(this,options));
             });
-        else if(util.ios)
+        }
+
+        else if(util.ios) {
             $scroll.css({
                 '-webkit-overflow-scrolling': 'touch',
                 overflowY: 'scroll'
@@ -465,9 +466,11 @@
                     $scroll.off('touchend').off('scroll');
                 }
             });
+        }
 
-        else if(util.android)
+        else if(util.android) {
             $scroll.css({ overflowY: 'scroll' });
+        }
 
         if(options&&options.refresh) {
 
