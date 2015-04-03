@@ -1,20 +1,9 @@
-﻿define(['$','./linklist'],function(require,exports,module) {
+﻿define(['$','./linklist'],function (require,exports,module) {
 
     var $=require('$');
     var LinkList=require('./linklist');
 
-    var drawImage=function(ctx,imageList,item) {
 
-        var imageTop=imageList.marginTop+item.index*(imageList.marginTop+imageList.height),
-            top=imageTop-imageList.scrollTop,
-            sy=imageList.scrollTop-imageTop;
-
-        if(top+imageList.height>=0) {
-            sy=sy<=0?0:sy;
-
-            ctx.drawImage(item.img,0,sy,item.img.width,item.img.height-sy,imageList.left,imageList.top+(top<0?0:top),imageList.width,imageList.height-sy);
-        }
-    }
 
     function ImageCanvas(canvas) {
         var that=this;
@@ -27,7 +16,7 @@
         canvas.width=window.innerWidth;
         canvas.height=window.innerHeight;
 
-        $(window).on('ortchange',function() {
+        $(window).on('ortchange',function () {
             canvas.width=window.innerWidth;
             canvas.height=window.innerHeight;
             that.draw();
@@ -37,35 +26,42 @@
     }
 
     ImageCanvas.prototype={
-        clearRect: function() {
+        clearRect: function () {
             this.context.clearRect(0,0,this.canvas.width,this.canvas.height);
         },
 
-        draw: function() {
+        draw: function () {
             var that=this,
                 index,
                 ctx=that.context;
 
             that.clearRect();
 
-            this.images.each(function(imageList) {
+            this.images.each(function (imageList) {
                 index=0;
 
-                imageList.each(function(data) {
+                imageList.each(function (data) {
                     var item=this;
                     item.index=index;
 
-                    if(!item.img) {
-                        item.img=new Image();
-                        $(item.img).appendTo('body')
-                        item.img.onload=function() {
-                            drawImage(ctx,imageList,item);
-                            item.loaded=true;
-                        }
-                        item.img.src=data;
+                    var imageTop=imageList.marginTop+item.index*(imageList.marginTop+imageList.height),
+                        top=imageTop-imageList.scrollTop,
+                        sy=imageList.scrollTop-imageTop;
 
-                    } else if(item.loaded) {
-                        drawImage(ctx,imageList,item);
+                    if(top+imageList.height>=0) {
+                        sy=sy<=0?0:sy;
+
+                        if(!item.img) {
+                            item.img=new Image();
+                            item.img.onload=function () {
+                                ctx.drawImage(item.img,0,sy,item.img.width,item.img.height-sy,imageList.left,imageList.top+(top<0?0:top),imageList.width,imageList.height-sy);
+                                item.loaded=true;
+                            }
+                            item.img.src=data;
+
+                        } else if(item.loaded) {
+                            ctx.drawImage(item.img,0,sy,item.img.width,item.img.height-sy,imageList.left,imageList.top+(top<0?0:top),imageList.width,imageList.height-sy);
+                        }
                     }
 
                     index++;
@@ -74,7 +70,7 @@
             });
         },
 
-        add: function(imageList) {
+        add: function (imageList) {
             var list=new LinkList();
 
             list.scrollTop=imageList.scrollTop||0;
@@ -111,7 +107,7 @@
     imageCanvas.draw();
 
 
-    setTimeout(function() {
+    setTimeout(function () {
         imageItem.scrollTop=100;
         imageCanvas.draw();
     },1000);

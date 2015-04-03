@@ -58,6 +58,8 @@
             seajs.use(this.template,function (r) {
                 that.$el.html(r.T())
 
+                that.razor=r;
+
                 dfd.resolveWith(that,[r]);
             });
 
@@ -74,6 +76,7 @@
             that.$el.data('url',that.url).data('path',that.path);
 
             that.application=that.options.application;
+            that.$el.appendTo(that.application.$el);
 
             that.on('Start',that.onStart);
             that.on('Resume',that.onResume);
