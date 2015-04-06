@@ -6,6 +6,7 @@
         sl=require('./base'),
         view=require('./view'),
         tween=require('./tween'),
+        LinkList=require('./linklist'),
         animations=require('./animations'),
         Activity=require('./activity');
 
@@ -191,14 +192,13 @@
                 if(that.isTouchStop) return;
                 that.isTouchStop=true;
 
-                var isCancel=that.isMoveLeft!==that.isSwipeLeft,
-                    swipeAction;
+                var isCancelSwipe=that.isMoveLeft!==that.isSwipeLeft;
 
-                var activity=that.swipeActivity,
-                    currentActivity=that._currentActivity;
+                that.queue(that.swiper,that.swiper.animate,[200,isCancelSwipe?0:100,function () {
+                    var activity=that.swipeActivity,
+                        currentActivity=that._currentActivity;
 
-                that.queue(that.swiper,that.swiper.animate,200,isCancel?0:100,function () {
-                    if(isCancel) {
+                    if(isCancelSwipe) {
                         currentActivity.isPrepareExitAnimation=false;
                         that.mask.hide();
                     } else {
@@ -218,8 +218,7 @@
                         }
                     }
                     that.turning();
-                });
-
+                } ]);
                 return false;
             }
         },
@@ -304,6 +303,8 @@
         initialize: function () {
             var that=this;
 
+            that._queue=new LinkList();
+
             that.mask=$(that.$el[0]).on('tap click touchend touchmove touchstart',function (e) {
                 return false;
             });
@@ -317,25 +318,27 @@
         _historyCursor: -1,
         _currentActivity: null,
 
-        _queue: [],
+        _queue: null,
 
-        queue: function (context,fn) {
+        queue: function (context,fn,args) {
             var queue=this._queue;
-            var args=slice.call(arguments,2);
-            queue.push(context,fn,args);
+            queue.append({
+                context: context,
+                fn: fn,
+                args: args
+            });
 
-            if(queue.length===3)
+            if(queue.length==1)
                 fn.apply(context,args);
         },
 
         turning: function () {
-            var that=this;
-            var queue=that._queue;
+            var queue=this._queue;
 
-            if(queue.length>=3) {
-                queue.splice(0,3);
+            if(queue.length) {
+                queue.shift();
                 if(queue.length) {
-                    queue[1].apply(queue[0],queue[2]);
+                    queue.fn.apply(queue.context,queue.args);
                 }
             }
         },
@@ -357,7 +360,7 @@
             if(!location.hash) location.hash='/';
             that.hash=hash=hashToUrl(location.hash);
 
-            that.queue(that,that._getActivity,hash,function (activity) {
+            that.queue(that,that._getActivity,[hash,function (activity) {
                 that._currentActivity=activity;
                 that._history.push(activity.url);
                 that._historyCursor++;
@@ -396,7 +399,7 @@
                     that.isHistoryBack=false;
                 });
 
-            });
+            } ]);
         },
 
         _to: function (url) {
@@ -405,7 +408,7 @@
         },
 
         to: function (url) {
-            this.queue(this,this._to,url);
+            this.queue(this,this._to,[url]);
         },
 
         _navigate: function (url,skip) {
@@ -466,7 +469,7 @@
         },
 
         forward: function (url,duration,animationName) {
-            this.queue(this,this._forward,url,duration,animationName);
+            this.queue(this,this._forward,[url,duration,animationName]);
         },
 
         isHistoryBack: false,
@@ -493,7 +496,7 @@
         },
 
         back: function (url,duration,animationName) {
-            this.queue(this,this._back,url,duration,animationName);
+            this.queue(this,this._back,[url,duration,animationName]);
         },
 
         _getActivity: function (url,callback) {
@@ -538,7 +541,7 @@
                 currentActivity=that._currentActivity,
                 route=that.matchRoute(url);
 
-            if(url!=hashToUrl(location.hash)&&that._queue.length==3&&hashToUrl(that._queue[2][0])===url) {
+            if(url!=hashToUrl(location.hash)&&that._queue.length==1&&that._queue.args&&hashToUrl(that._queue.args[0])===url) {
                 that.navigate(url);
             }
 

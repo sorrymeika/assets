@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','sl/activity','sl/widget/loading','sl/widget/slider','tween','sl/vdom'],function (require,exports,module) {
+﻿define(['$','util','bridge','sl/activity','sl/widget/loading','sl/widget/slider','tween','sl/vdom','sl/images'],function (require,exports,module) {
     var util=require('util');
 
     var $=require('$'),
@@ -9,6 +9,7 @@
         Slider=require('sl/widget/slider');
 
     var VirtualDom=require('sl/vdom');
+    var ImageCanvas=require('sl/images');
 
 
     var tween=require('tween');
@@ -100,29 +101,114 @@
 
             }
             */
-
-            var vdom=new VirtualDom(this.el);
-
-            var list=[];
+            return;
 
             for(var i=0;i<10000;i++) {
-                list.push(this.razor.helper.test());
+                //list.push(this.razor.helper.test({ id: i }));
             }
 
-            var now=Date.now();
+            var imageCanvas=new ImageCanvas(document.getElementsByTagName('canvas')[0]);
 
-            var nodeList=vdom.add({
+            var imageItem=imageCanvas.add({
                 top: 50,
                 left: 0,
                 marginTop: 50,
-                width: 0,
+                width: 100,
+                height: 100,
                 scrollTop: 50,
-                list: list
+                list: ['http://images4.c-ctrip.com/target/hotel/65000/64650/ca6d75857e124b328629894ce6ee1362_130_130.jpg','http://images4.c-ctrip.com/target/hotel/53000/52741/2f631f5c7979400883b58230f4bb3640_130_130.jpg','http://images4.c-ctrip.com/target/hotel/65000/64650/ca6d75857e124b328629894ce6ee1362_130_130.jpg','http://images4.c-ctrip.com/target/hotel/53000/52741/2f631f5c7979400883b58230f4bb3640_130_130.jpg','http://images4.c-ctrip.com/target/hotel/65000/64650/ca6d75857e124b328629894ce6ee1362_130_130.jpg','http://images4.c-ctrip.com/target/hotel/53000/52741/2f631f5c7979400883b58230f4bb3640_130_130.jpg','http://images4.c-ctrip.com/target/hotel/65000/64650/ca6d75857e124b328629894ce6ee1362_130_130.jpg','http://images4.c-ctrip.com/target/hotel/53000/52741/2f631f5c7979400883b58230f4bb3640_130_130.jpg','http://images4.c-ctrip.com/target/hotel/65000/64650/ca6d75857e124b328629894ce6ee1362_130_130.jpg','http://images4.c-ctrip.com/target/hotel/53000/52741/2f631f5c7979400883b58230f4bb3640_130_130.jpg','http://images4.c-ctrip.com/target/hotel/65000/64650/ca6d75857e124b328629894ce6ee1362_130_130.jpg','http://images4.c-ctrip.com/target/hotel/53000/52741/2f631f5c7979400883b58230f4bb3640_130_130.jpg','http://images4.c-ctrip.com/target/hotel/65000/64650/ca6d75857e124b328629894ce6ee1362_130_130.jpg','http://images4.c-ctrip.com/target/hotel/53000/52741/2f631f5c7979400883b58230f4bb3640_130_130.jpg','http://images4.c-ctrip.com/target/hotel/65000/64650/ca6d75857e124b328629894ce6ee1362_130_130.jpg','http://images4.c-ctrip.com/target/hotel/53000/52741/2f631f5c7979400883b58230f4bb3640_130_130.jpg','http://images4.c-ctrip.com/target/hotel/65000/64650/ca6d75857e124b328629894ce6ee1362_130_130.jpg','http://images4.c-ctrip.com/target/hotel/53000/52741/2f631f5c7979400883b58230f4bb3640_130_130.jpg','http://images4.c-ctrip.com/target/hotel/65000/64650/ca6d75857e124b328629894ce6ee1362_130_130.jpg','http://images4.c-ctrip.com/target/hotel/53000/52741/2f631f5c7979400883b58230f4bb3640_130_130.jpg','http://images4.c-ctrip.com/target/hotel/65000/64650/ca6d75857e124b328629894ce6ee1362_130_130.jpg','http://images4.c-ctrip.com/target/hotel/53000/52741/2f631f5c7979400883b58230f4bb3640_130_130.jpg','http://images4.c-ctrip.com/target/hotel/65000/64650/ca6d75857e124b328629894ce6ee1362_130_130.jpg','http://images4.c-ctrip.com/target/hotel/53000/52741/2f631f5c7979400883b58230f4bb3640_130_130.jpg','http://images4.c-ctrip.com/target/hotel/65000/64650/ca6d75857e124b328629894ce6ee1362_130_130.jpg','http://images4.c-ctrip.com/target/hotel/53000/52741/2f631f5c7979400883b58230f4bb3640_130_130.jpg']
             });
 
-            vdom.draw();
+            //imageCanvas.draw();
 
-            console.log(Date.now()-now);
+            that.$el.on('touchstart',function (e) {
+                var that=this,
+                    point=e.touches[0];
+
+                that.pointX=that.startX=point.pageX;
+                that.pointY=that.startY=point.pageY;
+
+                that.isTouchStop=false;
+                that.isTouchStart=false;
+                that.isTouchMoved=false;
+
+                that.startTime=e.timeStamp||Date.now();
+
+                that.startScrollTop=imageItem.scrollTop;
+
+            }).on('touchmove',function (e) {
+                if(this.isTouchStop) return;
+
+                var that=this,
+                    minDelta=8,
+                    point=e.touches[0],
+                    deltaX=point.pageX-that.startX,
+                    deltaY=point.pageY-that.startY;
+
+                if(!that.isTouchStart) {
+                    var isDirectionX=Math.abs(deltaX)>=minDelta,
+                        isDirectionY=Math.abs(deltaY)>=minDelta;
+
+                    if(isDirectionY) {
+                        that.isTouchStart=true;
+                        that.isDirectionY=true;
+
+                    } else if(isDirectionX) {
+                        that.isTouchStart=true;
+                        that.isDirectionY=false;
+
+                    } else {
+                        return;
+                    }
+                }
+
+                if(that.isDirectionY) {
+                    imageItem.scrollTop=that.startScrollTop-deltaY;
+
+                    imageCanvas.draw();
+                }
+
+                that.isTouchMoved=true;
+
+                that.pointX=point.pageX;
+                that.pointY=point.pageY;
+
+                return false;
+            })
+            .on('touchend',function (e) {
+                var that=this;
+
+                if(!that.isTouchMoved) return;
+                that.isTouchMoved=false;
+
+                if(that.isTouchStop) return;
+                that.isTouchStop=true;
+
+                $(e.target).trigger('touchcancel');
+
+                var point=e.changedTouches[0],
+                    target,
+                    duration=(e.timeStamp||Date.now())-that.startTime;
+
+                if(duration<300) {
+                    that.momentum=tween.momentum([[that.startScrollTop,imageItem.scrollTop,duration,nodeList.scrollHeight,0,window.innerHeight],[that.startNScrollTop,nodeList.scrollTop,duration,nodeList.scrollHeight,0,window.innerHeight]],function (img,ym) {
+
+                        imageItem.scrollTop=img.current;
+                        nodeList.scrollTop=ym.current;
+                        vdom.draw();
+                        //imageCanvas.draw();
+
+                    },'ease',function () {
+                        that.momentum=null;
+                    });
+                } else {
+                    if(that.momentum) {
+                        that.momentum.finish();
+                    }
+                }
+
+                return false;
+            });
 
             var that=this,
                 $list=that.$('.js_list');

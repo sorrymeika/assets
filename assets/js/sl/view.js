@@ -1,56 +1,12 @@
-﻿define(function(require,exports,module) {
+﻿define(function (require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
         sl=require('./base'),
         Event=require('./event'),
-        slice=Array.prototype.slice,
+        slice=Array.prototype.slice;
 
-        plugin=function(host,options) {
-            var obj,
-            original,
-            type,
-            override=options.override,
-            prototype=host.prototype;
-
-            for(var i in options) {
-                obj=options[i];
-
-                if(i==='override'||typeof obj==='undefined') continue;
-
-                original=prototype[i];
-                type=typeof original;
-
-                if(type==='undefined') {
-                    prototype[i]=obj;
-
-                } else if(type==='function') {
-                    prototype[i]=(function(key,fn) {
-
-                        return function() {
-                            this._pluginFnCursorRecords[key]=fn;
-                            fn.apply(this,arguments);
-                        };
-
-                    })(i,obj);
-
-                    obj.__host=original;
-
-                } else if($.isPlainObject(original)) {
-                    $.extend(true,prototype[i],obj);
-                } else {
-                    prototype[i]=obj;
-                }
-            }
-
-            if(override)
-                for(var i in override) {
-                    prototype[i]=override[i];
-                }
-        };
-
-    var viewOptions=['className','el'];
-    var View=sl.Class.extend(function() {
+    var View=sl.Class.extend(function () {
         var that=this,
             options,
             args=slice.call(arguments),
@@ -61,47 +17,49 @@
         $.isPlainObject(selector)?(options=selector,selector=null):(options=args.shift());
 
         if(options&&options.override) {
-            $.each(options.override,function(key,fn) {
+            $.each(options.override,function (key,fn) {
                 that[key]=fn;
             });
             delete options.override;
         }
         that.options=$.extend({},that.options,options);
 
-        $.extend(this,util.pick(that.options,viewOptions))
+        if(that.options.className) that.className=that.options.className;
+        if(that.options.el) that.el=that.options.el;
 
         that.cid=util.guid();
 
         that.setElement(selector||that.el);
 
         that.initialize.apply(that,args);
-        that.options.initialize&&that.options.initialize.apply(that,args);
+
+        if(that.options.initialize) that.options.initialize.apply(that,args);
 
         that.on('Destory',that.onDestory);
 
     },{
         options: {},
-        setElement: function(element,delegate) {
+        setElement: function (element,delegate) {
             if(this.$el) this.undelegateEvents();
             this.$el=$(element);
             this.el=this.$el[0];
-            this.className&&this.$el.addClass(this.className);
+            if(this.className) this.$el.addClass(this.className);
             if(delegate!==false) this.delegateEvents();
             return this;
         },
 
-        undelegateEvents: function() {
+        undelegateEvents: function () {
             this.$el.off('.delegateEvents'+this.cid);
             return this;
         },
 
-        delegateEvents: function() {
+        delegateEvents: function () {
             this.listen(this.events);
             this.listen(this.options.events);
             return this;
         },
 
-        listen: function(options,fn) {
+        listen: function (options,fn) {
             var that=this;
 
             if(!fn) {
@@ -124,7 +82,7 @@
             return that;
         },
 
-        listenTo: function(target) {
+        listenTo: function (target) {
 
             var args=slice.apply(arguments),
                 fn=args[args.length-1];
@@ -146,32 +104,24 @@
         off: Event.off,
         trigger: Event.trigger,
 
-        _pluginFnCursorRecords: {},
-        host: function() {
-            var args=slice.call(arguments),
-                fn=args.shift();
-
-            this._pluginFnCursorRecords[fn].__host.apply(this,args);
-        },
-
-        $: function(selector) {
+        $: function (selector) {
             if(typeof selector==="string"&&selector[0]=='#') {
                 selector='[id="'+selector.substr(1)+'"]';
             }
             return $(selector,this.$el);
         },
 
-        initialize: function() {
+        initialize: function () {
         },
 
-        onDestory: function() { },
+        onDestory: function () { },
 
-        destory: function() {
+        destory: function () {
             var $el=this.$el,
                 that=this,
                 target;
 
-            $.each(this._bindListenTo,function(i,attrs) {
+            $.each(this._bindListenTo,function (i,attrs) {
                 target=attrs.shift();
                 target.off.apply(target,attrs);
             });
@@ -183,9 +133,8 @@
         }
     });
 
-    View.extend=function(childClass,prop) {
+    View.extend=function (childClass,prop) {
         var that=this;
-
         var plugins=(typeof prop!=='undefined'?prop:childClass).plugins;
 
         childClass=sl.Class.extend.call(that,childClass,prop);
@@ -198,29 +147,6 @@
         plugins&&childClass.loadPlugins(plugins);
 
         return childClass;
-    };
-
-
-    View.loadPlugins=function(plugins) {
-        var that=this,
-            item;
-
-        for(var i=0,n=plugins.length;i<n;i++) {
-            item=plugins[i];
-
-            if(typeof item==='function') {
-                item(that);
-            } else {
-                plugin(that,item);
-            }
-        }
-    };
-
-    View.Plugin=function(options) {
-
-        return function(host) {
-            plugin(host,options);
-        }
     };
 
     sl.View=View;

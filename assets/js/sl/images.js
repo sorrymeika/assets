@@ -3,8 +3,6 @@
     var $=require('$');
     var LinkList=require('./linklist');
 
-
-
     function ImageCanvas(canvas) {
         var that=this;
 
@@ -46,21 +44,25 @@
 
                     var imageTop=imageList.marginTop+item.index*(imageList.marginTop+imageList.height),
                         top=imageTop-imageList.scrollTop,
-                        sy=imageList.scrollTop-imageTop;
+                        y=imageList.scrollTop-imageTop,
+                        sy;
 
                     if(top+imageList.height>=0) {
-                        sy=sy<=0?0:sy;
+                        y=y<=0?0:y;
 
                         if(!item.img) {
                             item.img=new Image();
                             item.img.onload=function () {
+                                sy=y*item.img.height/imageList.height;
                                 ctx.drawImage(item.img,0,sy,item.img.width,item.img.height-sy,imageList.left,imageList.top+(top<0?0:top),imageList.width,imageList.height-sy);
                                 item.loaded=true;
                             }
                             item.img.src=data;
 
                         } else if(item.loaded) {
-                            ctx.drawImage(item.img,0,sy,item.img.width,item.img.height-sy,imageList.left,imageList.top+(top<0?0:top),imageList.width,imageList.height-sy);
+                            sy=y*item.img.height/imageList.height;
+
+                            ctx.drawImage(item.img,0,sy,item.img.width,item.img.height-sy,imageList.left,imageList.top+(top<0?0:top),imageList.width,imageList.height-y);
                         }
                     }
 
@@ -91,27 +93,6 @@
             return list;
         }
     }
-
-    var imageCanvas=new ImageCanvas(document.getElementsByTagName('canvas')[0]);
-
-    var imageItem=imageCanvas.add({
-        top: 50,
-        left: 0,
-        marginTop: 50,
-        width: 100,
-        height: 100,
-        scrollTop: 50,
-        list: ['http://images4.c-ctrip.com/target/hotel/65000/64650/ca6d75857e124b328629894ce6ee1362_130_130.jpg','http://images4.c-ctrip.com/target/hotel/53000/52741/2f631f5c7979400883b58230f4bb3640_130_130.jpg']
-    });
-
-    imageCanvas.draw();
-
-
-    setTimeout(function () {
-        imageItem.scrollTop=100;
-        imageCanvas.draw();
-    },1000);
-
 
 
     module.exports=ImageCanvas;

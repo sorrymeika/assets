@@ -8,14 +8,15 @@ footer { position: absolute; bottom: 0px; left: 0px; width: 100%; z-index: 200; 
 .header-title { text-align: center; margin: 0px 50px; position: absolute; right: 0px; left: 0px; top: 0px; z-index: -1; font-size: 18px; letter-spacing: 1px; overflow: hidden; }
 
 .viewport { position: absolute; overflow: hidden; width: 100%; background: #fff; bottom: 0px; top: 0px; right: 0; left: 0; z-index: 1; }
-.view { position: absolute; width: 100%; top: 0; left: 0; bottom: 0; background: #fff;-webkit-transform: translate(0px,0px) translateZ(0); overflow: hidden; -webkit-box-shadow: -3px 2px 5px rgba(49,60,75,.35); box-shadow: -3px 2px 5px rgba(49,60,75,.35); }
+.view { position: absolute; width: 100%; top: 0; left: 0; bottom: 0; background: #fff; -webkit-transform: translate(0px,0px) translateZ(0); overflow: hidden; -webkit-box-shadow: -3px 2px 5px rgba(49,60,75,.35); box-shadow: -3px 2px 5px rgba(49,60,75,.35); }
 .view.active { z-index: 4; }
 .view.stop { display: none; }
-.view.transparent { background: rgba(0,0,0,0); border: 0;-webkit-box-shadow: none; box-shadow: none; }
+.view.transparent { background: rgba(0,0,0,0); border: 0; -webkit-box-shadow: none; box-shadow: none; }
 
-.virtualdom {position: absolute; top: 0px; left: 0px;-webkit-transform: translate(0px,0px) translateZ(0);background:rgba(0,0,0,0);}
+.virtualdom { position: absolute; top: 0px; left: 0px; -webkit-transform: translate(0px,0px) translateZ(0); background: rgba(0,0,0,0); }
+.virtualdom-hide { display: none; display: none !important; }
 
-.imagecanvas { z-index: 2;pointer-events: none;background:rgba(0,0,0,0); position: absolute; }
+.imagecanvas { z-index: 2; pointer-events: none; background: rgba(0,0,0,0); position: absolute; }
 
 .scroll { overflow: hidden; -webkit-transform: translate(0px,0px) translateZ(0); }
 
@@ -106,5 +107,5 @@ input[type="password"].prompt-text { letter-spacing: 2px; }
 .box-item:last-child { margin-right: 10px; }
 
 .table { width: 100%; display: table; }
-.table-row{ display: table-row; }
+.table-row { display: table-row; }
 .table-cell { display: table-cell; text-align: center; padding-top: 5px; }

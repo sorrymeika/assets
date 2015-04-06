@@ -1,16 +1,16 @@
-﻿define(function(require,exports,module) {
+﻿define(function (require,exports,module) {
 
-    var LinkList=function() {
+    var LinkList=function () {
         this._idlePrev=this;
         this._idleNext=this;
     };
 
-    var next=function(item) {
+    var next=function (item) {
         if(item._idlePrev==item) return null;
         return item._idlePrev;
     };
 
-    var remove=function(item) {
+    var remove=function (item) {
         if(item._idleNext) {
             item._idleNext._idlePrev=item._idlePrev;
         }
@@ -26,7 +26,7 @@
     LinkList.prototype={
         length: 0,
 
-        init: function(item) {
+        init: function (item) {
             item={ data: item };
             this.list=item;
             this.length=1;
@@ -35,10 +35,10 @@
             item._idlePrev=item;
         },
 
-        get: function(fn) {
+        get: function (fn) {
             var result=null;
 
-            this.each(function(item) {
+            this.each(function (item) {
                 if(fn(item)===true) {
                     result=item;
                     return false;
@@ -48,10 +48,10 @@
             return result;
         },
 
-        find: function(fn) {
+        find: function (fn) {
             var result=[];
 
-            this.each(function(item) {
+            this.each(function (item) {
                 if(fn(item)===true) {
                     result.push(item);
                 }
@@ -60,15 +60,15 @@
             return result;
         },
 
-        first: function() {
+        first: function () {
             return this._idlePrev!=this?this._idlePrev.data:null;
         },
 
-        peek: function() {
+        peek: function () {
             return this._idlePrev==this?null:this._idlePrev;
         },
 
-        each: function(fn) {
+        each: function (fn) {
             var first=this._idlePrev,
                 nextItem;
 
@@ -83,8 +83,8 @@
 
         next: next,
 
-        append: function(item) {
-            item={ data: item };
+        append: function (item,unsafe) {
+            if(!unsafe) item={ data: item };
 
             item._idleNext=this._idleNext;
             this._idleNext._idlePrev=item;
@@ -95,9 +95,9 @@
             return item;
         },
 
-        contains: function(item) {
+        contains: function (item) {
             var res=false;
-            this.each(function(cItem) {
+            this.each(function (cItem) {
                 if(item===cItem) {
                     res=true;
                     return false;
@@ -106,7 +106,7 @@
             return res;
         },
 
-        shift: function() {
+        shift: function () {
             var first=this._idlePrev;
             if(first!=this) {
                 this._remove(first);
@@ -116,17 +116,17 @@
             }
         },
 
-        _remove: function(item) {
+        _remove: function (item) {
             if(this.length==0) return;
 
             this.length--;
             remove(item);
         },
 
-        remove: function(item) {
+        remove: function (item) {
             var that=this;
 
-            that.each(function(cItem) {
+            that.each(function (cItem) {
                 if(cItem===item) {
                     that._remove(this);
                     return false;
@@ -134,7 +134,7 @@
             });
         },
 
-        isEmpty: function() {
+        isEmpty: function () {
             return this._idlePrev==this;
         }
     };
