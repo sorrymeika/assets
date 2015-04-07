@@ -193,8 +193,6 @@
         return parseFloat(from)+(parseFloat(end)-parseFloat(from))*d;
     }
 
-    Tween.getCurrent=getCurrent;
-
     var getMatrixByTransform=function (transform) {
         var m2d=new Matrix2D();
         transform.replace(transformReg,function ($0,$1,$2) {
@@ -320,7 +318,7 @@
         if(animationStop) run();
     }
 
-    var elementInit=function (el,css) {
+    var prepareElement=function (el,css) {
         el.each(function () {
             var that=this,
                 animationStyle={},
@@ -436,7 +434,7 @@
                     el.transform(anim.start);
                 }
 
-                elementInit(el,css);
+                prepareElement(el,css);
 
                 anim._step=anim.step;
                 anim.step=animationStep;
@@ -449,6 +447,10 @@
         return animations;
     }
 
+    var parallelAnimation=function (animations) {
+        parallel(prepare(animations));
+    }
+
     Tween.prepare=function (animations) {
         if(!$.isArray(animations)) animations=[animations];
         var ret={
@@ -458,6 +460,7 @@
                     anim.from=per;
                     anim.step(per/100);
                 }
+                return this;
             },
             animate: function (duration,per,callback) {
                 var anim;
@@ -470,6 +473,8 @@
                 }
                 anim.finish=callback;
                 parallel(animations);
+
+                return this;
             }
         };
 
@@ -477,10 +482,6 @@
 
         return ret;
     };
-
-    var parallelAnimation=function (animations) {
-        parallel(prepare(animations));
-    }
 
     Tween.parallel=parallelAnimation;
 
