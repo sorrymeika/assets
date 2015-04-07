@@ -166,7 +166,7 @@
         }
     };
 
-    var _ease=function (ease) {
+    var getEase=function (ease) {
         if(!ease) ease=[Tween.easeOut];
         else {
             if(!(ease instanceof Array)) ease=[ease];
@@ -299,7 +299,7 @@
 
     var init=function (item) {
         item.startTime=Date.now();
-        item.ease=_ease(item.ease);
+        item.ease=getEase(item.ease);
         item.stop=function () {
             list.remove(item);
         };
