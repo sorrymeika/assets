@@ -11,7 +11,6 @@
     var VirtualDom=require('sl/vdom');
     var ImageCanvas=require('sl/images');
 
-
     var tween=require('tween');
 
     return Activity.extend({
@@ -136,6 +135,8 @@
 
                 that.startScrollTop=imageItem.scrollTop;
 
+                that.trigger('start');
+
             }).on('touchmove',function (e) {
                 if(this.isTouchStop) return;
 
@@ -161,6 +162,9 @@
                         return;
                     }
                 }
+
+                that.trigger('move');
+
 
                 if(that.isDirectionY) {
                     imageItem.scrollTop=that.startScrollTop-deltaY;

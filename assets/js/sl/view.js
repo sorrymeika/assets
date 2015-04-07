@@ -135,16 +135,12 @@
 
     View.extend=function (childClass,prop) {
         var that=this;
-        var plugins=(typeof prop!=='undefined'?prop:childClass).plugins;
 
         childClass=sl.Class.extend.call(that,childClass,prop);
 
         childClass.events=$.extend({},childClass.superClass.events,childClass.prototype.events);
 
         childClass.extend=arguments.callee;
-        childClass.loadPlugins=that.loadPlugins;
-
-        plugins&&childClass.loadPlugins(plugins);
 
         return childClass;
     };

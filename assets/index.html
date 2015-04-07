@@ -19,7 +19,6 @@
 <body>
     <script debug>
         seajs.use(['zepto','tools/tools','sl/linklist'],function ($,tools,linklist) {
-            return;
             tools.build({
                 api: 'http://photo.ie1e.com',
                 compress: [
@@ -60,64 +59,15 @@
                         'sl/widget/dropdown'
                         ],
                     views: [
-                        'views/index',
-                        'views/auth',
-                        'views/cart',
-                        'views/order',
-                        'views/orderinfo',
-                        'views/orderlist',
-                        'views/user',
-                        'views/login',
-                        'views/register',
-                        'views/registerS1',
-                        'views/registerS2',
-                        'views/menu',
-                        'views/product',
-                        'views/about',
-                        'views/eco',
-                        'views/create',
-                        'views/ourdesigner',
-                        'views/support'
+                        'views/index'
                         ]
                 },
                 html: ['index.html'],
                 template: [
-                    'views/index.html',
-                    'views/cart.html',
-                    'views/order.html',
-                    'views/orderinfo.html',
-                    'views/orderlist.html',
-                    'views/user.html',
-                    'views/login.html',
-                    'views/register.html',
-                    'views/registerS1.html',
-                    'views/registerS2.html',
-                    'views/menu.html',
-                    'views/product.html',
-                    'views/about.html',
-                    'views/eco.html',
-                    'views/ourdesigner.html',
-                    'views/create.html',
-                    'views/support.html'
+                    'views/index.html'
                     ],
                 razor: [
-                    'views/index.html',
-                    'views/cart.html',
-                    'views/order.html',
-                    'views/orderinfo.html',
-                    'views/orderlist.html',
-                    'views/user.html',
-                    'views/login.html',
-                    'views/register.html',
-                    'views/registerS1.html',
-                    'views/registerS2.html',
-                    'views/menu.html',
-                    'views/product.html',
-                    'views/about.html',
-                    'views/eco.html',
-                    'views/ourdesigner.html',
-                    'views/create.html',
-                    'views/support.html'
+                    'views/index.html'
                     ],
                 resource: [
                     'images'
