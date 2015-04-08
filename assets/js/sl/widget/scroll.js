@@ -1,8 +1,9 @@
-﻿define(['$','util','./../base','./../view','./../tween'],function (require,exports,module) {
+﻿define(['$','util','./../base','./../view','./../tween','./../touch'],function(require,exports,module) {
     var $=require('$'),
         util=require('util'),
         view=require('./../view'),
         tween=require('./../tween'),
+        Touch=require('./../touch'),
         hasTouch='ontouchstart' in window,
         m=Math,
         easeOut=tween.easeOut;
@@ -14,7 +15,7 @@
     //size:反弹距离
     var _momentum=tween._momentum;
 
-    function addScrollInner($scroll,refresh) {
+    function addScroller($scroll,refresh) {
         var el=$('<div class="sl_scroll_inner" style="width:100%;-webkit-transform: translate(0px,0px) translateZ(0);"></div>').append($scroll.children()).appendTo($scroll.html(''));
 
         if(refresh) {
@@ -37,23 +38,23 @@
             hScroll: false,
             vScroll: true
         },
-        initialize: function () {
+        initialize: function() {
             var that=this;
 
-            if(that.onScroll) that.on('Scroll',$.proxy(that.onScroll,that));
+            if(that.onScroll) that.on('scroll',$.proxy(that.onScroll,that));
             if(that.options.useTransform===true) that.useTransform=true;
 
             that.init();
 
             if(that.useTransform) {
                 var $scroll=this.$scroll;
-                that.$scrollInner=addScrollInner($scroll,that.options.refresh);
-                that.scrollInner=that.$scrollInner[0];
+                that.$scroller=addScroller($scroll,that.options.refresh);
+                that.scroller=that.$scroller[0];
                 $scroll.css({ overflow: 'hidden' });
             }
         },
 
-        init: function () {
+        init: function() {
             this.$scroll=this.$el;
             this.scroll=this.el;
         },
@@ -67,7 +68,7 @@
         minY: 0,
         minDelta: 6,
 
-        start: function () {
+        start: function() {
             var that=this;
 
             that.maxX=that.scrollerW-that.wrapperW;
@@ -78,7 +79,7 @@
             return that.options.bounce?true:((that.wrapperW<that.scrollerW||that.wrapperH<that.scrollerH)==true);
         },
 
-        refresh: function () {
+        refresh: function() {
             var that=this;
             that.x=that.scroll.scrollLeft;
             that.y=that.scroll.scrollTop;
@@ -86,11 +87,11 @@
             that.wrapperW=that.scroll.clientWidth;
             that.wrapperH=that.scroll.clientHeight;
 
-            that.scrollerW=that.useTransform?that.scrollInner.scrollWidth:that.scroll.scrollWidth;
-            that.scrollerH=that.useTransform?that.scrollInner.scrollHeight:that.scroll.scrollHeight;
+            that.scrollerW=that.useTransform?that.scroller.scrollWidth:that.scroll.scrollWidth;
+            that.scrollerH=that.useTransform?that.scroller.scrollHeight:that.scroll.scrollHeight;
         },
 
-        stopAnimate: function () {
+        stopAnimate: function() {
             var ani=this._aniTimer;
             if(ani) {
                 ani.stop();
@@ -101,7 +102,7 @@
             else return false;
         },
 
-        animate: function (x,y,duration,callback) {
+        animate: function(x,y,duration,callback) {
             var that=this,
                 fromX=that.x,
                 fromY=that.y;
@@ -114,21 +115,21 @@
 
             !duration&&(duration=200);
 
-            tween.animate(function (d) {
+            tween.animate(function(d) {
                 var cx=fromX+(x-fromX)*d,
                     cy=fromY+(y-fromY)*d;
 
                 that.pos(m.round(cx),m.round(cy));
                 that._aniTimer=this;
 
-            },duration,this.options.ease||'ease',function () {
+            },duration,this.options.ease||'ease',function() {
                 that._aniTimer=null;
-                that._isClickStopAni=true;
+                that._isClickStopAni=false;
                 callback&&callback.call(that,x,y);
             });
         },
 
-        bounceBack: function () {
+        bounceBack: function() {
             var that=this;
             var newX=that.x<that.minX?that.minX:that.x>that.maxX?that.maxX:that.x;
             var newY=that.y<that.minY?that.minY:that.y>that.maxY?that.maxY:that.y;
@@ -142,17 +143,17 @@
             }
         },
 
-        end: function () {
+        end: function() {
             this.options.bounce?this.bounceBack():this.onScrollStop();
         },
 
         onScroll: null,
 
-        onScrollStop: function () {
+        onScrollStop: function() {
             this.$scroll.trigger('scrollStop');
         },
 
-        _start: function (e) {
+        _start: function(e) {
             var that=this,
                 point=hasTouch?e.touches[0]:e;
 
@@ -167,7 +168,7 @@
             return !that.stopAnimate();
         },
 
-        _move: function (e) {
+        _move: function(e) {
             var point=hasTouch?e.touches[0]:e;
 
             if(this._isStop) return;
@@ -227,7 +228,7 @@
             return false;
         },
 
-        _end: function (e) {
+        _end: function(e) {
             var that=this;
             if((!that._moved||that._isStop)&&that._isClickStopAni) {
                 that.end();
@@ -278,18 +279,18 @@
             }
         },
 
-        _startAni: function (x,y,duration) {
+        _startAni: function(x,y,duration) {
             this.animate(x,y,duration,this.end);
         },
 
-        pos: function (x,y) {
+        pos: function(x,y) {
             //this.y=y;
             //this.$scroll.css({ '-webkit-transform': 'translate('+0+'px,'+y* -1+'px) translateZ(0)' });
 
             this._pos(x,y);
         },
 
-        _pos: function (x,y) {
+        _pos: function(x,y) {
             var that=this;
             x=m.round(x);
             y=m.round(y);
@@ -308,7 +309,7 @@
                 if(that.options.vScroll) {
                     that.y=y;
                 }
-                that.$scrollInner.css({ '-webkit-transform': 'translate('+that.x* -1+'px,'+that.y* -1+'px) translateZ(0)' }),that._bounceChanged=true;
+                that.$scroller.css({ '-webkit-transform': 'translate('+that.x* -1+'px,'+that.y* -1+'px) translateZ(0)' }),that._bounceChanged=true;
 
             } else {
                 if(that.options.hScroll) {
@@ -380,7 +381,7 @@
 
             target._startRefresh=false;
 
-            tween.animate(function (d) {
+            tween.animate(function(d) {
                 y=from+(end-from)*d;
 
                 $child.css({ '-webkit-transform': 'translate(0px,'+y+'px) translateZ(0)' });
@@ -389,7 +390,7 @@
         }
     }
 
-    Scroll.bind=function (selector,options) {
+    Scroll.bind=function(selector,options) {
         //<--debug
         options={
             useScroll: true,
@@ -401,10 +402,10 @@
         var $scroll=typeof selector==='string'?$(selector):selector;
         var result=[];
 
-        $scroll.on('scroll',function () {
+        $scroll.on('scroll',function() {
             var that=this;
             if(that._stm) clearTimeout(that._stm);
-            that._stm=setTimeout(function () {
+            that._stm=setTimeout(function() {
                 //for ios
                 that._scrollTop=that.scrollTop;
 
@@ -413,7 +414,7 @@
         });
 
         if(options&&options.useScroll||util.android&&parseFloat(util.osVersion<=2.3)) {
-            $scroll.each(function () {
+            $scroll.each(function() {
                 result.push(new Scroll(this,options));
             });
         }
@@ -423,16 +424,16 @@
                 '-webkit-overflow-scrolling': 'touch',
                 overflowY: 'scroll'
             })
-            .on('touchend',function (e) {
+            .on('touchend',function(e) {
                 if(this._scrollTop!==this.scrollTop) {
                     this._scrollTop=this.scrollTop;
                     e.stopPropagation();
                 }
-            }).each(function () {
+            }).each(function() {
                 this._scrollTop=0;
             }),
             result.push({
-                destory: function () {
+                destory: function() {
                     $scroll.off('touchend').off('scroll');
                 }
             });
@@ -445,7 +446,7 @@
         if(options&&options.refresh) {
 
             var $inner=$scroll.children('.sl_scroll_inner');
-            if(!$inner.length) $inner=addScrollInner($scroll,true);
+            if(!$inner.length) $inner=addScroller($scroll,true);
 
             $scroll.on('touchstart',refreshStart)
                 .on('touchmove',refreshMove)
