@@ -15,15 +15,48 @@
     //size:反弹距离
     var _momentum=tween._momentum;
 
-    function addScroller($scroll,refresh) {
-        var el=$('<div class="sl_scroll_inner" style="width:100%;-webkit-transform: translate(0px,0px) translateZ(0);"></div>').append($scroll.children()).appendTo($scroll.html(''));
+    var addScroller=function($el,refresh) {
+        var $scroller=$('<div class="sl_scroll_inner" style="width:100%;-webkit-transform: translate(0px,0px) translateZ(0);"></div>').append($el.children()).appendTo($el.html(''));
 
         if(refresh) {
-            el.css({ marginTop: -40 }).prepend('<div style="height:40px;background:#ddd;text-align:center;line-height:40px;">下拉刷新</div>')
+            $scroller.css({ marginTop: -40 }).prepend('<div style="height:40px;background:#ddd;text-align:center;line-height:40px;">下拉刷新</div>')
         }
+        $el.css({ overflow: 'hidden' });
 
-        return el;
+        return $scroller;
     };
+
+    var ScrollView=function(el,options) {
+
+        var that=this,
+            touch;
+
+        that.options=$.extend({},options);
+        that.$el=$(el);
+
+        touch=that.touch=new Touch(addScroller(that.$el))
+
+        touch.on('init',function() {
+            var matrix=this.$el.matrix();
+            console.log(matrix);
+
+            this.y=this.startScrollTop=matrix.ty;
+        })
+        .on('starttimereset',function() {
+            this.startScrollTop=this.y;
+        })
+        .on('move',function() {
+            this.y=this.el.scrollTop=this.startScrollTop+this.deltaY;
+        })
+        .on('beforemomentum',function() {
+            this.addMomentumOptions(this.startScrollTop,this.el.scrollTop,this.el.scrollHeight,0,window.innerHeight);
+        })
+        .on('momentum',function(e,a) {
+            this.y=this.el.scrollTop=a.current;
+        });
+
+        that.$scroller=touch.$el;
+    }
 
     var Scroll=view.extend({
         events: {
@@ -254,8 +287,8 @@
             e.preventDefault();
 
             if(duration<300) {
-                momentumX=newPosX?_momentum(that.startX,that.x,duration,that.maxX,that.minX,that.options.bounce?(that.wrapperW||window.innerWidth):0):momentumX;
-                momentumY=newPosY?_momentum(that.startY,that.y,duration,that.maxY,that.minY,that.options.bounce?(that.wrapperH||window.innerHeight):0):momentumY;
+                momentumX=newPosX?_momentum(that.startX,that.x,duration,that.minX,that.maxX,that.options.bounce?(that.wrapperW||window.innerWidth):0):momentumX;
+                momentumY=newPosY?_momentum(that.startY,that.y,duration,that.minY,that.maxY,that.options.bounce?(that.wrapperH||window.innerHeight):0):momentumY;
 
                 newPosX=that.x+momentumX.dist;
                 newPosY=that.y+momentumY.dist;

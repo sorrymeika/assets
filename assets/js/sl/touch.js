@@ -64,6 +64,11 @@
                     that.isTouchStart=true;
                     that.isDirectionY=isDirectionY;
                     that.isDirectionX=isDirectionX;
+
+                    if(!that.isInit) {
+                        that.trigger('init');
+                        that.isInit=true;
+                    }
                     that.trigger('start');
 
                     if(that.isTouchStop) {
@@ -90,7 +95,9 @@
                 that.startX=point.pageX;
                 that.startY=point.pageY;
 
-                that.trigger('resetstart');
+                console.log('starttimereset')
+
+                that.trigger('starttimereset');
             }
             return false;
         },
@@ -99,8 +106,8 @@
             this.isTouchStop=true;
         },
 
-        addMomentumOptions: function(start,current,max,min,size) {
-            this.momentumOptions.push([start,current,this.duration,max,min,size]);
+        addMomentumOptions: function(start,current,max,min,size,divisor) {
+            this.momentumOptions.push([start,current,this.duration,max,min,size,divisor]);
         },
 
         _end: function(e) {
@@ -126,26 +133,25 @@
 
             that.duration=duration;
 
-            if(duration<300) {
+            if(duration<300||!that.momentum) {
+
                 that.momentumOptions=[];
                 that.trigger('beforemomentum',duration);
 
-                that.momentum=tween.momentum(that.momentumOptions,function() {
+                that.momentum=tween.momentum(that.momentumOptions,duration,function() {
 
                     var args=slice.call(arguments);
                     args.splice(0,0,'momentum');
                     event.trigger.apply(that,args);
 
-                },'ease',function() {
+                },that.options.ease||'ease',function() {
                     that.momentum=null;
                     that._isClickStopAni=false;
                     that.trigger('stop');
                 });
 
-            } else if(that.momentum) {
-                that.momentum.finish();
             } else {
-                that.trigger('stop');
+                that.momentum.finish();
             }
 
             return false;

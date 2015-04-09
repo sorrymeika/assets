@@ -514,15 +514,23 @@
             this.bounce();
         },
         bounce: function() {
-            var count=0;
+            var count=0,
+                divisor,
+                current;
 
             for(var i=0,n=this.momentums.length,m;i<n;i++) {
                 m=this.momentums[i];
 
-                var current=m.current<m.min?m.min:m.current>m.max?m.max:m.current;
+                current=m.current<m.min?m.min:m.current>m.max?m.max:m.current;
                 if(current!=m.current) {
                     m.start=m.current;
                     m.result=current;
+                    count++;
+
+                } else if(m.divisor&&current%m.divisor!=0) {
+                    divisor=m.divisor;
+                    m.start=m.current;
+                    m.result=(current%divisor<divisor/2)?current-current%divisor:(current-current%divisor+divisor);
                     count++;
                 }
             }
@@ -536,52 +544,55 @@
         }
     };
 
-    Tween.momentum=function(options,step,ease,end) {
+    Tween.momentum=function(options,duration,step,ease,end) {
         var momentums=[],
-            duration=0,
-            anim;
+            anim,
+            newDuration=0;
 
         if(typeof options[0]==='number') options=[options];
         for(var i=0,n=options.length,m;i<n;i++) {
+            options[2]=duration;
             m=this._momentum.apply(this,options[i]);
 
-            if(m.dist!=0) {
-                duration=Math.max(duration,m.time);
-            }
+            if(m.dist!=0) newDuration=Math.max(newDuration,m.time);
             momentums.push(m);
         }
 
-        if(duration!=0) {
-            for(var i=0,n=momentums.length,m;i<n;i++) {
-                m=momentums[i];
-                if(m.outside!=0) m.result=m.result-m.outside+m.outside*400/duration;
-            }
-
-            anim=$.extend(momentum,{
-                momentums: momentums,
-                momentumStep: step,
-                duration: duration,
-                ease: ease,
-                end: end
-            });
-
-            parallel([anim]);
-
-            return anim;
+        for(var i=0,n=momentums.length,m;i<n;i++) {
+            m=momentums[i];
+            if(m.outside!=0) m.result=m.result-m.outside+m.outside*400/duration;
         }
+
+        anim=$.extend(momentum,{
+            momentums: momentums,
+            momentumStep: step,
+            duration: newDuration,
+            ease: ease,
+            end: end
+        });
+
+        if(newDuration!=0) {
+            parallel([anim]);
+        } else {
+            anim.bounce();
+        }
+
+        return anim;
     };
 
-    Tween._momentum=function(start,current,time,max,min,size) {
+    Tween._momentum=function(start,current,time,min,max,size,divisor) {
         var dist=current-start,
-                maxDistUpper=max-current,
-                maxDistLower=current-min,
-                deceleration=0.0006,
-                speed=Math.abs(dist)/time,
-                newDist=(speed*speed)/(2*deceleration),
-                newTime=0,
-                outsideDist=0,
-                outSpeed,
-                result;
+            maxDistUpper=max-current,
+            maxDistLower=current-min,
+            deceleration=0.0006,
+            speed=Math.abs(dist)/time,
+            newDist=(speed*speed)/(2*deceleration),
+            newTime=0,
+            outsideDist=0,
+            outSpeed,
+            result;
+
+        size=divisor||size;
 
         if(dist>0&&newDist>maxDistUpper) {
             outsideDist=size/(6/(newDist/speed*deceleration))/2;
@@ -598,6 +609,7 @@
         newDist=newDist*(dist<0?-1:1);
         outsideDist=outsideDist*(dist<0?-1:1);
         newTime=speed/deceleration;
+        result=current+newDist;
 
         if(outsideDist!=0) {
             outSpeed=(0.15/(outsideDist/newDist));
@@ -605,14 +617,21 @@
                 newDist-=outsideDist;
                 outsideDist/=outSpeed;
                 newDist+=outsideDist;
+                result=current+newDist;
             }
         }
 
-        result=current+newDist;
         if((current<min&&result<min)||(current>max&&result>max))
             newDist=0,newTime=0,outside=0,result=current;
 
-        return { dist: newDist,time: Math.round(newTime),outside: outsideDist,result: result,current: current,start: current,max: max,min: min };
+        else if(divisor&&outsideDist==0) {
+            result=result%divisor==0?result:(result%divisor<divisor/2)?result-result%divisor:(result-result%divisor+divisor);
+            result=result>max?max:result<min?min:result;
+            if(newTime<300) newTime=300;
+            newDist=result-current;
+        }
+
+        return { dist: newDist,time: Math.round(newTime),outside: outsideDist,result: result,current: current,start: current,max: max,min: min,divisor: divisor };
     }
 
     return Tween;

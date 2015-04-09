@@ -14,6 +14,66 @@
 
     var tween=require('tween');
 
+    var addScroller=function($el,refresh) {
+        var $scroller=$('<div class="sl_scroll_inner" style="width:100%;-webkit-transform: translate(0px,0px) translateZ(0);"></div>').append($el.children()).appendTo($el.html(''));
+
+        if(refresh) {
+            $scroller.css({ marginTop: -40 }).prepend('<div style="height:40px;background:#ddd;text-align:center;line-height:40px;">下拉刷新</div>')
+        }
+        $el.css({ overflow: 'hidden' });
+
+        return $scroller;
+    };
+
+    var ScrollView=function(el,options) {
+
+        var that=this,
+            touch;
+
+        that.options=$.extend({
+            ease: 'ease'
+        },options);
+        that.$el=$(el);
+        that.el=that.$el[0];
+
+        touch=that.touch=new Touch(addScroller(that.$el),that.options)
+
+        touch.on('init',function() {
+            var matrix=this.$el.matrix();
+            this.y=matrix.ty* -1;
+            this.minY=0;
+        })
+        .on('start',function() {
+            this.wapperH=this.el.parentNode.clientHeight;
+            this.scrollH=this.el.offsetHeight;
+            this.maxY=this.scrollH-this.wapperH;
+            this.startScrollTop=this.y;
+        })
+        .on('starttimereset',function() {
+            this.startScrollTop=this.y;
+        })
+        .on('move',function() {
+            var newY=this.startScrollTop+this.deltaY;
+
+            if(newY<this.minY||newY>this.maxY) {
+                newY=this.startScrollTop+(this.deltaY/4);
+            }
+            this.y=newY;
+
+            this.$el.css({ '-webkit-transform': 'translate(0px,'+(this.y)* -1+'px) translateZ(0)' });
+        })
+        .on('beforemomentum',function() {
+            this.addMomentumOptions(this.startScrollTop,this.y,this.minY,this.maxY,window.innerHeight);
+        })
+        .on('momentum',function(e,a) {
+            this.y=a.current;
+            this.$el.css({ '-webkit-transform': 'translate(0px,'+(this.y)* -1+'px) translateZ(0)' });
+        });
+
+        that.$scroller=touch.$el;
+    }
+
+
     return Activity.extend({
         template: 'views/index.html',
 
@@ -121,23 +181,7 @@
             //imageCanvas.draw();
 
 
-            var t=new Touch(that.$('.main1'));
-
-            t.on('start',function() {
-                this.startScrollTop=this.el.scrollTop;
-            })
-            .on('resetstart',function() {
-                this.startScrollTop=this.y;
-            })
-            .on('move',function() {
-                this.y=this.el.scrollTop=this.startScrollTop+this.deltaY;
-            })
-            .on('beforemomentum',function() {
-                this.addMomentumOptions(this.startScrollTop,this.el.scrollTop,this.el.scrollHeight,0,window.innerHeight);
-            })
-            .on('momentum',function(e,a) {
-                this.y=this.el.scrollTop=a.current;
-            })
+            var scrollView=new ScrollView(that.$('.main1'));
             return;
 
             var that=this,
