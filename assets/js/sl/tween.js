@@ -551,7 +551,6 @@
 
         if(typeof options[0]==='number') options=[options];
         for(var i=0,n=options.length,m;i<n;i++) {
-            options[2]=duration;
             m=this._momentum.apply(this,options[i]);
 
             if(m.dist!=0) newDuration=Math.max(newDuration,m.time);
@@ -560,7 +559,7 @@
 
         for(var i=0,n=momentums.length,m;i<n;i++) {
             m=momentums[i];
-            if(m.outside!=0) m.result=m.result-m.outside+m.outside*400/duration;
+            if(m.outside!=0) m.result=m.result-m.outside+m.outside*400/newDuration;
         }
 
         anim=$.extend(momentum,{

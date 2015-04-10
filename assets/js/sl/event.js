@@ -64,7 +64,6 @@
 
         isDefaultPrevented: returnFalse,
 
-
         isPropagationStopped: returnFalse,
 
 
@@ -78,6 +77,7 @@
     };
 
     sl.event={
+        createEvent: Event,
 
         on: function(name,callback,context) {
             var me=this,

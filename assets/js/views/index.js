@@ -31,47 +31,101 @@
             touch;
 
         that.options=$.extend({
-            ease: 'ease'
+            ease: 'ease',
+            hScroll: true,
+            vScroll: true
         },options);
+
         that.$el=$(el);
         that.el=that.$el[0];
 
-        touch=that.touch=new Touch(addScroller(that.$el),that.options)
+        touch=that.touch=new Touch(addScroller(that.$el),that.options);
 
-        touch.on('init',function() {
-            var matrix=this.$el.matrix();
-            this.y=matrix.ty* -1;
-            this.minY=0;
-        })
-        .on('start',function() {
-            this.wapperH=this.el.parentNode.clientHeight;
-            this.scrollH=this.el.offsetHeight;
-            this.maxY=this.scrollH-this.wapperH;
-            this.startScrollTop=this.y;
-        })
-        .on('starttimereset',function() {
-            this.startScrollTop=this.y;
-        })
-        .on('move',function() {
-            var newY=this.startScrollTop+this.deltaY;
-
-            if(newY<this.minY||newY>this.maxY) {
-                newY=this.startScrollTop+(this.deltaY/4);
-            }
-            this.y=newY;
-
-            this.$el.css({ '-webkit-transform': 'translate(0px,'+(this.y)* -1+'px) translateZ(0)' });
-        })
-        .on('beforemomentum',function() {
-            this.addMomentumOptions(this.startScrollTop,this.y,this.minY,this.maxY,window.innerHeight);
-        })
-        .on('momentum',function(e,a) {
-            this.y=a.current;
-            this.$el.css({ '-webkit-transform': 'translate(0px,'+(this.y)* -1+'px) translateZ(0)' });
-        });
-
+        touch.on('init',that.init,that)
+            .on('start',that.start,that)
+            .on('starttimereset',that.resetStartTime,that)
+            .on('move',that.move,that)
+            .on('beforemomentum',that.beforeMomentum,that)
+            .on('momentum',that.momentum,that);
         that.$scroller=touch.$el;
     }
+
+    ScrollView.prototype={
+        init: function() {
+            var matrix=this.touch.$el.matrix();
+
+            this.x=matrix.tx* -1;
+            this.minX=0;
+
+            this.y=matrix.ty* -1;
+            this.minY=0;
+        },
+        start: function() {
+            var that=this,
+                touch=that.touch;
+
+            if(!that.options.hScroll&&touch.isDirectionX||!that.options.vScroll&&touch.isDirectionY) {
+                touch.stop();
+                return;
+            }
+
+            that.wapperW=that.el.clientWidth;
+            that.scrollW=touch.el.offsetWidth;
+            that.maxX=that.scrollW-that.wapperW;
+            that._startLeft=that.startLeft=that.x
+
+            that.wapperH=that.el.clientHeight;
+            that.scrollH=touch.el.offsetHeight;
+            that.maxY=that.scrollH-that.wapperH;
+            that._startTop=that.startTop=that.y;
+        },
+        resetStartTime: function() {
+            if(this.options.hScroll) {
+                this.startLeft=this.startLeft+this.touch.deltaX;
+                this._startLeft=this.x;
+            }
+
+            if(this.options.vScroll) {
+                this.startTop=this.startTop+this.touch.deltaY;
+                this._startTop=this.y;
+            }
+
+        },
+        move: function() {
+            if(this.options.hScroll) {
+                var newX=this.startLeft+this.touch.deltaX;
+                if(newX<this.minX||newX>this.maxX) {
+                    newX=newX<this.minX?newX+(this.minX-newX)/2:(newX+(newX-this.maxX)/2);
+                }
+                this.x=newX;
+            }
+
+            if(this.options.vScroll) {
+                var newY=this.startTop+this.touch.deltaY;
+                if(newY<this.minY||newY>this.maxY) {
+                    newY=newY<this.minY?newY+(this.minY-newY)/2:(newY+(newY-this.maxY)/2);
+                }
+                this.y=newY;
+            }
+
+            this.touch.$el.css({ '-webkit-transform': 'translate('+(-this.x)+'px,'+(-this.y)+'px) translateZ(0)' });
+        },
+        beforeMomentum: function() {
+            console.log(this._startLeft,this.x,this.minX,this.maxX,this.wapperW)
+
+            this.touch.addMomentumOptions(this._startLeft,this.x,this.minX,this.maxX,this.wapperW)
+                .addMomentumOptions(this._startTop,this.y,this.minY,this.maxY,this.wapperH);
+        },
+        momentum: function(e,a,b) {
+
+            this.x=a.current;
+            this.y=b.current;
+            this.touch.$el.css({ '-webkit-transform': 'translate('+(-this.x)+'px,'+(-this.y)+'px) translateZ(0)' });
+        },
+        destory: function() {
+            this.touch.destory();
+        }
+    };
 
 
     return Activity.extend({

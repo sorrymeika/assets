@@ -24,7 +24,7 @@
 
         _stopMomentum: function() {
             if(this.momentum) {
-                this.momentum.stop();
+                this.momentum.stop&&this.momentum.stop();
                 this._isClickStopAni=true;
                 return true;
             }
@@ -64,11 +64,13 @@
                     that.isTouchStart=true;
                     that.isDirectionY=isDirectionY;
                     that.isDirectionX=isDirectionX;
+                    that.dir=isDirectionX;
 
                     if(!that.isInit) {
                         that.trigger('init');
                         that.isInit=true;
                     }
+
                     that.trigger('start');
 
                     if(that.isTouchStop) {
@@ -83,9 +85,14 @@
             that.deltaX=deltaX;
             that.deltaY=deltaY;
 
-            that.trigger('move',deltaX,deltaY);
+            var moveEvent=event.createEvent('move');
+
+            that.trigger(moveEvent,deltaX,deltaY);
 
             that.isTouchMoved=true;
+
+            that.isMoveLeft=that.pointX-point.pageX>0?true:false;
+            that.isMoveTop=that.pointY-point.pageY>0?true:false;
 
             that.pointX=point.pageX;
             that.pointY=point.pageY;
@@ -94,8 +101,6 @@
                 that.startTime=timestamp;
                 that.startX=point.pageX;
                 that.startY=point.pageY;
-
-                console.log('starttimereset')
 
                 that.trigger('starttimereset');
             }
@@ -106,8 +111,9 @@
             this.isTouchStop=true;
         },
 
-        addMomentumOptions: function(start,current,max,min,size,divisor) {
-            this.momentumOptions.push([start,current,this.duration,max,min,size,divisor]);
+        addMomentumOptions: function(start,current,min,max,size,divisor) {
+            this.momentumOptions.push([start,current,this.duration,min,max,size,divisor]);
+            return this;
         },
 
         _end: function(e) {
