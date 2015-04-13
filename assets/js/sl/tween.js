@@ -508,7 +508,7 @@
                 m.current=m.start+(m.result-m.start)*d;
             }
 
-            this.momentumStep.apply(this,this.momentums);
+            this.momentumStep.apply(this.ctx,this.momentums);
         },
         finish: function() {
             this.bounce();
@@ -536,7 +536,7 @@
             }
 
             if(count==0) {
-                this.end();
+                this.end.call(this.ctx);
             } else {
                 this.duration=400;
                 parallel([this]);
@@ -544,9 +544,9 @@
         }
     };
 
-    Tween.momentum=function(options,duration,step,ease,end) {
+    Tween.momentum=function(options,maxDuration,step,ease,end,context) {
         var momentums=[],
-            anim,
+            anim={},
             newDuration=0;
 
         if(typeof options[0]==='number') options=[options];
@@ -562,7 +562,8 @@
             if(m.outside!=0) m.result=m.result-m.outside+m.outside*400/newDuration;
         }
 
-        anim=$.extend(momentum,{
+        $.extend(anim,momentum,{
+            ctx: context||anim,
             momentums: momentums,
             momentumStep: step,
             duration: newDuration,
@@ -571,6 +572,7 @@
         });
 
         if(newDuration!=0) {
+            if(maxDuration&&anim.duration>maxDuration) anim.duration=maxDuration;
             parallel([anim]);
         } else {
             anim.bounce();

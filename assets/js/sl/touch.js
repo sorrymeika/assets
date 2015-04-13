@@ -26,9 +26,10 @@
             if(this.momentum) {
                 this.momentum.stop&&this.momentum.stop();
                 this._isClickStopAni=true;
-                return true;
+                return false;
             }
-            else return false;
+            else
+                return true;
         },
 
         _start: function(e) {
@@ -57,8 +58,8 @@
                 timestamp=e.timeStamp||Date.now();
 
             if(!that.isTouchStart) {
-                var isDirectionX=Math.abs(deltaX)>=minDelta,
-                    isDirectionY=Math.abs(deltaY)>=minDelta;
+                var isDirectionX=Math.abs(deltaX)>=minDelta&&Math.abs(deltaX)>Math.abs(deltaY),
+                    isDirectionY=Math.abs(deltaY)>=minDelta&&Math.abs(deltaY)>Math.abs(deltaX);
 
                 if(isDirectionY||isDirectionX) {
                     that.isTouchStart=true;
@@ -74,11 +75,17 @@
                     that.trigger('start');
 
                     if(that.isTouchStop) {
+                        /*
+                        if(that._isClickStopAni) {
+                        that.momentum.finish();
+                        that._isClickStopAni=false;
+                        }
+                        */
                         return;
                     }
 
                 } else {
-                    return;
+                    return false;
                 }
             }
 
@@ -112,8 +119,20 @@
         },
 
         addMomentumOptions: function(start,current,min,max,size,divisor) {
-            this.momentumOptions.push([start,current,this.duration,min,max,size,divisor]);
+            this.momentumOptions.push([start||0,current||0,this.duration,min||0,max||0,size||0,divisor]);
             return this;
+        },
+
+        _momentum: function() {
+            var args=slice.call(arguments);
+            args.splice(0,0,'momentum');
+            event.trigger.apply(this,args);
+        },
+
+        _stop: function() {
+            this.momentum=null;
+            this._isClickStopAni=false;
+            this.trigger('stop');
         },
 
         _end: function(e) {
@@ -131,6 +150,7 @@
             if(that.isTouchStop) return;
             that.isTouchStop=true;
 
+
             $(e.target).trigger('touchcancel');
 
             var point=e.changedTouches[0],
@@ -144,17 +164,7 @@
                 that.momentumOptions=[];
                 that.trigger('beforemomentum',duration);
 
-                that.momentum=tween.momentum(that.momentumOptions,duration,function() {
-
-                    var args=slice.call(arguments);
-                    args.splice(0,0,'momentum');
-                    event.trigger.apply(that,args);
-
-                },that.options.ease||'ease',function() {
-                    that.momentum=null;
-                    that._isClickStopAni=false;
-                    that.trigger('stop');
-                });
+                that.momentum=tween.momentum(that.momentumOptions,that.options.maxDuration,that._momentum,that.options.ease||'ease',that._stop,that);
 
             } else {
                 that.momentum.finish();

@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','sl/activity','sl/widget/loading','sl/widget/slider','tween','sl/vdom','sl/images','sl/touch'],function(require,exports,module) {
+﻿define(['$','util','bridge','sl/activity','sl/widget/loading','sl/widget/slider','tween','sl/vdom','sl/images','sl/widget/scrollview'],function(require,exports,module) {
     var util=require('util');
 
     var $=require('$'),
@@ -11,121 +11,9 @@
 
     var VirtualDom=require('sl/vdom');
     var ImageCanvas=require('sl/images');
+    var tween=require('sl/tween');
 
-    var tween=require('tween');
-
-    var addScroller=function($el,refresh) {
-        var $scroller=$('<div class="sl_scroll_inner" style="width:100%;-webkit-transform: translate(0px,0px) translateZ(0);"></div>').append($el.children()).appendTo($el.html(''));
-
-        if(refresh) {
-            $scroller.css({ marginTop: -40 }).prepend('<div style="height:40px;background:#ddd;text-align:center;line-height:40px;">下拉刷新</div>')
-        }
-        $el.css({ overflow: 'hidden' });
-
-        return $scroller;
-    };
-
-    var ScrollView=function(el,options) {
-
-        var that=this,
-            touch;
-
-        that.options=$.extend({
-            ease: 'ease',
-            hScroll: true,
-            vScroll: true
-        },options);
-
-        that.$el=$(el);
-        that.el=that.$el[0];
-
-        touch=that.touch=new Touch(addScroller(that.$el),that.options);
-
-        touch.on('init',that.init,that)
-            .on('start',that.start,that)
-            .on('starttimereset',that.resetStartTime,that)
-            .on('move',that.move,that)
-            .on('beforemomentum',that.beforeMomentum,that)
-            .on('momentum',that.momentum,that);
-        that.$scroller=touch.$el;
-    }
-
-    ScrollView.prototype={
-        init: function() {
-            var matrix=this.touch.$el.matrix();
-
-            this.x=matrix.tx* -1;
-            this.minX=0;
-
-            this.y=matrix.ty* -1;
-            this.minY=0;
-        },
-        start: function() {
-            var that=this,
-                touch=that.touch;
-
-            if(!that.options.hScroll&&touch.isDirectionX||!that.options.vScroll&&touch.isDirectionY) {
-                touch.stop();
-                return;
-            }
-
-            that.wapperW=that.el.clientWidth;
-            that.scrollW=touch.el.offsetWidth;
-            that.maxX=that.scrollW-that.wapperW;
-            that._startLeft=that.startLeft=that.x
-
-            that.wapperH=that.el.clientHeight;
-            that.scrollH=touch.el.offsetHeight;
-            that.maxY=that.scrollH-that.wapperH;
-            that._startTop=that.startTop=that.y;
-        },
-        resetStartTime: function() {
-            if(this.options.hScroll) {
-                this.startLeft=this.startLeft+this.touch.deltaX;
-                this._startLeft=this.x;
-            }
-
-            if(this.options.vScroll) {
-                this.startTop=this.startTop+this.touch.deltaY;
-                this._startTop=this.y;
-            }
-
-        },
-        move: function() {
-            if(this.options.hScroll) {
-                var newX=this.startLeft+this.touch.deltaX;
-                if(newX<this.minX||newX>this.maxX) {
-                    newX=newX<this.minX?newX+(this.minX-newX)/2:(newX+(newX-this.maxX)/2);
-                }
-                this.x=newX;
-            }
-
-            if(this.options.vScroll) {
-                var newY=this.startTop+this.touch.deltaY;
-                if(newY<this.minY||newY>this.maxY) {
-                    newY=newY<this.minY?newY+(this.minY-newY)/2:(newY+(newY-this.maxY)/2);
-                }
-                this.y=newY;
-            }
-
-            this.touch.$el.css({ '-webkit-transform': 'translate('+(-this.x)+'px,'+(-this.y)+'px) translateZ(0)' });
-        },
-        beforeMomentum: function() {
-            console.log(this._startLeft,this.x,this.minX,this.maxX,this.wapperW)
-
-            this.touch.addMomentumOptions(this._startLeft,this.x,this.minX,this.maxX,this.wapperW)
-                .addMomentumOptions(this._startTop,this.y,this.minY,this.maxY,this.wapperH);
-        },
-        momentum: function(e,a,b) {
-
-            this.x=a.current;
-            this.y=b.current;
-            this.touch.$el.css({ '-webkit-transform': 'translate('+(-this.x)+'px,'+(-this.y)+'px) translateZ(0)' });
-        },
-        destory: function() {
-            this.touch.destory();
-        }
-    };
+    var ScrollView=require('sl/widget/scrollview');
 
 
     return Activity.extend({
@@ -236,7 +124,6 @@
 
 
             var scrollView=new ScrollView(that.$('.main1'));
-            return;
 
             var that=this,
                 $list=that.$('.js_list');
@@ -258,11 +145,14 @@
                 pageSize: 5,
                 success: function(res) {
                     that.slider=new Slider($list,{
+                        width: 100,
                         data: res.data,
                         itemTemplate: '<div style="position:relative"><img class="home_tee_img" src="@Picture" onerror="this.removeAttribute(\'src\')" /><b class="home_buy_btn js_buy""></b><p class="t_info"><span>COMBED COTTON TEE</span> <span>可与皮肤直接接触</span> </p></div>'
                     });
                 }
             });
+
+            return;
 
 
             var anim=tween.prepare([{

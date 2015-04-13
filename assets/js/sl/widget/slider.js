@@ -1,56 +1,107 @@
-﻿define(['$','util','./../view','./../razor','./scroll'],function(require,exports,module) {
+﻿define(['$','util','./../razor','./scrollview'],function(require,exports,module) {
     var $=require('$'),
         _=require('util'),
-        view=require('./../view'),
-        razor=require('./../razor');
+        razor=require('./../razor'),
+        ScrollView=require('./scrollview');
 
-    window.test=function() {
-        var now=Date.now();
+    var Slider=function(el,options) {
+        options=$.extend({
+            maxDuration: 400,
+            ease: 'ease-out',
+            hScroll: true,
+            vScroll: false,
+            width: '100%'
+        },options);
+
+        $.extend(this,_.pick(options,['width','loop','render','template','itemTemplate','navTemplate']));
+
+        var that=this,
+            data=options.data,
+            items=[],
+            item,
+            $slider;
+
+        if(typeof that.itemTemplate==='string') that.itemTemplate=razor.create(that.itemTemplate).T;
+        if(typeof that.width=='string') that.width=parseInt(that.width.replace('%',''));
+
+        if(!$.isArray(data)) data=[data];
+        that._data=data;
+        that.length=data.length;
+
+        if(options.index!=undefined) options.index=options.index;
+
+        for(var i=0,n=data.length;i<n;i++) {
+            items.push(that.render(data[i]));
+        }
+
+        ScrollView.call(this,$(that.template({
+            items: items.join(''),
+            navs: ''
+        })).appendTo($(el)),options);
+
+        that.touch.on('stop',that.stop,that);
+
+        $slider=that.$slider=that.$el.find('.js_slider');
+        that.$items=$slider.children();
+        that.slider=$slider[0];
+
+        //that.index=index== -1?that.length%2==0?that.length/2-1:Math.floor(that.length/2):index;
+        if(that.length<2) that.loop=false;
+        else if(that.width<100) that.loop=false;
+
+        var length;
+        if(that.loop) {
+            $slider.prepend(that.$items.eq(that.length-1).clone());
+            $slider.append(that.$items.eq(0).clone());
+        } else {
+            length=that.length;
+        }
+
+        if(options.imagelazyload) {
+            that.bind("Change",function() {
+                that._loadImage();
+            });
+            that._loadImage();
+        }
+
+        if(options.arrow) {
+            that._prev=$('<span class="slider-pre js_pre"></span>').appendTo(that.$el);
+            that._next=$('<span class="slider-next js_next"></span>').appendTo(that.$el);
+
+            that.listen('tap .js_pre',function(e) {
+                that.index(options.index-1);
+            })
+                .listen('tap .js_next',function(e) {
+                    that.index(options.index+1);
+                });
+        }
+
+        $(window).on('ortchange',$.proxy(that._adjustWidth,that));
+
+        that._adjustWidth();
     }
 
-    var Scroll=require('./scroll');
+    var fn=ScrollView.prototype;
 
-    var Slider=Scroll.extend({
-        options: {
-            index: 0,
-            width: '50%',
-            onChange: null,
-            data: [],
-            dots: false,
-            imagelazyload: false,
-            useTransform: true,
-            bounce: true,
-            arrow: false,
-            ease: 'ease-out',
-            vScroll: false,
-            hScroll: true
-        },
+    Slider.prototype=Object.create(fn);
 
+    $.extend(Slider.prototype,{
         loop: false,
 
-        getIndex: function() {
-            return Math.round(this.x/this.wrapperW);
-        },
-
         start: function() {
-            var that=this;
-            var index=this.getIndex();
+            var that=this,
+                touch=that.touch,
+                index=this.getIndex();
+
+
+            if(!that.options.hScroll&&touch.isDirectionX||!that.options.vScroll&&touch.isDirectionY) {
+                touch.stop();
+                return;
+            }
 
             that.maxX=Math.min(that.scrollerW-that.wrapperW,(index+1)*that.wrapperW);
             that.minX=Math.max(0,(index-1)*that.wrapperW);
-            return true;
-        },
-
-        onScroll: function(x,y) {
-        },
-
-        onScrollStop: function() {
-            var that=this;
-            var x=that.x;
-
-            var index=this.getIndex();
-
-            that.index(index);
+            that._startLeft=that.startLeft=that.x
         },
 
         index: function(index) {
@@ -68,23 +119,11 @@
             }
 
             x=index*this.wrapperW;
-            if(x!=this.x) this.animate(x,0,200);
+            //if(x!=this.x) this.animate(x,0,200);
         },
-
-        refresh: _.noop,
-
-        _startAni: function(x,y,duration) {
-            var w=this.wrapperW;
-            var index=this.getIndex();
-            var nextL=Math.min((index+1)*w,this.maxX);
-            var currL=index*w;
-            var prevL=Math.max((index-1)*w,this.minX);
-
-            x=x>currL&&x<nextL?nextL:x<nextL&&x>prevL?prevL:x;
-
-            this.animate(x,y,Math.min(400,duration),this.end);
+        getIndex: function() {
+            return Math.round(this.x/this.wrapperW);
         },
-
         data: function(index) {
             return this._data[index||this.options.index];
         },
@@ -111,75 +150,14 @@
         itemTemplate: '@html(TypeName)',
         navTemplate: razor.create('<ol class="js_slide_navs slider-nav">@each(items,i,item){<li class="slide-nav-item@(current) slide-nav-item"></li>}</ol>').T,
         template: razor.create('<div class="slider"><ul class="js_slider slider-con">@html(items)</ul>@html(navs)</div>').T,
-        init: function() {
-            $.extend(this,_.pick(this.options,['width','loop','render','template','itemTemplate','navTemplate']));
+        stop: function() {
+            var that=this;
+            var x=that.x;
 
-            var that=this,
-                data=that.options.data,
-                items=[],
-                item,
-                $slider;
+            var index=this.getIndex();
 
-            if(typeof that.itemTemplate==='string') that.itemTemplate=razor.create(that.itemTemplate).T;
-            if(typeof that.width=='string') that.width=parseInt(that.width.replace('%',''));
-
-            if(!$.isArray(data)) data=[data];
-            that._data=data;
-            that.length=data.length;
-
-            if(that.options.index!=undefined) that.options.index=that.options.index;
-
-            for(var i=0,n=data.length;i<n;i++) {
-                items.push(that.render(data[i]));
-            }
-            that.$scroll=$(that.template({
-                items: items.join(''),
-                navs: ''
-            })).appendTo(that.$el);
-            that.scroll=that.$scroll[0];
-
-            $slider=that.$slider=that.$('.js_slider');
-            that.$items=$slider.children();
-            that.slider=$slider[0];
-
-            //that.index=index== -1?that.length%2==0?that.length/2-1:Math.floor(that.length/2):index;
-            if(that.length<2) that.loop=false;
-            else if(that.width<100) that.loop=false;
-
-            var length;
-            if(that.loop) {
-                $slider.prepend(that.$items.eq(that.length-1).clone());
-                $slider.append(that.$items.eq(0).clone());
-            } else {
-                length=that.length;
-            }
-
-            if(that.options.imagelazyload) {
-                that.bind("Change",function() {
-                    that._loadImage();
-                });
-                that._loadImage();
-            }
-
-            if(that.options.arrow) {
-                that._prev=$('<span class="slider-pre js_pre"></span>').appendTo(that.$el);
-                that._next=$('<span class="slider-next js_next"></span>').appendTo(that.$el);
-
-                that.listen('tap .js_pre',function(e) {
-                    that.index(that.options.index-1);
-                })
-                .listen('tap .js_next',function(e) {
-                    that.index(that.options.index+1);
-                });
-            }
-
-            $(window).on('ortchange',$.proxy(that._adjustWidth,that));
-
-            setTimeout(function() {
-                that._adjustWidth();
-            },0)
+            that.index(index);
         },
-
         _loadImage: function() {
             var that=this;
 
@@ -209,12 +187,15 @@
                 children=slider.children(),
                 length=children.length;
 
-            that.wrapperW=that.scroll.clientWidth*that.width/100;
+            that.wrapperW=that.el.clientWidth*that.width/100;
             that.scrollerW=that.wrapperW*length;
 
             slider.css({ width: length*that.width+'%',marginLeft: (100-that.width)/2+'%' });
 
-            that.pos(that.wrapperW*that.options.index,0);
+            that.x=that.wrapperW*that.options.index;
+            that.touch.$el.css({ '-webkit-transform': 'translate('+(-that.x)+'px,0px) translateZ(0)' });
+            that.divisorX=that.wrapperW;
+
             children.css({ width: 100/length+'%' });
         },
 
@@ -233,13 +214,14 @@
                 options=that.options;
 
             if(options.onChange) options.onChange.call(that,options.index);
-            that.trigger('Change',[options.index,that.currentData]);
+            that.trigger('change',options.index,that.currentData);
         },
 
-        onDestory: function() {
+        destory: function() {
             $(window).off('ortchange',this._adjustWidth);
+            this.touch.destory();
         }
-    });
+    })
 
     module.exports=Slider;
 });
