@@ -1,4 +1,4 @@
-﻿define(['$','util','bridge','./activity','./view','./tween','./animations'],function (require,exports,module) {
+﻿define(['$','util','bridge','./activity','./view','./tween','./animations'],function(require,exports,module) {
 
     var $=require('$'),
         util=require('util'),
@@ -14,18 +14,18 @@
         lastIndexOf=util.lastIndexOf,
         slice=Array.prototype.slice,
         getUrlPath=util.getUrlPath,
-        hashToUrl=function (hash) {
+        hashToUrl=function(hash) {
             return (hash.replace(/^#/,'')||'/').toLowerCase();
         };
 
-    var checkQueryString=function (activity,route) {
+    var checkQueryString=function(activity,route) {
         if(activity.route.url!=route.url) {
             activity._setRoute(route);
             activity.trigger('QueryChange');
         }
     };
 
-    var getAcitivityAnimation=function (isOpen,currentActivity,activity,animationName) {
+    var getAcitivityAnimation=function(isOpen,currentActivity,activity,animationName) {
         if(!animationName) animationName=(isOpen?activity:currentActivity).animationName;
 
         var anim=animations[animationName],
@@ -51,7 +51,7 @@
         }];
     }
 
-    var prepareActivity=function (currentActivity,activity) {
+    var prepareActivity=function(currentActivity,activity) {
         currentActivity.prepareExitAnimation();
         currentActivity.$el.siblings(':not([data-path="'+activity.path+'"])').hide();
         activity.el.parentNode===null&&activity.$el.appendTo(currentActivity.$el.parent());
@@ -59,7 +59,7 @@
 
     var Application=view.extend({
         events: {
-            'tap,click a[href]:not(.js-link-default)': function (e) {
+            'tap,click a[href]:not(.js-link-default)': function(e) {
                 var that=this,
                     target=$(e.currentTarget);
 
@@ -78,7 +78,7 @@
 
                 return false;
             },
-            'tap [data-href]': function (e) {
+            'tap [data-href]': function(e) {
                 var that=this,
                     target=$(e.currentTarget);
 
@@ -86,16 +86,16 @@
                     that.to(target.attr('data-href'));
                 }
             },
-            'tap [data-back]': function (e) {
+            'tap [data-back]': function(e) {
                 this.back($(e.currentTarget).attr('data-back'));
             },
-            'tap [data-forward]': function (e) {
+            'tap [data-forward]': function(e) {
                 this.forward($(e.currentTarget).attr('data-forward'));
             },
-            'focus input': function (e) {
+            'focus input': function(e) {
                 this.activeInput=e.target;
             },
-            'touchstart': function (e) {
+            'touchstart': function(e) {
                 var that=this,
                     point=e.touches[0];
 
@@ -107,7 +107,7 @@
                 that.isTouchMoved=false;
                 that.width=window.innerWidth;
             },
-            'touchmove': function (e) {
+            'touchmove': function(e) {
                 if(this.isTouchStop) return;
 
                 var that=this,
@@ -150,7 +150,7 @@
 
                         if(action) {
                             that.mask.show();
-                            that._getActivity(action,function (activity) {
+                            that._getActivity(action,function(activity) {
                                 prepareActivity(currentActivity,activity);
 
                                 that.isSwipeOpen=isOpen;
@@ -183,7 +183,7 @@
                 that.pointX=point.pageX;
                 that.pointY=point.pageY;
             },
-            'touchend': function (e) {
+            'touchend': function(e) {
                 var that=this;
 
                 if(!that.isTouchMoved) return;
@@ -194,7 +194,7 @@
 
                 var isCancelSwipe=that.isMoveLeft!==that.isSwipeLeft;
 
-                that.queue(that.swiper,that.swiper.animate,[200,isCancelSwipe?0:100,function () {
+                that.queue(that.swiper,that.swiper.animate,[200,isCancelSwipe?0:100,function() {
                     var activity=that.swipeActivity,
                         currentActivity=that._currentActivity;
 
@@ -226,13 +226,13 @@
         el: '<div class="screen" style="position:fixed;top:0px;bottom:0px;right:0px;width:100%;background:rgba(0,0,0,0);z-index:2000;display:none"></div><div class="viewport"></div><canvas class="imagecanvas"></canvas>',
 
         routes: [],
-        mapRoute: function (options) {
+        mapRoute: function(options) {
             var routes=this.routes;
-            $.each(options,function (k,opt) {
+            $.each(options,function(k,opt) {
                 var parts=[],
                     routeOpt={};
 
-                var reg='^(?:\/{0,1})'+k.replace(/(\/|^|\?)\{([^\{\}]+?\{[^\}]*\}[^\{\}]*|[^\}]*)\}/g,function (r0,r1,r2) {
+                var reg='^(?:\/{0,1})'+k.replace(/(\/|^|\?)\{([^\{\}]+?\{[^\}]*\}[^\{\}]*|[^\}]*)\}/g,function(r0,r1,r2) {
                     var ra=r2.split(':');
 
                     if(ra.length>1) {
@@ -255,7 +255,7 @@
                 routes.push(routeOpt);
             });
         },
-        matchRoute: function (url) {
+        matchRoute: function(url) {
             var result=null,
                 queries={},
                 hash=hashToUrl(url);
@@ -269,7 +269,7 @@
 
                 url=url.substr(0,index);
 
-                query.replace(/(?:^|&)([^=&]+)=([^&]*)/g,function (r0,r1,r2) {
+                query.replace(/(?:^|&)([^=&]+)=([^&]*)/g,function(r0,r1,r2) {
                     queries[r1]=decodeURIComponent(r2);
                     return '';
                 })
@@ -277,7 +277,7 @@
                 query='';
             }
 
-            $.each(this.routes,function (i,route) {
+            $.each(this.routes,function(i,route) {
                 var m=route.reg?url.match(route.reg):null;
 
                 if(m) {
@@ -290,7 +290,7 @@
                         queryString: query,
                         queries: queries
                     };
-                    $.each(route.parts,function (i,name) {
+                    $.each(route.parts,function(i,name) {
                         result.data[name]=m[i+1];
                     });
                     return false;
@@ -300,12 +300,12 @@
             return result;
         },
 
-        initialize: function () {
+        initialize: function() {
             var that=this;
 
             that._queue=new LinkList();
 
-            that.mask=$(that.$el[0]).on('tap click touchend touchmove touchstart',function (e) {
+            that.mask=$(that.$el[0]).on('tap click touchend touchmove touchstart',function(e) {
                 return false;
             });
 
@@ -320,7 +320,7 @@
 
         _queue: null,
 
-        queue: function (context,fn,args) {
+        queue: function(context,fn,args) {
             var queue=this._queue;
             queue.append({
                 context: context,
@@ -332,7 +332,7 @@
                 fn.apply(context,args);
         },
 
-        turning: function () {
+        turning: function() {
             var queue=this._queue;
 
             if(queue.length) {
@@ -343,11 +343,11 @@
             }
         },
 
-        start: function () {
+        start: function() {
             $(window).on('load',$.proxy(this._start,this));
         },
 
-        _start: function () {
+        _start: function() {
             sl.app=this;
 
             var that=this,
@@ -360,19 +360,19 @@
             if(!location.hash) location.hash='/';
             that.hash=hash=hashToUrl(location.hash);
 
-            that.queue(that,that._getActivity,[hash,function (activity) {
+            that.queue(that,that._getActivity,[hash,function(activity) {
                 that._currentActivity=activity;
                 that._history.push(activity.url);
                 that._historyCursor++;
 
                 activity.$el.transform(animations[activity.animationName].openEnterAnimationTo);
-                activity.then(function () {
+                activity.then(function() {
                     activity.trigger('Resume');
                     activity.trigger('Show');
                     that.turning();
                 });
 
-                $win.on('hashchange',function () {
+                $win.on('hashchange',function() {
                     hash=that.hash=hashToUrl(location.hash);
 
                     var index=lastIndexOf(that._history,hash),
@@ -402,16 +402,16 @@
             } ]);
         },
 
-        _to: function (url) {
+        _to: function(url) {
             this._navigate(url);
             this.turning();
         },
 
-        to: function (url) {
+        to: function(url) {
             this.queue(this,this._to,[url]);
         },
 
-        _navigate: function (url,skip) {
+        _navigate: function(url,skip) {
             url=hashToUrl(url);
 
             var that=this,
@@ -440,41 +440,41 @@
             }
         },
 
-        navigate: function (url) {
+        navigate: function(url) {
             this._navigate(url,true);
         },
 
         _activities: {},
 
-        get: function (url) {
+        get: function(url) {
             return this._activities[getUrlPath(url)];
         },
 
-        set: function (url,activity) {
+        set: function(url,activity) {
             this._activities[getUrlPath(url)]=activity;
         },
 
-        remove: function (url) {
+        remove: function(url) {
             this._activities[getUrlPath(url)]=void 0;
         },
 
         viewPath: 'views/',
 
-        _forward: function (url,duration,animationName) {
+        _forward: function(url,duration,animationName) {
             var currentActivity=this._currentActivity;
 
-            this._animationTo(url,duration,animationName,'open',function () {
+            this._animationTo(url,duration,animationName,'open',function() {
                 currentActivity.trigger('Pause');
             });
         },
 
-        forward: function (url,duration,animationName) {
+        forward: function(url,duration,animationName) {
             this.queue(this,this._forward,[url,duration,animationName]);
         },
 
         isHistoryBack: false,
 
-        _back: function (url,duration,animationName) {
+        _back: function(url,duration,animationName) {
             var that=this,
                 currentActivity=that._currentActivity;
 
@@ -489,17 +489,17 @@
                     animationName=duration;
                     duration=null;
                 }
-                that._animationTo(url,duration,animationName,'close',function () {
+                that._animationTo(url,duration,animationName,'close',function() {
                     currentActivity.destory();
                 });
             }
         },
 
-        back: function (url,duration,animationName) {
+        back: function(url,duration,animationName) {
             this.queue(this,this._back,[url,duration,animationName]);
         },
 
-        _getActivity: function (url,callback) {
+        _getActivity: function(url,callback) {
             var that=this,
                 route=typeof url==='string'?that.matchRoute(url):url;
 
@@ -508,7 +508,7 @@
             var activity=that.get(route.path);
 
             if(activity==null) {
-                seajs.use(that.viewPath+route.view,function (ActivityClass) {
+                seajs.use(that.viewPath+route.view,function(ActivityClass) {
 
                     if(ActivityClass!=null) {
                         activity=new ActivityClass({
@@ -517,7 +517,7 @@
                         });
                         that.set(route.path,activity);
 
-                        activity.then(function () {
+                        activity.then(function() {
                             callback.call(that,activity,route);
                         });
 
@@ -533,7 +533,7 @@
             }
         },
 
-        _animationTo: function (url,duration,animationName,type,callback) {
+        _animationTo: function(url,duration,animationName,type,callback) {
             if(!duration) duration=400;
             url=hashToUrl(url);
 
@@ -551,7 +551,7 @@
                 return;
             }
 
-            that._getActivity(route,function (activity) {
+            that._getActivity(route,function(activity) {
                 if(activity.path==currentActivity.path) {
                     checkQueryString(activity,route);
                     that.turning();
@@ -561,7 +561,7 @@
 
                 prepareActivity(currentActivity,activity);
 
-                activity.then(function () {
+                activity.then(function() {
                     activity.trigger('Resume');
                 });
 
@@ -581,7 +581,7 @@
                     anim.duration=duration;
                 }
 
-                anim.finish=function () {
+                anim.finish=function() {
                     callback&&callback(activity);
                     activity.finishEnterAnimation();
                     that.turning();

@@ -19,7 +19,7 @@
 <body>
     <script debug>
         seajs.use(['zepto','tools/tools','sl/linklist'],function($,tools,linklist) {
-            return;
+            //return;
             tools.build({
                 api: 'http://photo.ie1e.com',
                 compress: [
@@ -50,12 +50,12 @@
                         'sl/app',
                         'sl/activity',
                         'sl/tween',
+                        'sl/touch',
+                        'sl/widget/scrollview',
+                        'sl/widget/scroll',
                         'sl/widget/dialog',
                         'sl/widget/tip',
                         'sl/widget/button',
-                        'sl/widget/touch',
-                        'sl/widget/scrollview',
-                        'sl/widget/scroll',
                         'sl/widget/selector',
                         'sl/widget/loading',
                         'sl/widget/slider',
@@ -89,7 +89,7 @@
         });
 
         seajs.use(['$','sl/app','bridge'],function($,Application,bridge,views) {
-            $(document).on('touchmove',function() { return false });
+            //$(document).on('touchmove',function() { return false });
 
             var app=new Application();
 

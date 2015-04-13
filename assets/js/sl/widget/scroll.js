@@ -55,7 +55,7 @@
     exports.bind=function(selector,options) {
         //<--debug
         options={
-            useScroll: true,
+            useScroll: false,
             refresh: false
         }
         //debug-->
@@ -83,6 +83,7 @@
         else if(util.ios) {
             $el.css({
                 '-webkit-overflow-scrolling': 'touch',
+                height: '100%',
                 overflowY: 'scroll'
             })
             .on('touchend',function(e) {
