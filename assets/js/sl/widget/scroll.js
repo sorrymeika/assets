@@ -52,10 +52,35 @@
         }
     }
 
+    var iosStart=function(e) {
+        if(this._scrollTop!==this.scrollTop) {
+            this._scrollTop=this.scrollTop;
+            this._isTouchStop=true;
+        }
+    };
+
+    var iosEnd=function(e) {
+        if(this._isTouchStop) {
+            this._isTouchStop=false;
+            return false;
+        }
+    };
+
+    var scrollStop=function() {
+        var that=this;
+        if(that._stm) clearTimeout(that._stm);
+        that._stm=setTimeout(function() {
+            //for ios
+            that._scrollTop=that.scrollTop;
+
+            $(that).trigger('scrollStop');
+        },80);
+    };
+
     exports.bind=function(selector,options) {
         //<--debug
         options={
-            useScroll: false,
+            useScroll: true,
             refresh: false
         }
         //debug-->
@@ -63,16 +88,7 @@
         var $el=typeof selector==='string'?$(selector):selector;
         var result=[];
 
-        $el.on('scroll',function() {
-            var that=this;
-            if(that._stm) clearTimeout(that._stm);
-            that._stm=setTimeout(function() {
-                //for ios
-                that._scrollTop=that.scrollTop;
-
-                $(that).trigger('scrollStop');
-            },80);
-        });
+        $el.on('scroll',scrollStop);
 
         if(options&&options.useScroll||util.android&&parseFloat(util.osVersion<=2.3)) {
             $el.each(function() {
@@ -86,17 +102,13 @@
                 height: '100%',
                 overflowY: 'scroll'
             })
-            .on('touchend',function(e) {
-                if(this._scrollTop!==this.scrollTop) {
-                    this._scrollTop=this.scrollTop;
-                    e.stopPropagation();
-                }
-            }).each(function() {
+            .on('touchstart',iosStart)
+            .on('touchend',iosEnd).each(function() {
                 this._scrollTop=0;
             }),
             result.push({
                 destory: function() {
-                    $el.off('touchend').off('scroll');
+                    $el.off('touchstart',iosStart).off('touchend',iosEnd).off('scroll',scrollStop);
                 }
             });
         }

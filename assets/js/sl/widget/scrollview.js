@@ -4,12 +4,8 @@
         tween=require('./../tween'),
         Touch=require('./../touch');
 
-    var addScroller=function($el,refresh) {
-        var $scroller=$('<div class="sl_scroller" style="width:100%;-webkit-transform: translate(0px,0px) translateZ(0);"></div>').append($el.children()).appendTo($el.html(''));
-
-        $el.css({ overflow: 'hidden' });
-
-        return $scroller;
+    var addScroller=function($el) {
+        return $('<div class="sl_scroller" style="width:100%;-webkit-transform: translate(0px,0px) translateZ(0);"></div>').append($el.children()).appendTo($el.html('').css({ overflow: 'hidden' }));
     };
 
     var ScrollView=function(el,options) {
@@ -65,12 +61,12 @@
 
             that.wrapperW=that.el.clientWidth;
             that.scrollW=that.scroller.offsetWidth;
-            that.maxX=that.scrollW-that.wrapperW;
+            that.maxX=Math.max(that.scrollW-that.wrapperW,0);
             that._startLeft=that.startLeft=that.x
 
             that.wrapperH=that.el.clientHeight;
             that.scrollH=that.scroller.offsetHeight;
-            that.maxY=that.scrollH-that.wrapperH;
+            that.maxY=Math.max(that.scrollH-that.wrapperH,0);
             that._startTop=that.startTop=that.y;
         },
         resetStartTime: function() {
