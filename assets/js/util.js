@@ -7,15 +7,16 @@
         ios=ua.match(/(iPhone|iPad|iPod).*OS\s([\d_]+)/i),
         android=ua.match(/(Android);?[\s\/]+([\d.]+)?/),
         isAndroid=!!android,
-        guid=0;
+        guid=0,
+        osVersion;
 
-    ios&&(osVersion=ios[2].split('_'));
-    android&&(osVersion=android[2].split('.'));
+    if(ios) osVersion=ios[2].split('_');
+    else if(android) osVersion=android[2].split('.');
 
     var util={
         ios: !!ios,
         android: isAndroid,
-        osVersion: osVersion[0]+'.'+osVersion[1],
+        osVersion: osVersion?(osVersion[0]+'.'+osVersion[1]):0,
         guid: function() {
             return ++guid;
         },
